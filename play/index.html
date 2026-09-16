@@ -1352,8 +1352,13 @@ main {
   transform:translate(var(--character-x),var(--character-y)) scale(var(--character-scale));
   transform-origin:center center;
 }
-.character-layer[data-layer="giraffe"] {z-index:1;}
-.character-layer[data-layer="handItem"] {z-index:2;}
+.character-layer[data-slot="back"] {z-index:1;}
+.character-layer[data-layer="giraffe"] {z-index:2;}
+.character-layer[data-slot="head"],
+.character-layer[data-slot="face"],
+.character-layer[data-slot="hand_left"],
+.character-layer[data-slot="hand_right"],
+.character-layer[data-slot="extra"] {z-index:3;}
 .character-fallback {display:none;font-size:100px;position:absolute;inset:0;align-items:center;justify-content:center;}
 .base-unavailable .character-fallback {display:flex;}
 .base-unavailable .character-layer {display:none;}
@@ -1469,26 +1474,33 @@ const enName=d=>({key:d.lowercase+'_name',text:d.name||d.letter,lang:'en-US'});
 const enSound=d=>({key:d.lowercase+'_sound',text:`Listen to the first sound in ${d.word}. ${d.word}.`,lang:'en-US'});
 const enWord=d=>({key:d.word.toLowerCase(),text:d.word,lang:'en-US'});
 for(const d of letters){d.letterAudio=MEDIA_ASSETS.audio[d.lowercase+'_name']?.src||null;d.soundAudio=MEDIA_ASSETS.audio[d.lowercase+'_sound']?.src||null;d.wordAudio=MEDIA_ASSETS.audio[d.word.toLowerCase()]?.src||null;}
-/* CHARACTER DATA — full giraffe variants; only hand items are overlays.
-   Every scene uses the same 2:3 stage and shared actor coordinate system. */
-const REWARD_STATE_VERSION=2;
+/* INVENTORY — course rewards reference item IDs; rendering and ownership live here.
+   Every asset uses the same 2:3 stage and shared actor coordinate system. */
+const REWARD_STATE_VERSION=3;
+const ITEM_SLOTS=Object.freeze(['outfit','head','face','hand_left','hand_right','back','extra','background']);
+const SLOT_CONFIG=Object.freeze({
+ outfit:{label:'Куртка'},head:{label:'На голове'},face:{label:'На лице'},
+ hand_left:{label:'В левой руке'},hand_right:{label:'В руках'},back:{label:'За спиной'},
+ extra:{label:'Дополнительно'},background:{label:'Фон'}
+});
 const characterConfig={
  width:1024,height:1536,
  backgrounds:{home:'background_home',reward:'background_reward'},
- variants:{base:'giraffe_base',jacket_stars:'giraffe_jacket_stars',jacket_racer:'giraffe_jacket_racer'},
- categories:{giraffeVariant:{label:'Куртка'},handItem:{label:'В руках'}}
+ baseAsset:'giraffe_base'
 };
+const ITEMS=Object.freeze([
+ {id:'jacket_stars',name:'Куртка со звёздами',slot:'outfit',asset:'giraffe_jacket_stars',icon:'reward_icon_jacket_stars',collection:'base'},
+ {id:'jacket_racer',name:'Гоночная куртка',slot:'outfit',asset:'giraffe_jacket_racer',icon:'reward_icon_jacket_racer',collection:'base'},
+ {id:'accessory_bouquet',name:'Букет',slot:'hand_right',asset:'accessory_bouquet',icon:'accessory_bouquet',collection:'base'},
+ {id:'accessory_balloon',name:'Шарик',slot:'hand_right',asset:'accessory_balloon',icon:'accessory_balloon',collection:'base'}
+]);
+const itemCatalog=new Map(ITEMS.map(item=>[item.id,Object.freeze({...item})]));
 const rewardConfig=[
- {id:'reward_abc',afterLetters:['A','B','C'],category:'giraffeVariant',prompt:'Выбери одну куртку',options:[
-  {id:'jacket_stars',icon:'reward_icon_jacket_stars',label:'Куртка со звёздами'},
-  {id:'jacket_racer',icon:'reward_icon_jacket_racer',label:'Гоночная куртка'}]},
- {id:'reward_def',afterLetters:['D','E','F'],category:'handItem',prompt:'Выбери один подарок',options:[
-  {id:'accessory_bouquet',icon:'accessory_bouquet',image:'accessory_bouquet',label:'Букет'},
-  {id:'accessory_balloon',icon:'accessory_balloon',image:'accessory_balloon',label:'Шарик'}]}
+ {id:'reward_abc',afterLetters:['A','B','C'],prompt:'Выбери одну куртку',itemIds:['jacket_stars','jacket_racer']},
+ {id:'reward_def',afterLetters:['D','E','F'],prompt:'Выбери один подарок',itemIds:['accessory_bouquet','accessory_balloon']}
 ];
-const itemCatalog=new Map(rewardConfig.flatMap(r=>r.options.map(item=>[item.id,{...item,category:r.category}])));
-const blankCharacter=()=>({ownedItems:[],equipped:{giraffeVariant:'base',handItem:null}});
-const ownsItem=(id,state=AppState)=>state.characterState.ownedItems.includes(id);
+const rewardItems=reward=>reward.itemIds.map(id=>itemCatalog.get(id)).filter(Boolean);
+const blankCharacter=()=>({ownedItems:[],equipped:Object.fromEntries(ITEM_SLOTS.map(slot=>[slot,null]))});
 
 const GROUP_SIZE=3, MINI_LENGTH=5, FINAL_LENGTH=10;
 const CORE_TYPES=['find','letterPicture','pictureLetter'];
@@ -1536,6 +1548,31 @@ function loadProgress(){
  }catch(e){log('Storage unavailable or invalid',e);return fresh;}
 }
 function saveProgress(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(AppState));storageAvailable=true;}catch(e){storageAvailable=false;log('Progress kept in memory',e);}$('#storage-notice').classList.toggle('hide',storageAvailable);}
+function getItemById(id){return itemCatalog.get(id)||null;}
+function isItemOwned(id,state=AppState){return Boolean(getItemById(id)&&state.characterState.ownedItems.includes(id));}
+function unlockItem(id,state=AppState,persist){
+ if(!getItemById(id))return false;
+ if(!state.characterState.ownedItems.includes(id))state.characterState.ownedItems.push(id);
+ if(persist===true||(persist===undefined&&state===AppState))saveProgress();
+ return true;
+}
+function getEquippedItem(slot,state=AppState){
+ if(!ITEM_SLOTS.includes(slot))return null;
+ const item=getItemById(state.characterState.equipped[slot]);
+ return item?.slot===slot&&isItemOwned(item.id,state)?item:null;
+}
+function equipItem(id,state=AppState,persist){
+ const item=getItemById(id);if(!item||!isItemOwned(id,state))return false;
+ state.characterState.equipped[item.slot]=id;
+ if(persist===true||(persist===undefined&&state===AppState))saveProgress();
+ log('Equipped',id);return true;
+}
+function unequipItem(id,state=AppState,persist){
+ const item=getItemById(id);if(!item||state.characterState.equipped[item.slot]!==id)return false;
+ state.characterState.equipped[item.slot]=null;
+ if(persist===true||(persist===undefined&&state===AppState))saveProgress();
+ log('Unequipped',id);return true;
+}
 function validQuestion(q){return byLetter.has(q.letter)&&FINAL_TYPES.includes(q.type)&&Array.isArray(q.options)&&q.options.length>=1&&q.options.length<=3&&new Set(q.options).size===q.options.length&&q.options.includes(q.letter)&&q.options.every(x=>typeof x==='string'&&x.length<=2&&(q.type==='find'||byLetter.has(x)));}
 /* Migration uses course position, not mastery alone: a completed mini challenge
    is required. A pending gift never replaces the saved lesson/question. */
@@ -1548,28 +1585,37 @@ function migrateRewards(state,saved){
   if(passed&&!state.completedBlocks.includes(reward.id))state.completedBlocks.push(reward.id);
  }
  const previous=saved.characterState||{},equipped=previous.equipped||{},flow=saved.rewardFlow;
- const current=saved.rewardStateVersion===REWARD_STATE_VERSION;
  const oldIDs={jacket_01:'jacket_stars',jacket_02:'jacket_racer'};
  const mapID=id=>oldIDs[id]||id;
+ const previousRewardVersion=Number(saved.rewardStateVersion)||0;
+ const equippedBySlot={...equipped};
+ equippedBySlot.outfit=equippedBySlot.outfit||equipped.giraffeVariant||equipped.jacket||null;
+ equippedBySlot.hand_right=equippedBySlot.hand_right||equipped.handItem||null;
  // Legacy "unlockedItems" unlocked both options. Only the chosen/equipped
  // item is carried over. Retired headwear earns a fresh accessory choice.
- if(current&&Array.isArray(previous.ownedItems)){
-  state.characterState.ownedItems=[...new Set(previous.ownedItems.filter(id=>itemCatalog.has(id)))];
+ if(previousRewardVersion>=2&&Array.isArray(previous.ownedItems)){
+  for(const id of previous.ownedItems)unlockItem(mapID(id),state,false);
+  for(const slot of ITEM_SLOTS){
+   const item=getItemById(mapID(equippedBySlot[slot]));
+   if(item?.slot===slot&&isItemOwned(item.id,state))equipItem(item.id,state,false);
+  }
  }
  for(const reward of rewardConfig){
   const eligible=state.completedBlocks.includes(reward.id);
-  let chosen=mapID(equipped[reward.category]||(reward.category==='giraffeVariant'?equipped.jacket:null));
-  if(!reward.options.some(o=>o.id===chosen))chosen=flow?.id===reward.id?mapID(flow.selected):null;
-  if(!reward.options.some(o=>o.id===chosen))chosen=null;
-  if(!current&&eligible&&chosen)state.characterState.ownedItems.push(chosen);
-  const owned=reward.options.filter(o=>ownsItem(o.id,state));
-  if(chosen&&ownsItem(chosen,state))state.characterState.equipped[reward.category]=chosen;
-  else if(owned.length)state.characterState.equipped[reward.category]=owned[0].id;
+  const items=rewardItems(reward),slot=items[0]?.slot;
+  let chosen=mapID(equippedBySlot[slot]);
+  if(!items.some(item=>item.id===chosen))chosen=flow?.id===reward.id?mapID(flow.selected):null;
+  if(!items.some(item=>item.id===chosen))chosen=null;
+  if(previousRewardVersion<2&&eligible&&chosen)unlockItem(chosen,state,false);
+  const owned=items.filter(item=>isItemOwned(item.id,state));
+  if(chosen&&isItemOwned(chosen,state))equipItem(chosen,state,false);
+  else if(previousRewardVersion<REWARD_STATE_VERSION&&owned.length)equipItem(owned[0].id,state,false);
   if(eligible&&owned.length)state.claimedRewards.push(reward.id);
  }
  const reward=rewardConfig.find(r=>r.id===flow?.id);
  if(reward&&state.completedBlocks.includes(reward.id)){
-  const selected=state.claimedRewards.includes(reward.id)?state.characterState.equipped[reward.category]:null;
+  const slot=rewardItems(reward)[0]?.slot;
+  const selected=state.claimedRewards.includes(reward.id)?getEquippedItem(slot,state)?.id||null:null;
   state.rewardFlow={id:reward.id,resume:flow.resume==='after-mini'?'after-mini':'course',selected};
  }
  ensureRewardFlow(state);
@@ -1631,29 +1677,33 @@ function wireMedia(){
 }
 function letterStrip(){return `<div class="letter-strip" aria-label="Letter progress">${letters.map((d,i)=>`<div class="letter-chip ${AppState.stats[d.letter].mastery===3?'mastered':''} ${view==='course'&&i===AppState.cursor.index&&AppState.cursor.phase==='lesson'?'current':''}" aria-label="${d.letter}: ${AppState.stats[d.letter].mastery===3?'mastered':'learning'}"><span>${escapeHTML(d.letter)}</span><span class="star" aria-hidden="true">${AppState.stats[d.letter].mastery===3?'★':'☆'}</span></div>`).join('')}</div>`;}
 function journeyStrip(){return `<div class="journey-strip"><div class="journey-copy"><b>Буква за буквой — к новым открытиям</b><span>Учись и выбирай подарки для жирафика.</span></div>${letterStrip()}</div>`;}
-/* CHARACTER — one background, one full giraffe, one owned accessory.
-   Reward card icons are deliberately separate from the character image map. */
+/* CHARACTER — equipped slots resolve through the catalog. Outfit replaces the
+   full giraffe image; the remaining wearable slots are transparent overlays. */
 function renderCharacter(scene='home'){
- const equipped=AppState.characterState.equipped;
- const variant=ownsItem(equipped.giraffeVariant)?equipped.giraffeVariant:'base';
- const actor=characterConfig.variants[variant]||characterConfig.variants.base;
- const accessory=ownsItem(equipped.handItem)?itemCatalog.get(equipped.handItem):null;
- const background=characterConfig.backgrounds[scene]||characterConfig.backgrounds.home;
- const layer=(key,kind)=>MEDIA_ASSETS.images[key]?`<div class="character-layer" data-layer="${kind}"><img src="${escapeHTML(MEDIA_ASSETS.images[key].src)}" data-character-asset="${key}" alt="" draggable="false"></div>`:'';
- return `<div class="character-stage character-${scene}" role="img" aria-label="Жирафик${variant!=='base'?' в выбранной куртке':''}${accessory?' — '+escapeHTML(accessory.label):''}">${layer(background,'background')}<div class="character-actor"><span class="character-fallback" aria-hidden="true">🦒</span>${layer(actor,'giraffe')}${accessory?layer(accessory.image,'handItem'):''}</div></div>`;
+ const outfit=getEquippedItem('outfit'),backgroundItem=getEquippedItem('background');
+ const actor=outfit?.asset||characterConfig.baseAsset;
+ const background=backgroundItem?.asset||characterConfig.backgrounds[scene]||characterConfig.backgrounds.home;
+ const overlaySlots=['back','head','face','hand_left','hand_right','extra'];
+ const overlays=overlaySlots.map(slot=>getEquippedItem(slot)).filter(Boolean);
+ const layer=(key,kind,slot='')=>MEDIA_ASSETS.images[key]?`<div class="character-layer" data-layer="${kind}"${slot?` data-slot="${slot}"`:''}><img src="${escapeHTML(MEDIA_ASSETS.images[key].src)}" data-character-asset="${key}" alt="" draggable="false"></div>`:'';
+ const labels=[outfit,...overlays,backgroundItem].filter(Boolean).map(item=>item.name);
+ const back=overlays.filter(item=>item.slot==='back').map(item=>layer(item.asset,'item',item.slot)).join('');
+ const front=overlays.filter(item=>item.slot!=='back').map(item=>layer(item.asset,'item',item.slot)).join('');
+ return `<div class="character-stage character-${scene}" role="img" aria-label="Жирафик${labels.length?' — '+escapeHTML(labels.join(', ')):''}">${layer(background,'background','background')}<div class="character-actor"><span class="character-fallback" aria-hidden="true">🦒</span>${back}${layer(actor,'giraffe','outfit')}${front}</div></div>`;
 }
 function outfitOptions(reward,action){
  const choosing=action==='claim-reward'&&AppState.rewardFlow?.id===reward.id&&!AppState.rewardFlow.selected&&!AppState.claimedRewards.includes(reward.id);
- return `<div class="outfit-options" role="group" aria-label="${escapeHTML(characterConfig.categories[reward.category].label)}">${reward.options.map(item=>{
-  const owned=ownsItem(item.id),selected=AppState.characterState.equipped[reward.category]===item.id;
+ const items=rewardItems(reward),slot=items[0]?.slot;
+ return `<div class="outfit-options" role="group" aria-label="${escapeHTML(SLOT_CONFIG[slot]?.label||'Предметы')}">${items.map(item=>{
+  const owned=isItemOwned(item.id),selected=getEquippedItem(item.slot)?.id===item.id;
   const enabled=choosing||(action==='equip'&&owned),locked=!owned&&!choosing;
   const icon=MEDIA_ASSETS.images[item.icon]?.src;
-  return `<button class="outfit-option ${selected?'selected':''} ${locked?'locked':''}" data-action="${action}" data-item="${item.id}" ${enabled?'':'disabled'} aria-label="${escapeHTML(item.label)}${locked?' — закрыто':''}" aria-pressed="${selected}"><span class="outfit-art ${reward.category==='handItem'?'accessory-art':'jacket-art'}">${icon?`<img src="${escapeHTML(icon)}" data-character-asset="${item.icon}" alt="" draggable="false">`:''}</span><span class="outfit-name">${escapeHTML(item.label)}</span><span class="outfit-check" aria-hidden="true">${locked?'🔒':'✓'}</span><span class="outfit-status">${locked?'Закрыто':selected?'Твой подарок':owned?'Получено':'Выбрать'}</span></button>`;
+  return `<button class="outfit-option ${selected?'selected':''} ${locked?'locked':''}" data-action="${action}" data-item="${item.id}" ${enabled?'':'disabled'} aria-label="${escapeHTML(item.name)}${locked?' — закрыто':''}" aria-pressed="${selected}"><span class="outfit-art ${item.slot==='outfit'?'jacket-art':'accessory-art'}">${icon?`<img src="${escapeHTML(icon)}" data-character-asset="${item.icon}" alt="" draggable="false">`:''}</span><span class="outfit-name">${escapeHTML(item.name)}</span><span class="outfit-check" aria-hidden="true">${locked?'🔒':'✓'}</span><span class="outfit-status">${locked?'Закрыто':selected?'Твой подарок':owned?'Получено':'Выбрать'}</span></button>`;
  }).join('')}</div>`;
 }
 function renderWardrobe(){
  const available=rewardConfig.filter(r=>AppState.completedBlocks.includes(r.id));
- return `<section class="screen wardrobe-screen"><p class="eyebrow">Твой друг</p><h1>Жирафик</h1><div class="wardrobe-layout"><div id="character-preview">${renderCharacter()}</div><div class="wardrobe-options">${available.length?available.map(r=>`<section class="outfit-category"><h2>${escapeHTML(characterConfig.categories[r.category].label)}</h2>${outfitOptions(r,'equip')}</section>`).join(''):'<p class="wardrobe-empty">Пройди буквы A–C и мини-игру, чтобы выбрать первый подарок.</p>'}</div></div><button class="primary" data-action="back">В игру ${icons.arrow}</button></section>`;
+ return `<section class="screen wardrobe-screen"><p class="eyebrow">Твой друг</p><h1>Жирафик</h1><div class="wardrobe-layout"><div id="character-preview">${renderCharacter()}</div><div class="wardrobe-options">${available.length?available.map(r=>{const slot=rewardItems(r)[0]?.slot;return `<section class="outfit-category"><h2>${escapeHTML(SLOT_CONFIG[slot]?.label||'Предметы')}</h2>${outfitOptions(r,'equip')}</section>`;}).join(''):'<p class="wardrobe-empty">Пройди буквы A–C и мини-игру, чтобы выбрать первый подарок.</p>'}</div></div><button class="primary" data-action="back">В игру ${icons.arrow}</button></section>`;
 }
 /* Completion makes a choice available; ownership is granted only by selection. */
 function finishBlock(){
@@ -1668,17 +1718,11 @@ function renderReward(){
  if(!r)return renderWardrobe();
  return `<section class="screen reward-screen"><div class="stars" aria-hidden="true">★ ★ ★</div><h1>${flow.selected?'Как здорово!':'Уровень пройден!'}</h1><p>${flow.selected?'Жирафик рад новому подарку.':'Один из этих подарков станет твоим.'}</p><div class="reward-layout"><div id="character-preview" class="${flow.selected?'dressed':''}">${renderCharacter('reward')}</div><div class="reward-choices"><h2>${escapeHTML(r.prompt)}</h2>${outfitOptions(r,'claim-reward')}<div class="reward-next" aria-live="polite">${flow.selected?`<p>Подарок сохранён ✓</p><button class="primary" data-action="reward-next" ${rewardReady?'':'disabled'}>Дальше ${icons.arrow}</button>`:'<p>Выбери тот, который тебе нравится.</p>'}</div></div></div><button class="repeat" data-action="repeat" aria-label="Повторить инструкцию">${icons.speaker} Послушать</button></section>`;
 }
-function equipItem(id){
- const item=itemCatalog.get(id);
- if(!item||!ownsItem(id))return false;
- AppState.characterState.equipped[item.category]=id;saveProgress();log('Equipped',id);return true;
-}
 function chooseReward(id){
  const flow=AppState.rewardFlow,r=rewardConfig.find(r=>r.id===flow?.id);
- if(!r||flow.selected||AppState.claimedRewards.includes(r.id)||!AppState.completedBlocks.includes(r.id)||!r.options.some(o=>o.id===id))return false;
+ if(!r||flow.selected||AppState.claimedRewards.includes(r.id)||!AppState.completedBlocks.includes(r.id)||!r.itemIds.includes(id))return false;
  // One atomic save before animation. A queued second tap cannot change the gift.
- if(!ownsItem(id))AppState.characterState.ownedItems.push(id);
- AppState.characterState.equipped[r.category]=id;
+ if(!unlockItem(id,AppState,false)||!equipItem(id,AppState,false))return false;
  flow.selected=id;AppState.claimedRewards.push(r.id);saveProgress();
  rewardReady=false;showScreen();celebrate();
  const epoch=viewEpoch;

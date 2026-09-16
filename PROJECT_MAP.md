@@ -73,16 +73,18 @@
 - `cursor` хранит `phase`, индекс буквы и шаг. Фазы: `lesson`, `letterReward`, `miniIntro`, `mini`, `miniResult`, `finalIntro`, `final`, `results`.
 - `stats` по каждой букве: `attempts`, `correct`, `mistakes`, `mastery`, `skills`, `practiceDebt`. Итоги для родителей вычисляет `renderParentView()`.
 - `game`, `question`, `reviews`, `questionSerial` сохраняют позицию игры, вопрос и повторения; `started`, `completed`, `soundEnabled` — общие флаги.
-- Награды: `characterState`, `completedBlocks`, `claimedRewards`, `rewardFlow`.
-- `localStorage`: `alfie-abc-v1`; при `?demo=1` — отдельный `alfie-abc-demo-v1`. Версия состояния — 2; загрузчик принимает версии 1 и 2. Награды отдельно мигрирует `migrateRewards()` с `REWARD_STATE_VERSION`.
+- Награды: `characterState.ownedItems`, стандартные слоты `characterState.equipped`, `completedBlocks`, `claimedRewards`, `rewardFlow`.
+- `localStorage`: `alfie-abc-v1`; при `?demo=1` — отдельный `alfie-abc-demo-v1`. Общая версия состояния — 2; загрузчик принимает версии 1 и 2. Инвентарь отдельно мигрирует `migrateRewards()` с `REWARD_STATE_VERSION = 3`.
 - При невозможности записи состояние остаётся в памяти вкладки, показывается `#storage-notice`. Сохранение также вызывается при скрытии страницы и `pagehide`. Сброс сохраняет настройку звука.
 - `view`, блокировки, таймеры и история выбора стикеров — временные переменные вне сохранения.
 
 ## 6. Rewards
 
-`play/index.html`: `rewardConfig`, `itemCatalog`, `finishBlock()`, `ensureRewardFlow()`, `chooseReward()`, `continueReward()`.
+`play/index.html`: `ITEM_SLOTS`, `ITEMS`, `itemCatalog`, `rewardConfig`, `finishBlock()`, `ensureRewardFlow()`, `chooseReward()`, `continueReward()`.
 
-После A–C и мини-игры выбирается одна куртка; после D–F и мини-игры — один аксессуар. Завершение блока открывает выбор, а владение выдаёт `chooseReward()`. Он сохраняет выбранную вещь до анимации. Альтернативный предмет остаётся закрытым; `ownsItem()` и `equipItem()` проверяют владение.
+`ITEMS` — независимый каталог предметов с `id`, `name`, `slot`, `asset`, `collection` и необязательной иконкой. `rewardConfig` содержит только условия награды и `itemIds`. После A–C и мини-игры выбирается одна куртка; после D–F и мини-игры — один аксессуар. Завершение блока открывает выбор, а `chooseReward()` вызывает общие `unlockItem()` / `equipItem()` и сохраняет выбранную вещь до анимации. Альтернативный предмет остаётся закрытым.
+
+Общие операции: `getItemById()`, `isItemOwned()`, `unlockItem()`, `equipItem()`, `unequipItem()`, `getEquippedItem()`, `loadProgress()`, `saveProgress()`. Поддерживаемые слоты: `outfit`, `head`, `face`, `hand_left`, `hand_right`, `back`, `extra`, `background`.
 
 Звезда буквы в `letterStrip()` соответствует `mastery === 3`: освоены три базовых типа заданий. `celebrate()` создаёт конфетти; `renderInterlude()` и `renderResults()` показывают праздничные звёзды. Отдельных очков, валюты, покупок, счётчика серий ответов или каталога достижений нет.
 
@@ -100,8 +102,8 @@
 
 - База — `play/images/giraffe_base.png`. Куртки — полные изображения `giraffe_jacket_stars.png` / `giraffe_jacket_racer.png`, заменяющие базу.
 - Прозрачные аксессуары — `play/images/accessory_bouquet.png`, `play/images/accessory_balloon.png`; иконки карточек курток — `play/images/reward_icon_jacket_*.png`.
-- `renderCharacter()` собирает фон, полный вариант жирафика и слой `handItem`. CSS `.character-stage`, `.character-actor`, `.character-layer` задаёт сцену 2:3 и общую область наложения с `object-fit:contain`.
-- `characterState.ownedItems` хранит владение; `characterState.equipped.giraffeVariant` / `handItem` — надетые предметы. Менять через `chooseReward()` / `equipItem()`; отображение выбора — `outfitOptions()` / `renderWardrobe()`.
+- `renderCharacter()` получает предметы стандартных слотов из каталога. `outfit` заменяет полный вариант жирафика, `background` заменяет фон сцены, остальные слоты выводятся прозрачными слоями на общем холсте. CSS `.character-stage`, `.character-actor`, `.character-layer` задаёт сцену 2:3 и порядок слоёв.
+- `characterState.ownedItems` хранит владение; `characterState.equipped` всегда содержит все восемь слотов. Обе куртки занимают `outfit`, букет и шарик — `hand_right`. Менять через общие inventory-функции; отображение выбора — `outfitOptions()` / `renderWardrobe()`.
 - Старые `play/images/jacket_*.png` и `play/images/headwear_*.png` остаются в каталоге, но не подключены через `MEDIA_ASSETS`; старые идентификаторы учитывает `migrateRewards()`.
 
 ## 9. Assets
@@ -123,12 +125,14 @@
 | Function / Module | File | Purpose |
 | --- | --- | --- |
 | `letters`, `CORE_TYPES`, `rewardConfig` | `play/index.html` | Данные курса, типы вопросов и условия подарков. |
+| `ITEM_SLOTS`, `ITEMS`, `itemCatalog` | `play/index.html` | Слоты и единый каталог всех предметов. |
 | `ensureQuestion()`, `createQuestion()` | `play/index.html` | Восстановление/генерация текущего задания. |
 | `checkAnswer()`, `completeQuestion()` | `play/index.html` | Ответ, обратная связь, статистика и следующий этап. |
 | `getWeightedRandomLetter()`, `registerMistake()` | `play/index.html` | Повторение букв с учётом ошибок. |
 | `go()`, `showScreen()`, `actions` | `play/index.html` | Переходы, отрисовка и действия кнопок. |
 | `loadProgress()`, `saveProgress()`, `migrateRewards()` | `play/index.html` | Сохранение и совместимость старого прогресса. |
-| `finishBlock()`, `chooseReward()`, `equipItem()` | `play/index.html` | Получение и надевание подарков. |
+| `getItemById()`, `unlockItem()`, `equipItem()`, `unequipItem()` | `play/index.html` | Общие операции владения и экипировки. |
+| `finishBlock()`, `chooseReward()` | `play/index.html` | Условия и выдача наград уроков через inventory API. |
 | `renderCharacter()`, `showAnswerFeedback()` | `play/index.html` | Сцена персонажа и реакции на ответ. |
 | `announceScreen()` | `play/index.html` | Последовательности озвучки текущего экрана. |
 | `MEDIA_ASSETS` | `play/assets.js` | Реальные пути медиа. |
@@ -142,15 +146,15 @@
 - Упражнение/учебный материал → `play/index.html`: `letters`, типы вопросов, `ensureQuestion()`, `questionBody()`.
 - Проверка ответа → `play/index.html`: `checkAnswer()`, `registerMistake()`, `registerCorrectAnswer()`, `completeQuestion()`.
 - Реакция Marius → `play/index.html`: `showAnswerFeedback()`, `pickSuccessSticker()`, `renderCompletionSticker()`; `play/images/stickers/`.
-- Добавление изображения персонажа → `play/images/`, `play/assets.js`, `play/index.html`: `characterConfig` / `rewardConfig`.
+- Добавление предмета → `play/images/`, `play/assets.js`, затем один объект в `ITEMS`; для учебной награды добавить его ID в `rewardConfig.itemIds`.
 - Мобильная вёрстка → `play/index.html`: соответствующий CSS-селектор и все его переопределения в `@media`.
-- Награды → `play/index.html`: `rewardConfig`, `finishBlock()`, `chooseReward()`, `migrateRewards()`.
+- Награды → `play/index.html`: `ITEMS`, `rewardConfig`, `finishBlock()`, `chooseReward()`, `migrateRewards()`.
 - Сохранение → `play/index.html`: `initialState()`, `loadProgress()`, `saveProgress()`.
 - Звуки → `play/audio/`, `play/assets.js`, `play/audio-manager.js`; события озвучки — `announceScreen()` в `play/index.html`.
 
 ## 13. Sensitive areas
 
-- `AppState`, ключи/версии сохранения и `migrateRewards()` связывают учебную позицию, статистику и владение вещами: изменение схемы влияет на существующий прогресс.
+- `AppState`, ключи/версии сохранения и `migrateRewards()` связывают учебную позицию, статистику и владение вещами: изменение схемы влияет на существующий прогресс. Не переиспользовать старые ID и не обходить inventory-функции при выдаче наград.
 - `letters`, типы вопросов и размеры групп используются генератором, загрузчиком сохранений, статистикой и условиями наград; изменение курса требует согласованности этих мест.
 - `checkAnswer()`, `completeQuestion()`, `answerLocked`, `viewEpoch`, `transitionTimer` связывают ответ, немедленное сохранение, аудио и отложенный переход; нарушение порядка может повторно засчитать ответ или показать старый экран.
 - `go()` / `showScreen()` обслуживают все экраны и незавершённый выбор подарка.
@@ -178,7 +182,8 @@ Trainer UI change → play/index.html: renderHome / renderCourse / <style>
 Exercise logic → play/index.html: letters / ensureQuestion / checkAnswer
 Marius → play/index.html: renderCharacter / showAnswerFeedback; play/images/stickers/
 Assets → play/assets.js; play/images/; play/audio/
-Rewards → play/index.html: rewardConfig / chooseReward / equipItem
+Inventory → play/index.html: ITEM_SLOTS / ITEMS / itemCatalog / equipItem
+Rewards → play/index.html: rewardConfig / chooseReward / finishBlock
 Progress → play/index.html: initialState / loadProgress / saveProgress
 Mobile CSS → play/index.html: <style> / @media / .character-actor
 Audio → play/audio-manager.js; play/index.html: announceScreen; play/assets.js
@@ -195,3 +200,4 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 - `AppState.roomABC`: `currentRound`, `foundObjects`, `wrongAttempts`, `gameCompleted`. Сохраняется вместе с курсом в прежних ключах. `loadProgress` валидирует данные; старый `miniIntro` A/B/C при продолжении открывает комнату, начатый тест и последующие уроки сохраняют позицию.
 - Игра не вызывает `registerMistake`, `registerCorrectAnswer`, `finishBlock` и не выдаёт награды: это практика перед проверкой. Финиш и явная кнопка переводят в существующий `miniIntro`.
 - `tests/room.test.cjs`: новая механика, сохранения, повтор, старые данные и расчёт размеров зон. `tests/course-regression.test.cjs`: прежние полные проверки курса с добавленным проходом комнаты; адаптер DOM/audio — `tests/support/trainer-harness.cjs`.
+- `tests/inventory.test.cjs`: обязательные поля каталога, восемь слотов, общие операции, перезагрузка и миграция rewardStateVersion 2 → 3.

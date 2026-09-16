@@ -11,7 +11,7 @@ function playRoom(a){a.run(`for(let round=0;round<3;round++){for(const id of ROO
    const id=a.run('AppState.rewardFlow.id');rewards.push(id);
    const pending=createContext({saved:saved(a)});assert.equal(pending.run('view'),'reward');assert.equal(pending.run('AppState.rewardFlow.id'),id);
    if(id==='reward_abc')assert.equal(a.run('AppState.characterState.ownedItems.length'),0);
-   else assert.equal(a.run('AppState.characterState.equipped.giraffeVariant'),'jacket_stars');
+   else assert.equal(a.run('AppState.characterState.equipped.outfit'),'jacket_stars');
    a.run(`chooseReward('${id==='reward_abc'?'jacket_stars':'accessory_balloon'}')`);
    assert.equal(a.run('rewardReady'),false);const chosen=a.run('AppState.rewardFlow.selected');assert.equal(a.run(`chooseReward('${id==='reward_abc'?'jacket_racer':'accessory_bouquet'}')`),false);assert.equal(a.run('AppState.rewardFlow.selected'),chosen);a.run('continueReward()');assert.equal(a.run('Boolean(AppState.rewardFlow)'),true);
    const selected=createContext({saved:saved(a)});assert.equal(selected.run('view'),'reward');assert.equal(selected.run('rewardReady'),true);
@@ -26,7 +26,7 @@ function playRoom(a){a.run(`for(let round=0;round<3;round++){for(const id of ROO
   }else if(c.phase==='letterReward')a.run('advanceAfterLetter()');else if(c.phase==='room')playRoom(a);else if(c.phase==='miniIntro')a.run('startGame(false)');else if(c.phase==='miniResult')a.run('advanceAfterMini()');else if(c.phase==='finalIntro')a.run('startGame(true)');else throw Error(c.phase);
  }
  assert.equal(answers,38);assert.deepEqual(rewards,['reward_abc','reward_def']);assert.equal(a.run('AppState.completed'),true);assert.equal(a.run('letters.every(d=>AppState.stats[d.letter].mastery===3)'),true);assert.equal(a.run('AppState.characterState.ownedItems.length'),2);
- assert.equal(a.run("equipItem('jacket_racer')"),false);assert.equal(a.run("equipItem('accessory_bouquet')"),false);const resumed=createContext({saved:saved(a)});assert.equal(resumed.run('AppState.characterState.equipped.giraffeVariant'),'jacket_stars');assert.equal(resumed.run('AppState.characterState.equipped.handItem'),'accessory_balloon');assert.equal(resumed.run('AppState.rewardFlow'),null);
+ assert.equal(a.run("equipItem('jacket_racer')"),false);assert.equal(a.run("equipItem('accessory_bouquet')"),false);const resumed=createContext({saved:saved(a)});assert.equal(resumed.run('AppState.characterState.equipped.outfit'),'jacket_stars');assert.equal(resumed.run('AppState.characterState.equipped.hand_right'),'accessory_balloon');assert.equal(resumed.run('AppState.rewardFlow'),null);
 
  // Upgrade legacy v2 with both category options unlocked: retain only equipped.
  const legacy=JSON.parse(a.store.get('alfie-abc-v1'));
@@ -35,7 +35,7 @@ function playRoom(a){a.run(`for(let round=0;round<3;round++){for(const id of ROO
  legacy.rewardFlow=null;
  const migration=createContext({saved:{'alfie-abc-v1':JSON.stringify(legacy)}});
  assert.equal(migration.run('JSON.stringify(AppState.characterState.ownedItems)'),JSON.stringify(['jacket_racer']));
- assert.equal(migration.run('AppState.characterState.equipped.giraffeVariant'),'jacket_racer');
+ assert.equal(migration.run('AppState.characterState.equipped.outfit'),'jacket_racer');
  assert.equal(migration.run('AppState.rewardFlow.id'),'reward_def');
  assert.equal(migration.run('equipItem("jacket_stars")'),false);
  assert.equal(migration.run('JSON.stringify(AppState.stats)'),JSON.stringify(legacy.stats));
@@ -43,7 +43,7 @@ function playRoom(a){a.run(`for(let round=0;round<3;round++){for(const id of ROO
  migration.run('chooseReward("accessory_bouquet")');
  const migratedAgain=createContext({saved:saved(migration)});
  assert.equal(migratedAgain.run('AppState.characterState.ownedItems.length'),2);
- assert.equal(migratedAgain.run('AppState.characterState.equipped.handItem'),'accessory_bouquet');
+ assert.equal(migratedAgain.run('AppState.characterState.equipped.hand_right'),'accessory_bouquet');
  assert.equal(migratedAgain.run('AppState.rewardFlow.selected'),'accessory_bouquet');
  migratedAgain.run('continueReward()');
  assert.equal(migratedAgain.run('AppState.rewardFlow'),null);
@@ -65,8 +65,8 @@ function playRoom(a){a.run(`for(let round=0;round<3;round++){for(const id of ROO
  }
  assert.equal(bAnswers,38);
  const bReload=createContext({saved:saved(b)});
- assert.equal(bReload.run('AppState.characterState.equipped.giraffeVariant'),'jacket_racer');
- assert.equal(bReload.run('AppState.characterState.equipped.handItem'),'accessory_bouquet');
+ assert.equal(bReload.run('AppState.characterState.equipped.outfit'),'jacket_racer');
+ assert.equal(bReload.run('AppState.characterState.equipped.hand_right'),'accessory_bouquet');
  assert.equal(bReload.run('equipItem("jacket_stars")'),false);assert.equal(bReload.run('equipItem("accessory_balloon")'),false);
  assert.equal(bReload.run('AppState.characterState.ownedItems.length'),2);
  assert.ok(bReload.run('renderHome()').includes('giraffe_jacket_racer.png'));
@@ -81,7 +81,7 @@ function playRoom(a){a.run(`for(let round=0;round<3;round++){for(const id of ROO
  const migrated=createContext({saved:{'alfie-abc-v1':JSON.stringify(old)}});assert.equal(migrated.run('AppState.cursor.index'),3);assert.equal(migrated.run('AppState.cursor.step'),2);assert.equal(migrated.run('AppState.stats.D.correct'),4);assert.equal(migrated.run('AppState.stats.D.mistakes'),2);assert.equal(migrated.run('AppState.rewardFlow.id'),'reward_abc');
  migrated.run("chooseReward('jacket_racer')");await migrated.tick(1000);migrated.run('continueReward()');assert.equal(migrated.run('AppState.cursor.index'),3);assert.equal(migrated.run('AppState.cursor.step'),2);
  old.completed=true;old.cursor={index:5,phase:'results',step:4};const oldDone=createContext({saved:{'alfie-abc-v1':JSON.stringify(old)}});assert.equal(oldDone.run('AppState.completedBlocks.length'),2);assert.equal(oldDone.run('AppState.completed'),true);
- resumed.run('resetProgress()');assert.equal(resumed.run('AppState.soundEnabled'),false);assert.equal(resumed.run('AppState.claimedRewards.length'),0);assert.equal(resumed.run('AppState.characterState.ownedItems.length'),0);assert.equal(resumed.run("AppState.characterState.equipped.giraffeVariant==='base'&&AppState.characterState.equipped.handItem===null"),true);
+ resumed.run('resetProgress()');assert.equal(resumed.run('AppState.soundEnabled'),false);assert.equal(resumed.run('AppState.claimedRewards.length'),0);assert.equal(resumed.run('AppState.characterState.ownedItems.length'),0);assert.equal(resumed.run("ITEM_SLOTS.every(slot=>AppState.characterState.equipped[slot]===null)"),true);
  const blocked=createContext({blocked:true});blocked.run('begin();nextLessonStep()');assert.equal(blocked.run('storageAvailable'),false);
  const extended=createContext({saved:{'alfie-abc-v1':JSON.stringify(old)},extraLetter:true});assert.equal(extended.run('AppState.completed'),false);assert.equal(extended.run('AppState.cursor.index'),6);
  a.run("AppState.reviews=[{letter:'E',due:AppState.questionSerial}]");assert.equal(a.run('getWeightedRandomLetter(letters).letter'),'E');
