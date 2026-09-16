@@ -252,21 +252,6 @@ main {
   padding:25px 10px;
   isolation:isolate;
 }
-.mascot {
-  font-family:"Apple Color Emoji","Segoe UI Emoji",sans-serif;
-  font-size:126px;
-  line-height:1.25;
-  display:block;
-}
-.mascot img {
-  width:1em;
-  height:1em;
-  vertical-align:middle;
-}
-.hero-scene .mascot {
-  font-size:150px;
-  animation:float 4s ease-in-out infinite;
-}
 .speech-bubble {
   padding:13px 20px;
   border-radius:20px 20px 20px 5px;
@@ -459,9 +444,7 @@ main {
   color:var(--muted);
   font-size:16px;
 }
-.alfie-line .mascot {
-  font-size:36px;
-}
+.alfie-line .gameplay-marius-inline {width:44px;}
 .letter-pair {
   font-size:clamp(104px,16vw,160px);
   font-weight:850;
@@ -1032,9 +1015,6 @@ main {
     border-radius:46% 45% 38% 43%;
     padding:20px 5px 15px;
   }
-  .hero-scene .mascot {
-    font-size:99px;
-  }
   .speech-bubble {
     font-size:13px;
     margin-bottom:2px;
@@ -1143,9 +1123,7 @@ main {
     gap:8px;
     min-height:40px;
   }
-  .alfie-line .mascot {
-    font-size:29px;
-  }
+  .alfie-line .gameplay-marius-inline {width:38px;}
   .letter-pair {
     font-size:136px;
     margin:19px 0 7px;
@@ -1206,9 +1184,7 @@ main {
     min-height:490px;
     padding:25px 5px;
   }
-  .interlude .mascot {
-    font-size:110px;
-  }
+  .interlude .gameplay-marius-interlude {width:92px;}
   .interlude p {
     font-size:16px;
   }
@@ -1274,9 +1250,6 @@ main {
     width:234px;
     margin-bottom:16px;
   }
-  .hero-scene .mascot {
-    font-size:76px;
-  }
   .home .subline {
     margin:12px 0 18px;
   }
@@ -1317,7 +1290,6 @@ main {
   .home h1 { font-size:42px; }
   .home .subline { margin:12px 0 18px; }
   .hero-scene { min-height:250px; }
-  .hero-scene .mascot { font-size:90px; }
   .lesson-top { margin:12px auto; }
   .lesson-panel { min-height:0; padding:16px; }
   .lesson-heading { margin:0 0 8px; }
@@ -1330,12 +1302,12 @@ main {
   .word-art { font-size:84px; }
   .word-label { font-size:36px; margin-bottom:12px; }
   .interlude { min-height:0; padding:20px 0; }
+  .interlude .gameplay-marius-interlude { width:72px; }
 }
 /* CHARACTER & REWARDS — full canvases, responsive registration, unchanged PNGs. */
 .character-stage {position:relative;isolation:isolate;width:min(100%,310px);aspect-ratio:2/3;margin:0 auto;overflow:hidden;border-radius:28px;background:#e3efcb;user-select:none;-webkit-user-select:none;pointer-events:none;box-shadow:0 5px 20px #1e453512;}
-.character-layer {position:absolute;inset:0;pointer-events:none;}
+.character-layer {position:absolute;inset:0;pointer-events:none;z-index:var(--character-layer,1);}
 .character-layer img {position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:top center;user-select:none;-webkit-user-select:none;}
-.character-layer[data-layer="background"] {z-index:0;}
 .character-actor {
   /* All character/accessory PNGs use the same full 1024×1536 canvas as the scene.
      Keep the actor on the scene's exact coordinate system. */
@@ -1352,16 +1324,11 @@ main {
   transform:translate(var(--character-x),var(--character-y)) scale(var(--character-scale));
   transform-origin:center center;
 }
-.character-layer[data-slot="back"] {z-index:1;}
-.character-layer[data-layer="giraffe"] {z-index:2;}
-.character-layer[data-slot="head"],
-.character-layer[data-slot="face"],
-.character-layer[data-slot="hand_left"],
-.character-layer[data-slot="hand_right"],
-.character-layer[data-slot="extra"] {z-index:3;}
 .character-fallback {display:none;font-size:100px;position:absolute;inset:0;align-items:center;justify-content:center;}
 .base-unavailable .character-fallback {display:flex;}
 .base-unavailable .character-layer {display:none;}
+.gameplay-marius {background:transparent;border-radius:0;box-shadow:none;overflow:hidden;flex:none;}
+.gameplay-marius-interlude {width:112px;margin:0 auto 4px;}
 .hero-scene {background:none;border-radius:28px;padding:0;min-height:0;}
 .hero-scene .character-home {width:min(100%,340px);}
 .reward-screen,.wardrobe-screen {text-align:center;padding:20px 0;}
@@ -1478,6 +1445,8 @@ for(const d of letters){d.letterAudio=MEDIA_ASSETS.audio[d.lowercase+'_name']?.s
    Every asset uses the same 2:3 stage and shared actor coordinate system. */
 const REWARD_STATE_VERSION=3;
 const ITEM_SLOTS=Object.freeze(['outfit','head','face','hand_left','hand_right','back','extra','background']);
+const CHARACTER_LAYER_ORDER=Object.freeze(['back','body','face','head','hand_left','hand_right','extra']);
+const CHARACTER_LAYER_INDEX=Object.freeze(Object.fromEntries(CHARACTER_LAYER_ORDER.map((layer,index)=>[layer,index+1])));
 const SLOT_CONFIG=Object.freeze({
  outfit:{label:'Куртка'},head:{label:'На голове'},face:{label:'На лице'},
  hand_left:{label:'В левой руке'},hand_right:{label:'В руках'},back:{label:'За спиной'},
@@ -1668,7 +1637,7 @@ function ensureQuestion(){
 /* Small reusable renderers. Text is escaped; optional media failures replace only
    their own image, preserving layout and the button's accessible label. */
 function media(item,cls=''){return `<span class="${cls}" aria-hidden="true">${item.image?`<img src="${escapeHTML(item.image)}" alt="" data-fallback="${escapeHTML(item.emoji)}">`:item.emoji}</span>`;}
-function buddy(){return '<span class="mascot" aria-hidden="true">🦒</span>';}
+function buddy(placement='inline'){return renderCharacter('gameplay',{includeBackground:false,className:`gameplay-marius gameplay-marius-${placement}`,decorative:true});}
 const failedImages=new Set();
 function wireMedia(){
  document.querySelectorAll('img[data-feedback-sticker]').forEach(prepareFeedbackSticker);
@@ -1677,19 +1646,20 @@ function wireMedia(){
 }
 function letterStrip(){return `<div class="letter-strip" aria-label="Letter progress">${letters.map((d,i)=>`<div class="letter-chip ${AppState.stats[d.letter].mastery===3?'mastered':''} ${view==='course'&&i===AppState.cursor.index&&AppState.cursor.phase==='lesson'?'current':''}" aria-label="${d.letter}: ${AppState.stats[d.letter].mastery===3?'mastered':'learning'}"><span>${escapeHTML(d.letter)}</span><span class="star" aria-hidden="true">${AppState.stats[d.letter].mastery===3?'★':'☆'}</span></div>`).join('')}</div>`;}
 function journeyStrip(){return `<div class="journey-strip"><div class="journey-copy"><b>Буква за буквой — к новым открытиям</b><span>Учись и выбирай подарки для жирафика.</span></div>${letterStrip()}</div>`;}
-/* CHARACTER — equipped slots resolve through the catalog. Outfit replaces the
-   full giraffe image; the remaining wearable slots are transparent overlays. */
-function renderCharacter(scene='home'){
- const outfit=getEquippedItem('outfit'),backgroundItem=getEquippedItem('background');
+/* CHARACTER — the only renderer for the inventory-compatible 1024×1536 pose.
+   Outfit is a full body variant; the remaining wearable slots are overlays. */
+function renderCharacter(scene='home',options={}){
+ const {includeBackground=true,className='',decorative=false}=options;
+ const outfit=getEquippedItem('outfit'),backgroundItem=includeBackground?getEquippedItem('background'):null;
  const actor=outfit?.asset||characterConfig.baseAsset;
  const background=backgroundItem?.asset||characterConfig.backgrounds[scene]||characterConfig.backgrounds.home;
- const overlaySlots=['back','head','face','hand_left','hand_right','extra'];
+ const overlaySlots=CHARACTER_LAYER_ORDER.filter(slot=>slot!=='body');
  const overlays=overlaySlots.map(slot=>getEquippedItem(slot)).filter(Boolean);
- const layer=(key,kind,slot='')=>MEDIA_ASSETS.images[key]?`<div class="character-layer" data-layer="${kind}"${slot?` data-slot="${slot}"`:''}><img src="${escapeHTML(MEDIA_ASSETS.images[key].src)}" data-character-asset="${key}" alt="" draggable="false"></div>`:'';
+ const layer=(key,kind,slot='',order=0)=>MEDIA_ASSETS.images[key]?`<div class="character-layer" data-layer="${kind}" data-layer-order="${order}"${slot?` data-slot="${slot}"`:''} style="--character-layer:${order}"><img src="${escapeHTML(MEDIA_ASSETS.images[key].src)}" data-character-asset="${key}" alt="" draggable="false"></div>`:'';
  const labels=[outfit,...overlays,backgroundItem].filter(Boolean).map(item=>item.name);
- const back=overlays.filter(item=>item.slot==='back').map(item=>layer(item.asset,'item',item.slot)).join('');
- const front=overlays.filter(item=>item.slot!=='back').map(item=>layer(item.asset,'item',item.slot)).join('');
- return `<div class="character-stage character-${scene}" role="img" aria-label="Жирафик${labels.length?' — '+escapeHTML(labels.join(', ')):''}">${layer(background,'background','background')}<div class="character-actor"><span class="character-fallback" aria-hidden="true">🦒</span>${back}${layer(actor,'giraffe','outfit')}${front}</div></div>`;
+ const itemLayers=overlays.map(item=>layer(item.asset,'item',item.slot,CHARACTER_LAYER_INDEX[item.slot])).join('');
+ const accessibility=decorative?'aria-hidden="true"':`role="img" aria-label="Жирафик${labels.length?' — '+escapeHTML(labels.join(', ')):''}"`;
+ return `<div class="character-stage character-${escapeHTML(scene)} ${escapeHTML(className)}" data-character-context="${escapeHTML(scene)}" ${accessibility}>${includeBackground?layer(background,'background','background',0):''}<div class="character-actor"><span class="character-fallback" aria-hidden="true">🦒</span>${layer(actor,'body','outfit',CHARACTER_LAYER_INDEX.body)}${itemLayers}</div></div>`;
 }
 function outfitOptions(reward,action){
  const choosing=action==='claim-reward'&&AppState.rewardFlow?.id===reward.id&&!AppState.rewardFlow.selected&&!AppState.claimedRewards.includes(reward.id);
@@ -1748,7 +1718,7 @@ function renderGame(final=false){const q=ensureQuestion();return `${dots(AppStat
 function renderMiniGame(){return renderGame(false);}function renderFinalChallenge(){return renderGame(true);}
 function renderInterlude(kind){const c=AppState.cursor,group=groups[Math.floor(c.index/GROUP_SIZE)],range=letters.map(d=>d.letter).join('');
  if(kind==='letterReward'){const d=letters[c.index];return `<section class="interlude letter-completed">${renderCompletionSticker()}<div class="group-badge">${escapeHTML(d.letter)} ★</div><h1>Молодец!</h1><p>Ты подружился с буквой ${escapeHTML(d.letter)}.</p><div class="stars" aria-hidden="true">★</div><button class="primary" data-action="after-letter">Дальше ${icons.arrow}</button></section>`;}
- const isFinal=kind==='finalIntro',isResult=kind==='miniResult';return `<section class="interlude">${buddy()}<div class="group-badge">${escapeHTML(isFinal?range:group.map(d=>d.letter).join(' '))}</div><h1>${isResult?'Уровень пройден!':isFinal?'Большая игра!':'Мини-игра!'}</h1><div class="stars" aria-label="Три звезды">★★★</div><p>${isResult?'Отправляемся дальше?':isFinal?'Вспомним все буквы. Готов?':'Поиграем с новыми буквами.'}</p><button class="primary" data-action="${isResult?'after-mini':isFinal?'play-final':'play-mini'}">${isResult?'Дальше':'Играть'} ${icons.arrow}</button>${kind==='miniIntro'&&c.index===2?'<button class="text-button" data-action="room-replay">Ещё раз в комнату</button>':''}</section>`;
+ const isFinal=kind==='finalIntro',isResult=kind==='miniResult';return `<section class="interlude">${buddy('interlude')}<div class="group-badge">${escapeHTML(isFinal?range:group.map(d=>d.letter).join(' '))}</div><h1>${isResult?'Уровень пройден!':isFinal?'Большая игра!':'Мини-игра!'}</h1><div class="stars" aria-label="Три звезды">★★★</div><p>${isResult?'Отправляемся дальше?':isFinal?'Вспомним все буквы. Готов?':'Поиграем с новыми буквами.'}</p><button class="primary" data-action="${isResult?'after-mini':isFinal?'play-final':'play-mini'}">${isResult?'Дальше':'Играть'} ${icons.arrow}</button>${kind==='miniIntro'&&c.index===2?'<button class="text-button" data-action="room-replay">Ещё раз в комнату</button>':''}</section>`;
 }
 /* ROOM PRACTICE — a course phase, using the same progress, navigation and audio. */
 function renderRoom(){

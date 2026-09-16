@@ -91,10 +91,11 @@
 ## 7. Marius
 
 - `play/images/`: полные варианты `giraffe_base.png`, `giraffe_jacket_*.png`; сцены `background_*.png`. Подключение — `play/assets.js` и `characterConfig` в `play/index.html`.
-- `renderCharacter()` выводит персонажа на главной, в гардеробе, при награде и в итогах. `buddy()` выводит emoji-жирафика в учебных экранах; `wireMedia()` обрабатывает ошибки загрузки.
+- `renderCharacter()` — единственный renderer inventory-совместимой позы. Он выводит экипировку на главной, в гардеробе, при награде, в итогах, на экранах знакомства с буквой/словом и во вводных/итоговых экранах mini/final. `buddy()` — только компактная обёртка над ним без фона; отдельного состояния персонажа у экранов нет.
 - Реакции находятся в `play/images/stickers/`: `marius_success_01.png` … `marius_success_09.png`, `marius_retry_01.png`. Эти пути формируются прямо в `play/index.html`, вне `MEDIA_ASSETS`.
 - `SUCCESS_STICKERS`, `RETRY_STICKER`, `pickSuccessSticker()` выбирают реакцию без повторения успешного стикера подряд. `showAnswerFeedback()` вызывается из `checkAnswer()`; `renderCompletionSticker()` — из `renderInterlude()` при завершении буквы.
 - `prepareFeedbackSticker()` управляет загрузкой/ошибкой; `preloadFeedbackStickers()` запускает фоновую загрузку после начала игры. Внешний вид — `.feedback-sticker`, `.completion-sticker`, анимации `feedback-pop` / `feedback-soft`.
+- Сюжетные изображения не используют inventory overlays: цельная сцена `marius-room-abc.png`, success/retry/completion stickers и три иллюстрации лендинга `marius-captain.png`, `marius-traveler.png`, `marius-surfer.png`. У них другие позы, размеры и системы координат.
 
 ## 8. Clothing and accessories
 
@@ -102,9 +103,13 @@
 
 - База — `play/images/giraffe_base.png`. Куртки — полные изображения `giraffe_jacket_stars.png` / `giraffe_jacket_racer.png`, заменяющие базу.
 - Прозрачные аксессуары — `play/images/accessory_bouquet.png`, `play/images/accessory_balloon.png`; иконки карточек курток — `play/images/reward_icon_jacket_*.png`.
-- `renderCharacter()` получает предметы стандартных слотов из каталога. `outfit` заменяет полный вариант жирафика, `background` заменяет фон сцены, остальные слоты выводятся прозрачными слоями на общем холсте. CSS `.character-stage`, `.character-actor`, `.character-layer` задаёт сцену 2:3 и порядок слоёв.
+- `renderCharacter(scene, options)` получает предметы стандартных слотов из каталога. `outfit` заменяет полный вариант жирафика, потому что обе активные куртки являются готовыми full-body PNG, а остальные wearable-слоты выводятся прозрачными слоями на том же холсте. `includeBackground:false` создаёт компактный игровой stack и намеренно не применяет inventory-слот `background` к упражнениям.
+- Системный порядок `CHARACTER_LAYER_ORDER`: background (0) → back (1) → body/outfit (2) → face (3) → head (4) → hand_left (5) → hand_right (6) → extra (7). Порядок записывается в `data-layer-order` / `--character-layer`, а не задаётся отдельными правилами экрана.
+- CSS `.character-stage`, `.character-actor`, `.character-layer` задаёт единую сцену 2:3. Base/outfit и все overlays находятся внутри одного `.character-actor`, поэтому `translate(-3%, 0)` и адаптивный scale применяются ко всем слоям вместе.
 - `characterState.ownedItems` хранит владение; `characterState.equipped` всегда содержит все восемь слотов. Обе куртки занимают `outfit`, букет и шарик — `hand_right`. Менять через общие inventory-функции; отображение выбора — `outfitOptions()` / `renderWardrobe()`.
 - Старые `play/images/jacket_*.png` и `play/images/headwear_*.png` остаются в каталоге, но не подключены через `MEDIA_ASSETS`; старые идентификаторы учитывает `migrateRewards()`.
+
+Новый экран с совместимой основной позой должен вызывать `renderCharacter()`; для декоративного компактного Мариуса внутри упражнения — `buddy('inline')` или `buddy('interlude')`. Не копировать разметку `.character-layer` в экран и не читать `characterState.equipped` напрямую. Новый overlay должен быть зарегистрирован в `MEDIA_ASSETS`, добавлен в `ITEMS` и подготовлен на совместимом холсте 1024×1536. Сюжетные позы подключаются отдельной иллюстрацией и не проходят через renderer.
 
 ## 9. Assets
 
@@ -133,7 +138,8 @@
 | `loadProgress()`, `saveProgress()`, `migrateRewards()` | `play/index.html` | Сохранение и совместимость старого прогресса. |
 | `getItemById()`, `unlockItem()`, `equipItem()`, `unequipItem()` | `play/index.html` | Общие операции владения и экипировки. |
 | `finishBlock()`, `chooseReward()` | `play/index.html` | Условия и выдача наград уроков через inventory API. |
-| `renderCharacter()`, `showAnswerFeedback()` | `play/index.html` | Сцена персонажа и реакции на ответ. |
+| `renderCharacter()`, `buddy()`, `CHARACTER_LAYER_ORDER` | `play/index.html` | Единый character stack, compact-режим и порядок слоёв. |
+| `showAnswerFeedback()`, `renderCompletionSticker()` | `play/index.html` | Отдельные сюжетные реакции, несовместимые с inventory overlays. |
 | `announceScreen()` | `play/index.html` | Последовательности озвучки текущего экрана. |
 | `MEDIA_ASSETS` | `play/assets.js` | Реальные пути медиа. |
 | `createAudioManager()` | `play/audio-manager.js` | Загрузка, очередь, отмена, повтор и fallback аудио. |
@@ -145,7 +151,8 @@
 - Главный экран → `play/index.html`: `renderHome()`, `.home`, `.hero-scene`.
 - Упражнение/учебный материал → `play/index.html`: `letters`, типы вопросов, `ensureQuestion()`, `questionBody()`.
 - Проверка ответа → `play/index.html`: `checkAnswer()`, `registerMistake()`, `registerCorrectAnswer()`, `completeQuestion()`.
-- Реакция Marius → `play/index.html`: `showAnswerFeedback()`, `pickSuccessSticker()`, `renderCompletionSticker()`; `play/images/stickers/`.
+- Inventory-совместимый Marius → `play/index.html`: `renderCharacter()`, `buddy()`, `CHARACTER_LAYER_ORDER`, `.character-stage`.
+- Сюжетная реакция Marius → `play/index.html`: `showAnswerFeedback()`, `pickSuccessSticker()`, `renderCompletionSticker()`; `play/images/stickers/`.
 - Добавление предмета → `play/images/`, `play/assets.js`, затем один объект в `ITEMS`; для учебной награды добавить его ID в `rewardConfig.itemIds`.
 - Мобильная вёрстка → `play/index.html`: соответствующий CSS-селектор и все его переопределения в `@media`.
 - Награды → `play/index.html`: `ITEMS`, `rewardConfig`, `finishBlock()`, `chooseReward()`, `migrateRewards()`.
@@ -158,7 +165,7 @@
 - `letters`, типы вопросов и размеры групп используются генератором, загрузчиком сохранений, статистикой и условиями наград; изменение курса требует согласованности этих мест.
 - `checkAnswer()`, `completeQuestion()`, `answerLocked`, `viewEpoch`, `transitionTimer` связывают ответ, немедленное сохранение, аудио и отложенный переход; нарушение порядка может повторно засчитать ответ или показать старый экран.
 - `go()` / `showScreen()` обслуживают все экраны и незавершённый выбор подарка.
-- `:root`, общие кнопки, `.character-actor` и поздние `@media` влияют на несколько экранов и совмещение аксессуаров с персонажем.
+- `:root`, общие кнопки, `.character-actor`, `.gameplay-marius` и поздние `@media` влияют на несколько экранов и совмещение аксессуаров с персонажем. Не масштабировать слои внутри actor независимо.
 - `createAudioManager()` общий для всех реплик; подготовка одного аудиоэлемента по пользовательскому жесту важна для Safari. Отмена очереди предотвращает наложение старых инструкций на новый экран.
 
 ## 14. Deployment-related files
@@ -180,7 +187,8 @@ TASK → START HERE
 Landing → index.html: TRAINER_URL / data-trainer-link / <style>
 Trainer UI change → play/index.html: renderHome / renderCourse / <style>
 Exercise logic → play/index.html: letters / ensureQuestion / checkAnswer
-Marius → play/index.html: renderCharacter / showAnswerFeedback; play/images/stickers/
+Equipped Marius → play/index.html: renderCharacter / buddy / CHARACTER_LAYER_ORDER
+Story Marius → play/index.html: showAnswerFeedback / renderCompletionSticker; play/images/stickers/
 Assets → play/assets.js; play/images/; play/audio/
 Inventory → play/index.html: ITEM_SLOTS / ITEMS / itemCatalog / equipItem
 Rewards → play/index.html: rewardConfig / chooseReward / finishBlock
@@ -201,3 +209,4 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 - Игра не вызывает `registerMistake`, `registerCorrectAnswer`, `finishBlock` и не выдаёт награды: это практика перед проверкой. Финиш и явная кнопка переводят в существующий `miniIntro`.
 - `tests/room.test.cjs`: новая механика, сохранения, повтор, старые данные и расчёт размеров зон. `tests/course-regression.test.cjs`: прежние полные проверки курса с добавленным проходом комнаты; адаптер DOM/audio — `tests/support/trainer-harness.cjs`.
 - `tests/inventory.test.cjs`: обязательные поля каталога, восемь слотов, общие операции, перезагрузка и миграция rewardStateVersion 2 → 3.
+- `tests/character-renderer.test.cjs`: общий stack на игровых экранах, порядок слоёв, замена outfit/hand_right, совместное отображение, снятие, reload и изоляция сюжетных иллюстраций.
