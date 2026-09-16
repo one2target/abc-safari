@@ -9,6 +9,8 @@
 | `index.html` | Лендинг ABC Safari из prototype_v3; TRAINER_URL и четыре data-trainer-link ведут на /play/. |
 | `play/index.html` | HTML-каркас, общий `<style>`, данные курса и основной встроенный `<script>`. В конце запускается `showScreen()`. |
 | `play/assets.js` | Глобальный `MEDIA_ASSETS`: пути аудио и активных изображений, размеры изображений. Загружается до логики приложения. |
+| `play/hidden-object-game.js` | ROOM_HOTSPOTS, ROOM_ROUNDS, DEBUG_HOTSPOTS, переиспользуемая механика HiddenObjectGame. |
+| `play/hidden-object-game.css` | Сцена комнаты, адаптивные прозрачные кнопки, подсказки и debug-границы. |
 | `play/audio-manager.js` | `createAudioManager()`: воспроизведение записей и речевой fallback. Загружается после каталога ресурсов. |
 | `play/manifest.webmanifest` | Название приложения, запуск, область действия, цвета и иконки для установки на домашний экран. |
 | `README.md` | Запуск, пользовательские сценарии и описание сохранений. |
@@ -182,3 +184,14 @@ Mobile CSS → play/index.html: <style> / @media / .character-actor
 Audio → play/audio-manager.js; play/index.html: announceScreen; play/assets.js
 Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 ```
+
+## 16. Комната Мариуса (A/B/C)
+
+Порядок: `lesson` A → B → C → `letterReward` C → **`room`** → прежние `miniIntro` / `mini` (5 вопросов) → награда → D. Фаза `room` использует тот же `view='course'`, `go()`, `showScreen()`, `saveProgress()` и AudioManager.
+
+- `play/hidden-object-game.js`: `DEBUG_HOTSPOTS`, `ROOM_HOTSPOTS` (проценты от изображения), `ROOM_ROUNDS`, `MARIUS_ROOM`; `HiddenObjectGame.initialState/restore/choose/hint/next/render`.
+- `play/images/marius-room-abc.png`: цельная предоставленная иллюстрация; зарегистрирована в `play/assets.js` как `marius_room_abc`.
+- `play/index.html`: `renderRoom`, `wireRoomScene`, `updateRoomView`, `selectRoomObject`, `nextRoomRound`, `continueAfterRoom`, `replayRoom`; обработчики `room-*` в существующем `actions`.
+- `AppState.roomABC`: `currentRound`, `foundObjects`, `wrongAttempts`, `gameCompleted`. Сохраняется вместе с курсом в прежних ключах. `loadProgress` валидирует данные; старый `miniIntro` A/B/C при продолжении открывает комнату, начатый тест и последующие уроки сохраняют позицию.
+- Игра не вызывает `registerMistake`, `registerCorrectAnswer`, `finishBlock` и не выдаёт награды: это практика перед проверкой. Финиш и явная кнопка переводят в существующий `miniIntro`.
+- `tests/room.test.cjs`: новая механика, сохранения, повтор, старые данные и расчёт размеров зон. `tests/course-regression.test.cjs`: прежние полные проверки курса с добавленным проходом комнаты; адаптер DOM/audio — `tests/support/trainer-harness.cjs`.

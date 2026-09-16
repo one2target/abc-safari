@@ -183,6 +183,11 @@ const MEDIA_ASSETS = {
     }
   },
   "images": {
+    "marius_room_abc": {
+      "src": "./images/marius-room-abc.png",
+      "width": 1122,
+      "height": 1402
+    },
     "accessory_balloon": {
       "src": "./images/accessory_balloon.png?v=reward2",
       "width": 1024,

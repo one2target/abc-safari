@@ -1,0 +1,19 @@
+// In-memory DOM/audio adapter for deterministic course and storage regression checks.
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const path=require('node:path');
+const root=path.resolve(__dirname,'../..');
+const html=fs.readFileSync(path.join(root,'play/index.html'),'utf8');
+const source=fs.readFileSync(path.join(root,'play/assets.js'),'utf8')+'\n'+fs.readFileSync(path.join(root,'play/audio-manager.js'),'utf8')+'\n'+fs.readFileSync(path.join(root,'play/hidden-object-game.js'),'utf8')+'\n'+html.match(/<script>([\s\S]*?)<\/script>/)[1];
+function createContext({saved=null,blocked=false,audioResult='end',extraLetter=false}={}){
+ const store=new Map(saved?Object.entries(saved):[]),nodes=new Map(),timers=new Map(),played=[],spoken=[],warnings=[],loaded=[];let timerID=0,now=0,objects=0,active=0,maxActive=0;
+ function node(sel){if(!nodes.has(sel))nodes.set(sel,{innerHTML:'',textContent:'',hidden:true,disabled:false,dataset:{},isConnected:true,classList:{add(){},remove(){},toggle(){}},setAttribute(){},addEventListener(){},replaceChildren(){},appendChild(){},insertAdjacentHTML(){},querySelector(){return node('modalButton')},querySelectorAll(){return[]},focus(){},inert:false});return nodes.get(sel);}
+ const document={querySelector:sel=>sel==='#room-image'&&!node('#main').innerHTML.includes('id="room-image"')?null:node(sel),querySelectorAll:()=>[],addEventListener(){},activeElement:node('active'),hidden:false,createTextNode:s=>s,createElement:tag=>node('new'+tag),head:node('head'),body:node('body')};
+ const window={scrollTo(){},addEventListener(){},scrollY:0,speechSynthesis:{cancel(){},getVoices:()=>[{lang:'en-US',localService:true},{lang:'ru-RU',localService:true}],speak(u){spoken.push({text:u.text,lang:u.lang});queueMicrotask(()=>u.onend?.());}}};
+ const sandbox={document,location:{search:''},URLSearchParams,console:{log(){},warn(...x){warnings.push(x)}},setTimeout:(f,ms)=>{timers.set(++timerID,{f,at:now+ms});return timerID},clearTimeout:i=>timers.delete(i),localStorage:{getItem:k=>{if(blocked)throw Error('blocked');return store.get(k)||null},setItem:(k,v)=>{if(blocked)throw Error('blocked');store.set(k,v)}},Audio:class{constructor(){objects++}setAttribute(){}load(){loaded.push({src:this.src,at:now});this.pause();}play(){active++;maxActive=Math.max(maxActive,active);this.playing=true;played.push({src:this.src,at:now});if(audioResult==='blocked')return Promise.reject(Object.assign(Error('autoplay'),{name:'NotAllowedError'}));if(audioResult==='missing')queueMicrotask(()=>{this.pause();this.onerror?.();});else if(audioResult==='end')queueMicrotask(()=>{this.pause();this.onended?.();});return Promise.resolve();}pause(){if(this.playing){active--;this.playing=false;}}},SpeechSynthesisUtterance:class{constructor(t){this.text=t}},window};
+ const context=vm.createContext(sandbox);let code=source;if(extraLetter)code=code.replace('const AUDIO_TEXT',"letters.push({letter:'G',lowercase:'g',sound:'g',word:'Game',emoji:'🎮'});\nconst AUDIO_TEXT");vm.runInContext(code,context);
+ const api={context,store,nodes,timers,played,spoken,warnings,loaded,run:s=>vm.runInContext(s,context),stats:()=>({objects,maxActive,now}),async micro(){for(let i=0;i<12;i++)await Promise.resolve();},async tick(ms){await api.micro();const end=now+ms;for(let guard=0;guard<1000;guard++){const next=[...timers].filter(([id,t])=>t.at<=end).sort((a,b)=>a[1].at-b[1].at)[0];if(!next)break;const[id,t]=next;now=t.at;timers.delete(id);t.f();await api.micro();}now=end;await api.micro();}};
+ return api;
+}
+function saved(a){return Object.fromEntries(a.store)}
+
+module.exports={createContext,saved};
