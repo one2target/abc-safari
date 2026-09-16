@@ -150,8 +150,13 @@
 
     /* Hero */
     .hero{min-height:calc(100vh - 76px);display:flex;align-items:center;padding:54px 0 72px;overflow:hidden}
-    .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;align-items:center;gap:30px}
-    .hero-copy{position:relative;z-index:3}
+    .hero-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);align-items:center;gap:clamp(24px,2.5vw,36px)}
+    .hero-copy{min-width:0;position:relative;z-index:3}
+    .hero h1{
+      max-width:760px;font-size:clamp(44px,5vw,72px);line-height:1.05;
+      word-break:normal;overflow-wrap:normal;hyphens:none;
+      text-wrap:balance;
+    }
     .hero .eyebrow{margin-bottom:24px}
     .hero-note{font-size:14px;color:var(--muted);margin-top:15px;display:flex;align-items:center;gap:9px}
     .hero-note:before{
@@ -370,6 +375,7 @@
       .hero{min-height:auto;padding:34px 0 44px}
       .hero-grid{gap:5px}
       h1{font-size:clamp(42px,13vw,60px)}
+      .hero h1{max-width:100%;font-size:clamp(28px,9.5vw,52px)}
       .lead{font-size:18px}
       .btn-big{width:100%}
       .hero-note{align-items:flex-start}
@@ -440,7 +446,7 @@
       <div class="container hero-grid">
         <div class="hero-copy">
           <div class="eyebrow"><span class="eyebrow-dot"></span> Играем • Учимся • Получаем награды</div>
-          <h1>Отправляемся в путешествие по <span class="accent">английскому алфавиту</span></h1>
+          <h1>Отправляемся в&nbsp;путешествие по&nbsp;<span class="accent">английскому алфавиту</span></h1>
           <p class="lead">ABC Safari помогает ребёнку познакомиться с английскими буквами через короткие игровые задания вместе с жирафом Мариусом.</p>
           <a class="btn btn-primary btn-big" data-trainer-link href="/play/">
             Начать заниматься
