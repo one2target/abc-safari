@@ -70,8 +70,9 @@ assert.equal(reloaded.run("getEquippedItem('outfit').id"),'jacket_racer');
 assert.equal(reloaded.run("getEquippedItem('hand_right').id"),'accessory_bouquet');
 
 // Story art keeps its authored pose and never receives inventory overlays.
-assert.ok(reloaded.run('renderRoom()').includes('marius-room-abc.png'));
-assert.ok(!reloaded.run('renderRoom()').includes('giraffe_jacket_racer.png'));
+reloaded.run("AppState.cursor={phase:'room',index:2,step:4}");
+assert.ok(reloaded.run('renderFindObjectGame()').includes('marius-room-abc.png'));
+assert.ok(!reloaded.run('renderFindObjectGame()').includes('giraffe_jacket_racer.png'));
 const letterReward=reloaded.run("renderInterlude('letterReward')");
 assert.ok(letterReward.includes('data-feedback-sticker'));
 assert.ok(!letterReward.includes('data-character-context="gameplay"'));

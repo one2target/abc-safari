@@ -1,7 +1,7 @@
 // Existing course regression suite, extended to visit the new room phase.
 const assert=require('node:assert/strict');
 const {createContext,saved}=require('./support/trainer-harness.cjs');
-function playRoom(a){a.run(`for(let round=0;round<3;round++){for(const id of ROOM_ROUNDS[round].targets)selectRoomObject(id);if(round<2)nextRoomRound();}continueAfterRoom();`);}
+function playRoom(a){a.run(`for(let round=0;round<ABC_FIND_OBJECT_GAME.rounds.length;round++){for(const id of HiddenObjectGame.currentRound(ABC_FIND_OBJECT_GAME,findObjectState()).targets)selectFindObject(id,ABC_FIND_OBJECT_GAME.id);if(round<ABC_FIND_OBJECT_GAME.rounds.length-1)nextFindObjectRound(ABC_FIND_OBJECT_GAME.id);}continueFindObjectGame(ABC_FIND_OBJECT_GAME.id);`);}
 (async()=>{
  const a=createContext();assert.equal(a.played.length,0);assert.equal(a.run('AppState.version'),2);assert.equal(a.run('AppState.characterState.ownedItems.length'),0);
  a.run('toggleSound();begin()');let phases=[],answers=0,rewards=[];

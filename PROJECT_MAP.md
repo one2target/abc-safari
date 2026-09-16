@@ -9,8 +9,9 @@
 | `index.html` | Лендинг ABC Safari из prototype_v3; TRAINER_URL и четыре data-trainer-link ведут на /play/. |
 | `play/index.html` | HTML-каркас, общий `<style>`, данные курса и основной встроенный `<script>`. В конце запускается `showScreen()`. |
 | `play/assets.js` | Глобальный `MEDIA_ASSETS`: пути аудио и активных изображений, размеры изображений. Загружается до логики приложения. |
-| `play/hidden-object-game.js` | ROOM_HOTSPOTS, ROOM_ROUNDS, DEBUG_HOTSPOTS, переиспользуемая механика HiddenObjectGame. |
-| `play/hidden-object-game.css` | Сцена комнаты, адаптивные прозрачные кнопки, подсказки и debug-границы. |
+| `play/find-object-scenes.js` | Каталог данных find-object сцен; текущая конфигурация `FIND_OBJECT_SCENES.mariusRoomABC`. |
+| `play/hidden-object-game.js` | Универсальные правила, state API, валидация и HTML-шаблон `HiddenObjectGame`. |
+| `play/hidden-object-game.css` | Общий адаптивный layout find-object сцен, прозрачные кнопки, подсказки и debug-границы. |
 | `play/audio-manager.js` | `createAudioManager()`: воспроизведение записей и речевой fallback. Загружается после каталога ресурсов. |
 | `play/manifest.webmanifest` | Название приложения, запуск, область действия, цвета и иконки для установки на домашний экран. |
 | `README.md` | Запуск, пользовательские сценарии и описание сохранений. |
@@ -24,6 +25,9 @@
 │   ├── index.html
 │   ├── assets.js
 │   ├── audio-manager.js
+│   ├── find-object-scenes.js
+│   ├── hidden-object-game.js
+│   ├── hidden-object-game.css
 │   ├── manifest.webmanifest
 │   ├── icon-180.png
 │   ├── icon-192.png
@@ -139,6 +143,9 @@
 | `getItemById()`, `unlockItem()`, `equipItem()`, `unequipItem()` | `play/index.html` | Общие операции владения и экипировки. |
 | `finishBlock()`, `chooseReward()` | `play/index.html` | Условия и выдача наград уроков через inventory API. |
 | `renderCharacter()`, `buddy()`, `CHARACTER_LAYER_ORDER` | `play/index.html` | Единый character stack, compact-режим и порядок слоёв. |
+| `HiddenObjectGame` | `play/hidden-object-game.js` | Валидация config, изолированное состояние, выбор/hint/progress/round/completion и общий HTML find-object игры. |
+| `FIND_OBJECT_SCENES` | `play/find-object-scenes.js` | Изображения, объекты, процентные hotspots, раунды и тексты конкретных сцен. |
+| `FIND_OBJECT_COURSE` | `play/index.html` | Связь scene ID с существующей фазой курса и следующим экраном. |
 | `showAnswerFeedback()`, `renderCompletionSticker()` | `play/index.html` | Отдельные сюжетные реакции, несовместимые с inventory overlays. |
 | `announceScreen()` | `play/index.html` | Последовательности озвучки текущего экрана. |
 | `MEDIA_ASSETS` | `play/assets.js` | Реальные пути медиа. |
@@ -154,6 +161,7 @@
 - Inventory-совместимый Marius → `play/index.html`: `renderCharacter()`, `buddy()`, `CHARACTER_LAYER_ORDER`, `.character-stage`.
 - Сюжетная реакция Marius → `play/index.html`: `showAnswerFeedback()`, `pickSuccessSticker()`, `renderCompletionSticker()`; `play/images/stickers/`.
 - Добавление предмета → `play/images/`, `play/assets.js`, затем один объект в `ITEMS`; для учебной награды добавить его ID в `rewardConfig.itemIds`.
+- Find-object сцена → данные в `play/find-object-scenes.js`; общий state/render/click flow — `play/hidden-object-game.js`; подключение к фазе курса — `FIND_OBJECT_COURSE` в `play/index.html`.
 - Мобильная вёрстка → `play/index.html`: соответствующий CSS-селектор и все его переопределения в `@media`.
 - Награды → `play/index.html`: `ITEMS`, `rewardConfig`, `finishBlock()`, `chooseReward()`, `migrateRewards()`.
 - Сохранение → `play/index.html`: `initialState()`, `loadProgress()`, `saveProgress()`.
@@ -165,6 +173,7 @@
 - `letters`, типы вопросов и размеры групп используются генератором, загрузчиком сохранений, статистикой и условиями наград; изменение курса требует согласованности этих мест.
 - `checkAnswer()`, `completeQuestion()`, `answerLocked`, `viewEpoch`, `transitionTimer` связывают ответ, немедленное сохранение, аудио и отложенный переход; нарушение порядка может повторно засчитать ответ или показать старый экран.
 - `go()` / `showScreen()` обслуживают все экраны и незавершённый выбор подарка.
+- `FIND_OBJECT_COURSE`, `AppState.findObjectGames` и миграция прежнего `roomABC` связывают find-object state с курсом. Не переиспользовать `scene.id` для другой сцены и не хранить найденные объекты вне словаря по ID.
 - `:root`, общие кнопки, `.character-actor`, `.gameplay-marius` и поздние `@media` влияют на несколько экранов и совмещение аксессуаров с персонажем. Не масштабировать слои внутри actor независимо.
 - `createAudioManager()` общий для всех реплик; подготовка одного аудиоэлемента по пользовательскому жесту важна для Safari. Отмена очереди предотвращает наложение старых инструкций на новый экран.
 
@@ -195,6 +204,7 @@ Rewards → play/index.html: rewardConfig / chooseReward / finishBlock
 Progress → play/index.html: initialState / loadProgress / saveProgress
 Mobile CSS → play/index.html: <style> / @media / .character-actor
 Audio → play/audio-manager.js; play/index.html: announceScreen; play/assets.js
+Find-object game → play/hidden-object-game.js; play/find-object-scenes.js; play/index.html: FIND_OBJECT_COURSE
 Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 ```
 
@@ -202,11 +212,37 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 
 Порядок: `lesson` A → B → C → `letterReward` C → **`room`** → прежние `miniIntro` / `mini` (5 вопросов) → награда → D. Фаза `room` использует тот же `view='course'`, `go()`, `showScreen()`, `saveProgress()` и AudioManager.
 
-- `play/hidden-object-game.js`: `DEBUG_HOTSPOTS`, `ROOM_HOTSPOTS` (проценты от изображения), `ROOM_ROUNDS`, `MARIUS_ROOM`; `HiddenObjectGame.initialState/restore/choose/hint/next/render`.
+- Общий движок — `play/hidden-object-game.js`: `HiddenObjectGame.validate/initialState/restore/currentRound/getObject/progress/remaining/roundComplete/hint/choose/next/render`. В нём нет данных комнаты или маршрута курса.
+- Конфигурации — `play/find-object-scenes.js`. Текущая `FIND_OBJECT_SCENES.mariusRoomABC` содержит стабильный `id`, изображение и alt, `objects[]`, `rounds[]`, `copy` и `completion`.
 - `play/images/marius-room-abc.png`: цельная предоставленная иллюстрация; зарегистрирована в `play/assets.js` как `marius_room_abc`.
-- `play/index.html`: `renderRoom`, `wireRoomScene`, `updateRoomView`, `selectRoomObject`, `nextRoomRound`, `continueAfterRoom`, `replayRoom`; обработчики `room-*` в существующем `actions`.
-- `AppState.roomABC`: `currentRound`, `foundObjects`, `wrongAttempts`, `gameCompleted`. Сохраняется вместе с курсом в прежних ключах. `loadProgress` валидирует данные; старый `miniIntro` A/B/C при продолжении открывает комнату, начатый тест и последующие уроки сохраняют позицию.
+- `play/index.html`: `FIND_OBJECT_COURSE` связывает фазу `room` с config и `nextPhase`; `renderFindObjectGame`, `wireFindObjectScene`, `updateFindObjectView`, `selectFindObject`, `nextFindObjectRound`, `continueFindObjectGame`, `replayFindObjectGame` являются общим course adapter. Делегированные действия имеют префикс `find-object-*`.
+- `AppState.findObjectGames[scene.id]`: `{gameId,currentRound,foundObjects,wrongAttempts,gameCompleted}`. `gameId` не позволяет применить state одной сцены к другой. `loadProgress` переносит прежнее `roomABC` в `findObjectGames['marius-room-abc']`; старый `miniIntro` A/B/C при продолжении открывает комнату, начатый тест и последующие уроки сохраняют позицию.
+- Каждый `object` имеет `id`, `label`, необязательный ключ `audio` и `hotspot:{x,y,width,height}`. Все четыре величины — проценты от полного исходного изображения. Кнопка позиционируется внутри того же responsive wrapper, поэтому одна геометрия применяется на desktop, mobile и landscape.
+- Каждый `round` имеет стабильный `id`, `targets[]` из существующих object ID и текст `instruction`. Поле `letter` текущей сцены используется существующим AudioManager для курса A/B/C.
 - Игра не вызывает `registerMistake`, `registerCorrectAnswer`, `finishBlock` и не выдаёт награды: это практика перед проверкой. Финиш и явная кнопка переводят в существующий `miniIntro`.
-- `tests/room.test.cjs`: новая механика, сохранения, повтор, старые данные и расчёт размеров зон. `tests/course-regression.test.cjs`: прежние полные проверки курса с добавленным проходом комнаты; адаптер DOM/audio — `tests/support/trainer-harness.cjs`.
+- Последний правильный выбор возвращает из движка `game-complete` и ставит `state.gameCompleted=true`. `HiddenObjectGame.render()` выводит completion UI и действие `find-object-continue`; `continueFindObjectGame()` читает `nextPhase` из `FIND_OBJECT_COURSE` и вызывает прежний `go('course')`.
+- Комната остаётся сюжетной цельной иллюстрацией, несовместимой с inventory overlays. Renderer из разделов 7–8 не меняется: `outfit` выбирает готовое полное изображение Мариуса, а `head`, `face`, `hand_left`, `hand_right`, `back`, `extra` остаются прозрачными слоями поверх него.
+
+Минимальная новая конфигурация выглядит так (реальная вторая fixture находится в `tests/find-object-engine.test.cjs` и не включена в курс):
+
+```js
+{
+  id: 'find-park',
+  title: 'Park',
+  image: {src:'./images/park.png',width:800,height:600},
+  objects: [
+    {id:'kite',label:'Kite',hotspot:{x:10,y:5,width:20,height:25}}
+  ],
+  rounds: [
+    {id:'outdoors',targets:['kite'],instruction:'Find the kite!'}
+  ]
+}
+```
+
+Чтобы добавить живую сцену: зарегистрировать её изображение в `MEDIA_ASSETS`, добавить config в `FIND_OBJECT_SCENES`, затем добавить связь phase/config/`courseIndex`/`nextPhase` в `FIND_OBJECT_COURSE` и направить существующий переход курса в эту фазу. HTML/CSS/click/state логику копировать не нужно. Новую систему маршрутизации создавать не требуется.
+
+- `tests/find-object-engine.test.cjs`: две разные конфигурации, валидация, изоляция state, относительные координаты, counter/remaining и completion signal.
+- `tests/room.test.cjs`: текущая механика, сохранения и миграция `roomABC`, повтор, старые данные, загрузка изображения и расчёт размеров зон.
+- `tests/course-regression.test.cjs`: прежние полные проверки курса с проходом комнаты; адаптер DOM/audio — `tests/support/trainer-harness.cjs`.
 - `tests/inventory.test.cjs`: обязательные поля каталога, восемь слотов, общие операции, перезагрузка и миграция rewardStateVersion 2 → 3.
 - `tests/character-renderer.test.cjs`: общий stack на игровых экранах, порядок слоёв, замена outfit/hand_right, совместное отображение, снятие, reload и изоляция сюжетных иллюстраций.
