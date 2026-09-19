@@ -44,6 +44,16 @@ const reward=a.run('renderReward()');
 assert.ok(reward.includes('giraffe_jacket_stars.png'));
 assert.ok(reward.includes('accessory_bouquet.png'));
 
+// The maze moves the same complete actor stack, including outfit and handheld item.
+a.run("AppState.cursor={phase:'maze',index:5,step:4}");
+const maze=a.run('renderLetterMazeGame()');
+assert.ok(maze.includes('marius-letter-maze-def.png'));
+assert.ok(maze.includes('letter-maze-marius'));
+assert.ok(maze.includes('gameplay-marius letter-maze-marius'));
+assert.ok(maze.includes('giraffe_jacket_stars.png'));
+assert.ok(maze.includes('accessory_bouquet.png'));
+assert.equal((maze.match(/class="character-actor"/g)||[]).length,1);
+
 // One item per slot: replacement removes the previous layer.
 a.run("equipItem('jacket_racer')");
 let rendered=a.run("renderCharacter('gameplay',{includeBackground:false})");
@@ -82,7 +92,7 @@ for(const asset of ['marius-captain.png','marius-traveler.png','marius-surfer.pn
 console.log(JSON.stringify({
  passed:true,
  layerOrder:['background','back','body/outfit','face','head','hand_left','hand_right','extra'],
- gameplayRendererScreens:gameplayScreens.length+4,
+ gameplayRendererScreens:gameplayScreens.length+5,
  outfitReplacement:true,
  handReplacement:true,
  multiSlot:true,

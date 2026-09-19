@@ -12,6 +12,9 @@
 | `play/find-object-scenes.js` | Каталог данных find-object сцен; текущая конфигурация `FIND_OBJECT_SCENES.mariusRoomABC`. |
 | `play/hidden-object-game.js` | Универсальные правила, state API, валидация и HTML-шаблон `HiddenObjectGame`. |
 | `play/hidden-object-game.css` | Общий адаптивный layout find-object сцен, прозрачные кнопки, подсказки и debug-границы. |
+| `play/letter-maze-scenes.js` | Данные вертикального лабиринта D/E/F: background, процентные клетки, соседства, буквы и маршруты. |
+| `play/letter-maze-game.js` | Переиспользуемые правила, state API, валидация и HTML-шаблон letter maze. |
+| `play/letter-maze-game.css` | Mobile-first вертикальный layout, буквы на камнях, перемещение общего character stack. |
 | `play/audio-manager.js` | `createAudioManager()`: воспроизведение записей и речевой fallback. Загружается после каталога ресурсов. |
 | `play/manifest.webmanifest` | Название приложения, запуск, область действия, цвета и иконки для установки на домашний экран. |
 | `README.md` | Запуск, пользовательские сценарии и описание сохранений. |
@@ -28,6 +31,9 @@
 │   ├── find-object-scenes.js
 │   ├── hidden-object-game.js
 │   ├── hidden-object-game.css
+│   ├── letter-maze-scenes.js
+│   ├── letter-maze-game.js
+│   ├── letter-maze-game.css
 │   ├── manifest.webmanifest
 │   ├── icon-180.png
 │   ├── icon-192.png
@@ -146,6 +152,9 @@
 | `HiddenObjectGame` | `play/hidden-object-game.js` | Валидация config, изолированное состояние, выбор/hint/progress/round/completion и общий HTML find-object игры. |
 | `FIND_OBJECT_SCENES` | `play/find-object-scenes.js` | Изображения, объекты, процентные hotspots, раунды и тексты конкретных сцен. |
 | `FIND_OBJECT_COURSE` | `play/index.html` | Связь scene ID с существующей фазой курса и следующим экраном. |
+| `LetterMazeGame` | `play/letter-maze-game.js` | Соседние ходы, проверка буквы, раунды, restore и общий HTML лабиринта. |
+| `LETTER_MAZE_SCENES` | `play/letter-maze-scenes.js` | Background 941×1672, 36 клеток, D/E/F и правильные маршруты. |
+| `LETTER_MAZE_COURSE` | `play/index.html` | Фаза `maze` после F и переход к существующей награде D/E/F. |
 | `showAnswerFeedback()`, `renderCompletionSticker()` | `play/index.html` | Отдельные сюжетные реакции, несовместимые с inventory overlays. |
 | `announceScreen()` | `play/index.html` | Последовательности озвучки текущего экрана. |
 | `MEDIA_ASSETS` | `play/assets.js` | Реальные пути медиа. |
@@ -205,6 +214,7 @@ Progress → play/index.html: initialState / loadProgress / saveProgress
 Mobile CSS → play/index.html: <style> / @media / .character-actor
 Audio → play/audio-manager.js; play/index.html: announceScreen; play/assets.js
 Find-object game → play/hidden-object-game.js; play/find-object-scenes.js; play/index.html: FIND_OBJECT_COURSE
+Letter maze → play/letter-maze-game.js; play/letter-maze-scenes.js; play/letter-maze-game.css; play/index.html: LETTER_MAZE_COURSE
 Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 ```
 
@@ -246,3 +256,16 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 - `tests/course-regression.test.cjs`: прежние полные проверки курса с проходом комнаты; адаптер DOM/audio — `tests/support/trainer-harness.cjs`.
 - `tests/inventory.test.cjs`: обязательные поля каталога, восемь слотов, общие операции, перезагрузка и миграция rewardStateVersion 2 → 3.
 - `tests/character-renderer.test.cjs`: общий stack на игровых экранах, порядок слоёв, замена outfit/hand_right, совместное отображение, снятие, reload и изоляция сюжетных иллюстраций.
+
+## 17. Лабиринт D/E/F
+
+Порядок второго блока: D → E → F → `maze` → существующая награда `reward_def` → `finalIntro`. Прежняя D/E/F mini-проверка заменена новым лабиринтом; A/B/C mini из пяти вопросов и финальная игра из десяти вопросов остаются прежними.
+
+- `play/images/marius-letter-maze-def.png` — предоставленный пользователем неизменённый portrait PNG 941 × 1672. Он зарегистрирован как `MEDIA_ASSETS.images.marius_letter_maze_def` и служит основным фоном, а не референсом.
+- `play/letter-maze-scenes.js` — `LETTER_MAZE_SCENES.campDEF`. Каждая клетка имеет стабильный `id`, `x/y` в процентах и симметричный список `neighbors`; при необходимости `labelOffsetX/labelOffsetY` в процентных пунктах калибруют только видимую букву относительно нарисованного камня. Раунд задаёт `targetLetter`, `instruction`, разреженный словарь из 12 букв и проверенный `path` от `start` к `finish`; пустая строка означает обычную проходную плитку. `hitArea` задаёт единую расширенную область tap без offsets клеток.
+- `play/letter-maze-game.js` — `LetterMazeGame.validate/initialState/restore/currentRound/cellAtPoint/move/next/render`. Движок выбирает ближайшую клетку координатным hit-test, запрещает несоседние ходы, пропускает пустые клетки, не перемещает героя на неверную букву и завершает игру только после финиша F. Кнопки hit-layer и отдельный `letter-maze-label` overlay используют независимые координаты.
+- `AppState.mazeGames['marius-camp-def']` хранит раунд, текущую клетку, посещённые клетки, мягкие ошибки и completion. Каждый ход сохраняется в прежнем localStorage key.
+- `renderLetterMazeGame()` передаёт в движок `renderCharacter('gameplay', {includeBackground:false, className:'gameplay-marius letter-maze-marius'})`. Stage с body/outfit и всеми transparent overlays позиционируется целиком, поэтому экипировка движется вместе с Мариусом; maze CSS принудительно убирает фон, скругление, рамку и тень wrapper.
+- `play/letter-maze-game.css` сохраняет полное изображение через исходный aspect ratio, использует компактный maze mode без footer и рассчитывает ширину от `svh`. Отдельной горизонтальной сцены или mobile/desktop координат нет.
+- `continueLetterMazeGame()` переводит курс в `miniResult`, вызывает прежний `finishBlock()` и тем самым открывает неизменённую награду второго блока.
+- `tests/letter-maze-engine.test.cjs` проверяет asset, разреженные буквы, пустые ходы, расширенный детерминированный hit-test, неверную букву, аудио D/E/F, mute, D → E → F, restore и completion; course regression подтверждает переход к `reward_def` и сохранение общего прогресса.

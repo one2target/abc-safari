@@ -1,0 +1,82 @@
+/* Portrait-first letter maze. The authored scene is never cropped or redrawn. */
+.letter-maze-game {width:100%;display:grid;place-items:center;padding:0;}
+.letter-maze-scene {
+  position:relative;isolation:isolate;width:min(100%,var(--maze-max),calc((100svh - 92px) * var(--maze-ratio)));
+  aspect-ratio:var(--maze-ratio);overflow:hidden;border-radius:24px;background:#a8d768;
+  box-shadow:0 14px 38px rgba(26,72,48,.18);user-select:none;-webkit-user-select:none;touch-action:manipulation;
+}
+.letter-maze-background {position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;}
+.letter-maze-copy {
+  position:absolute;z-index:7;left:5%;right:5%;top:1.3%;padding:8px 12px;border-radius:16px;
+  background:rgba(255,255,255,.9);box-shadow:0 5px 18px rgba(28,67,49,.16);text-align:center;
+  backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+}
+.letter-maze-copy p {margin:0;color:var(--green);font-size:10px;font-weight:850;letter-spacing:1.6px;text-transform:uppercase;}
+.letter-maze-copy h1 {margin:3px 0 5px;font-size:clamp(14px,3.7vw,20px);line-height:1.18;letter-spacing:-.025em;}
+.letter-maze-copy h1:focus {outline:none;}
+.letter-maze-rounds {display:flex;justify-content:center;gap:5px;}
+.letter-maze-rounds span {width:23px;height:23px;display:grid;place-items:center;border-radius:50%;background:#eef1e8;color:var(--muted);font-size:12px;font-weight:900;}
+.letter-maze-rounds .current {background:var(--yellow);color:var(--ink);box-shadow:0 0 0 2px #fff;}
+.letter-maze-rounds .done {background:var(--green);color:#fff;}
+.letter-maze-cell {
+  position:absolute;z-index:3;transform:translate(-50%,-50%);width:9.5%;height:4%;
+  min-width:0;min-height:0;padding:0;border:0;border-radius:40%;background:transparent;color:#265e3e;
+  display:grid;place-items:center;pointer-events:none;-webkit-tap-highlight-color:transparent;
+}
+.letter-maze-label {
+  position:absolute;z-index:4;transform:translate(-50%,-50%);width:9.5%;height:4%;display:grid;place-items:center;
+  font-size:clamp(14px,4vw,20px);font-weight:950;line-height:1;text-align:center;color:#265e3e;
+  text-shadow:0 1px 0 rgba(255,255,255,.9),0 0 5px rgba(255,255,255,.7);transition:transform .16s,color .16s,opacity .16s;
+  pointer-events:none;
+}
+.letter-maze-cell:focus-visible {outline:3px solid #fff;outline-offset:1px;box-shadow:0 0 0 6px var(--purple);}
+.letter-maze-label.is-visited {opacity:.62;}
+.letter-maze-label.is-correct {animation:letter-maze-correct .42s ease-out;}
+.letter-maze-label.is-wrong {color:#b84d27;text-shadow:0 1px 0 #fff;animation:letter-maze-wrong .38s ease;}
+.letter-maze-label.is-blocked {animation:letter-maze-wrong .38s ease;}
+.letter-maze-character {
+  position:absolute;z-index:6;inset:0;pointer-events:none!important;transition:none;
+}
+.letter-maze-character .letter-maze-marius {
+  position:absolute;width:10.2%;min-width:39px;margin:0;transform:translate(-50%,-82%);
+  transition:left .4s cubic-bezier(.2,.75,.25,1),top .4s cubic-bezier(.2,.75,.25,1);
+  background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;
+  filter:none;overflow:visible;pointer-events:none!important;
+}
+.letter-maze-character * {pointer-events:none!important;}
+.letter-maze-character .character-actor,.letter-maze-character .character-layer {background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;}
+.letter-maze-character .character-actor {--character-x:-3%;}
+.letter-maze-status-panel {
+  position:absolute;z-index:7;left:6%;right:6%;bottom:2.2%;display:flex;flex-direction:column;align-items:center;gap:7px;
+  text-align:center;pointer-events:none;
+}
+.letter-maze-status-panel p {margin:0;padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.91);color:var(--ink);font-size:12px;font-weight:800;box-shadow:0 4px 14px rgba(28,67,49,.14);}
+.letter-maze-status-panel .primary {pointer-events:auto;min-height:42px;padding:9px 18px;font-size:13px;}
+.letter-maze-status-panel [hidden] {display:none;}
+.letter-maze-game.is-complete .letter-maze-cell,.letter-maze-game.is-complete .letter-maze-label {visibility:hidden;}
+.letter-maze-game.is-complete .letter-maze-copy {top:33%;padding:14px 16px;}
+.letter-maze-game.is-complete .letter-maze-copy h1 {font-size:clamp(22px,6vw,31px);}
+.letter-maze-game.is-complete .letter-maze-status-panel {bottom:13%;}
+.maze-active .app {max-width:none;padding:env(safe-area-inset-top) max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));}
+.maze-active main {justify-content:flex-start;}
+.maze-active .footer {display:none;}
+.maze-active .topbar {width:min(100%,470px);min-height:58px;margin:0 auto;}
+.maze-active .brand>div {display:none;}
+.maze-active .brand-mark {width:40px;height:40px;border-radius:14px;}
+.maze-active .tools .icon-button {width:44px;height:44px;border-radius:15px;}
+@keyframes letter-maze-correct {0%{transform:translate(-50%,-50%) scale(.7)}55%{transform:translate(-50%,-50%) scale(1.15)}100%{transform:translate(-50%,-50%) scale(.82)}}
+@keyframes letter-maze-wrong {0%,100%{transform:translate(-50%,-50%)}30%{transform:translate(calc(-50% - 4px),-50%)}70%{transform:translate(calc(-50% + 4px),-50%)}}
+@media(max-width:350px) {
+  .letter-maze-scene {border-radius:18px;}
+  .letter-maze-copy {left:3.5%;right:3.5%;padding:6px 8px;}
+  .letter-maze-copy h1 {font-size:13px;}
+  .letter-maze-label {font-size:14px;}
+  .letter-maze-character .letter-maze-marius {min-width:35px;}
+}
+@media(orientation:landscape) and (max-height:500px) {
+  .maze-active .topbar {min-height:48px;}
+  .letter-maze-scene {width:min(100%,var(--maze-max),calc((100svh - 56px) * var(--maze-ratio)));}
+}
+@media(prefers-reduced-motion:reduce) {
+  .letter-maze-character .letter-maze-marius,.letter-maze-label {transition:none!important;animation:none!important;}
+}

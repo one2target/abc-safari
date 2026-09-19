@@ -2,6 +2,7 @@
 const assert=require('node:assert/strict');
 const {createContext,saved}=require('./support/trainer-harness.cjs');
 function playRoom(a){a.run(`for(let round=0;round<ABC_FIND_OBJECT_GAME.rounds.length;round++){for(const id of HiddenObjectGame.currentRound(ABC_FIND_OBJECT_GAME,findObjectState()).targets)selectFindObject(id,ABC_FIND_OBJECT_GAME.id);if(round<ABC_FIND_OBJECT_GAME.rounds.length-1)nextFindObjectRound(ABC_FIND_OBJECT_GAME.id);}continueFindObjectGame(ABC_FIND_OBJECT_GAME.id);`);}
+function playMaze(a){a.run(`for(let round=0;round<DEF_LETTER_MAZE.rounds.length;round++){while(!LetterMazeGame.roundComplete(DEF_LETTER_MAZE,letterMazeState()))LetterMazeGame.move(DEF_LETTER_MAZE,letterMazeState(),LetterMazeGame.nextPathCell(DEF_LETTER_MAZE,letterMazeState()));if(round<DEF_LETTER_MAZE.rounds.length-1)LetterMazeGame.next(DEF_LETTER_MAZE,letterMazeState());}continueLetterMazeGame(DEF_LETTER_MAZE.id);`);}
 (async()=>{
  const a=createContext();assert.equal(a.played.length,0);assert.equal(a.run('AppState.version'),2);assert.equal(a.run('AppState.characterState.ownedItems.length'),0);
  a.run('toggleSound();begin()');let phases=[],answers=0,rewards=[];
@@ -23,9 +24,9 @@ function playRoom(a){a.run(`for(let round=0;round<ABC_FIND_OBJECT_GAME.rounds.le
    const q=JSON.parse(a.run('JSON.stringify(ensureQuestion())'));assert.equal(q.options.length,3);assert.equal(new Set(q.options).size,3);assert.ok(q.options.includes(q.letter));
    if(!answers){a.run('registerMistake(AppState.question)');const same=createContext({saved:saved(a)});assert.equal(same.run('AppState.stats.A.mistakes'),1);assert.equal(same.run('AppState.cursor.step'),2);}
    a.run('completeQuestion();go("course")');answers++;
-  }else if(c.phase==='letterReward')a.run('advanceAfterLetter()');else if(c.phase==='room')playRoom(a);else if(c.phase==='miniIntro')a.run('startGame(false)');else if(c.phase==='miniResult')a.run('advanceAfterMini()');else if(c.phase==='finalIntro')a.run('startGame(true)');else throw Error(c.phase);
+  }else if(c.phase==='letterReward')a.run('advanceAfterLetter()');else if(c.phase==='room')playRoom(a);else if(c.phase==='maze')playMaze(a);else if(c.phase==='miniIntro')a.run('startGame(false)');else if(c.phase==='miniResult')a.run('advanceAfterMini()');else if(c.phase==='finalIntro')a.run('startGame(true)');else throw Error(c.phase);
  }
- assert.equal(answers,38);assert.deepEqual(rewards,['reward_abc','reward_def']);assert.equal(a.run('AppState.completed'),true);assert.equal(a.run('letters.every(d=>AppState.stats[d.letter].mastery===3)'),true);assert.equal(a.run('AppState.characterState.ownedItems.length'),2);
+ assert.equal(answers,33);assert.deepEqual(rewards,['reward_abc','reward_def']);assert.equal(a.run('AppState.completed'),true);assert.equal(a.run('letters.every(d=>AppState.stats[d.letter].mastery===3)'),true);assert.equal(a.run('AppState.characterState.ownedItems.length'),2);
  assert.equal(a.run("equipItem('jacket_racer')"),false);assert.equal(a.run("equipItem('accessory_bouquet')"),false);const resumed=createContext({saved:saved(a)});assert.equal(resumed.run('AppState.characterState.equipped.outfit'),'jacket_stars');assert.equal(resumed.run('AppState.characterState.equipped.hand_right'),'accessory_balloon');assert.equal(resumed.run('AppState.rewardFlow'),null);
 
  // Upgrade legacy v2 with both category options unlocked: retain only equipped.
@@ -61,9 +62,9 @@ function playRoom(a){a.run(`for(let round=0;round<ABC_FIND_OBJECT_GAME.rounds.le
   if(c.phase==='results')break;
   if(c.phase==='lesson'&&c.step<2)b.run('nextLessonStep()');
   else if(c.phase==='lesson'||['mini','final'].includes(c.phase)){b.run('ensureQuestion();completeQuestion();go("course")');bAnswers++;}
-  else if(c.phase==='letterReward')b.run('advanceAfterLetter()');else if(c.phase==='room')playRoom(b);else if(c.phase==='miniIntro')b.run('startGame(false)');else if(c.phase==='miniResult')b.run('advanceAfterMini()');else if(c.phase==='finalIntro')b.run('startGame(true)');else throw Error(c.phase);
+  else if(c.phase==='letterReward')b.run('advanceAfterLetter()');else if(c.phase==='room')playRoom(b);else if(c.phase==='maze')playMaze(b);else if(c.phase==='miniIntro')b.run('startGame(false)');else if(c.phase==='miniResult')b.run('advanceAfterMini()');else if(c.phase==='finalIntro')b.run('startGame(true)');else throw Error(c.phase);
  }
- assert.equal(bAnswers,38);
+ assert.equal(bAnswers,33);
  const bReload=createContext({saved:saved(b)});
  assert.equal(bReload.run('AppState.characterState.equipped.outfit'),'jacket_racer');
  assert.equal(bReload.run('AppState.characterState.equipped.hand_right'),'accessory_bouquet');
@@ -103,5 +104,5 @@ function playRoom(a){a.run(`for(let round=0;round<ABC_FIND_OBJECT_GAME.rounds.le
  imageFailure.run("document.querySelectorAll=selector=>selector==='img[data-character-asset]'?[brokenClothing]:[];wireMedia();wireMedia()");assert.equal(imageFailure.context.brokenClothing.hidden,true);assert.equal(imageFailure.warnings.length,1);
  // Parent access still uses a two-second hold.
  const hold=createContext();hold.run("startHold({type:'keydown',key:'Enter',repeat:false,preventDefault(){}})");await hold.tick(1999);assert.equal(hold.nodes.get('#modal-layer')?.innerHTML||'','');await hold.tick(1);assert.ok(hold.nodes.get('#modal-layer').innerHTML.includes('Для родителей'));
- console.log(JSON.stringify({passed:true,answers,miniQuestions:10,finalQuestions:10,rewards,wardrobePersistence:true,lockedAlternatives:true,flowBAnswers:bAnswers,legacyBothUnlockedMigration:true,retiredHeadwearReplacement:true,doubleRewardTapGuard:true,pendingRewardResume:true,selectedRewardResume:true,oldProgressMigration:true,noPrematureGifts:true,noRepeatedGifts:true,resetAndMute:true,questionResume:true,doubleTapGuard:true,weightedReview:true,choiceTrials:500,finalCoverageTrials:40,audioSequenceAndPause:true,audioRepeat:true,audioCancellation:true,audioMute:true,reusedAudioObjects:audio.stats().objects,maxConcurrentAudio:audio.stats().maxActive,normalTTSCalls:audio.spoken.length,missingFileFallbackLanguages:true,autoplayDoesNotTriggerTTS:true,parentHold:true,brokenImageFallback:true},null,2));
+ console.log(JSON.stringify({passed:true,answers,miniQuestions:5,mazeRounds:3,finalQuestions:10,rewards,wardrobePersistence:true,lockedAlternatives:true,flowBAnswers:bAnswers,legacyBothUnlockedMigration:true,retiredHeadwearReplacement:true,doubleRewardTapGuard:true,pendingRewardResume:true,selectedRewardResume:true,oldProgressMigration:true,noPrematureGifts:true,noRepeatedGifts:true,resetAndMute:true,questionResume:true,doubleTapGuard:true,weightedReview:true,choiceTrials:500,finalCoverageTrials:40,audioSequenceAndPause:true,audioRepeat:true,audioCancellation:true,audioMute:true,reusedAudioObjects:audio.stats().objects,maxConcurrentAudio:audio.stats().maxActive,normalTTSCalls:audio.spoken.length,missingFileFallbackLanguages:true,autoplayDoesNotTriggerTTS:true,parentHold:true,brokenImageFallback:true},null,2));
 })().catch(e=>{console.error(e);process.exitCode=1});

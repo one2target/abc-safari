@@ -183,6 +183,11 @@ const MEDIA_ASSETS = {
     }
   },
   "images": {
+    "marius_letter_maze_def": {
+      "src": "./images/marius-letter-maze-def.png",
+      "width": 941,
+      "height": 1672
+    },
     "marius_room_abc": {
       "src": "./images/marius-room-abc.png",
       "width": 1122,
