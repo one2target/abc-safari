@@ -61,16 +61,19 @@ const LetterMazeGame = {
   getCell(config,id) {
     return config.cells.find(cell=>cell.id===id)||null;
   },
-  cellAtPoint(config,x,y) {
+  cellAtPoint(config,x,y,filter=null) {
     if(!Number.isFinite(x) || !Number.isFinite(y))return null;
     const radiusX=config.hitArea?.x||6,radiusY=config.hitArea?.y||3;
     let nearest=null,best=Infinity;
     for(const cell of config.cells){
-      if(cell.id===config.startCell)continue;
+      if(cell.id===config.startCell || (filter && !filter(cell)))continue;
       const score=((x-cell.x)/radiusX)**2+((y-cell.y)/radiusY)**2;
       if(score<=1 && score<best){nearest=cell;best=score;}
     }
     return nearest;
+  },
+  letterAtPoint(config,state,x,y) {
+    return this.cellAtPoint(config,x,y,cell=>Boolean(this.letterAt(config,state,cell.id)));
   },
   letterAt(config,state,id) {
     return this.currentRound(config,state).letters[id]||'';
@@ -82,21 +85,31 @@ const LetterMazeGame = {
     const path=this.currentRound(config,state).path,index=path.indexOf(state.currentCell);
     return index>=0?path[index+1]||null:null;
   },
+  nextLetterCell(config,state) {
+    const round=this.currentRound(config,state),index=round.path.indexOf(state.currentCell);
+    if(index<0)return null;
+    return round.path.slice(index+1).find(id=>Boolean(round.letters[id]))||null;
+  },
+  pathSegmentTo(config,state,id) {
+    const round=this.currentRound(config,state),currentIndex=round.path.indexOf(state.currentCell),targetIndex=round.path.indexOf(id);
+    if(currentIndex<0 || targetIndex<=currentIndex || round.letters[id]!==round.targetLetter)return null;
+    const segment=round.path.slice(currentIndex+1,targetIndex+1);
+    return segment.slice(0,-1).some(cellId=>Boolean(round.letters[cellId]))?null:segment;
+  },
   move(config,state,id) {
     if(state.gameId!==config.id || state.gameCompleted || this.roundComplete(config,state))return 'ignored';
-    const current=this.getCell(config,state.currentCell),target=this.getCell(config,id);
-    if(!current || !target || !current.neighbors.includes(id)){
-      state.wrongAttempts=Math.min(999,state.wrongAttempts+1);
-      return 'not-adjacent';
-    }
-    const letter=this.letterAt(config,state,id),targetLetter=this.currentRound(config,state).targetLetter;
-    if(letter && letter!==targetLetter){
+    const target=this.getCell(config,id),letter=this.letterAt(config,state,id),targetLetter=this.currentRound(config,state).targetLetter;
+    if(target && letter && letter!==targetLetter){
       state.wrongAttempts=Math.min(999,state.wrongAttempts+1);
       return 'wrong-letter';
     }
-    state.currentCell=id;
-    if(!state.visited.includes(id))state.visited.push(id);
-    if(!this.roundComplete(config,state))return letter===targetLetter?'correct-letter':'correct-empty';
+    const segment=target?this.pathSegmentTo(config,state,id):null;
+    if(!segment){
+      state.wrongAttempts=Math.min(999,state.wrongAttempts+1);
+      return 'not-adjacent';
+    }
+    for(const cellId of segment){state.currentCell=cellId;if(!state.visited.includes(cellId))state.visited.push(cellId);}
+    if(!this.roundComplete(config,state))return 'correct-letter';
     if(state.currentRound===config.rounds.length-1){state.gameCompleted=true;return 'game-complete';}
     return 'round-complete';
   },
@@ -116,9 +129,9 @@ const LetterMazeGame = {
     const action={move:actions.move||'letter-maze-move',next:actions.next||'letter-maze-next',continue:actions.continue||'letter-maze-continue'};
     const game=escape(config.id),ratio=config.background.width/config.background.height,maxWidth=Math.min(config.maxWidth||470,config.background.width);
     const current=this.getCell(config,state.currentCell),roundDone=this.roundComplete(config,state);
-    const cellButtons=config.cells.filter(cell=>cell.id!==config.startCell).map(cell=>{
-      const letter=round.letters[cell.id],visited=state.visited.includes(cell.id),finish=cell.id===config.finishCell,label=letter||'Path stone';
-      return `<button type="button" class="letter-maze-cell${letter?' has-letter':' is-empty'}${visited?' is-visited':''}${finish?' is-finish':''}" data-action="${escape(action.move)}" data-game="${game}" data-cell="${escape(cell.id)}" aria-label="${escape(label)}${finish?', finish':''}" style="left:${cell.x}%;top:${cell.y}%"></button>`;
+    const cellButtons=config.cells.filter(cell=>cell.id!==config.startCell && round.letters[cell.id]).map(cell=>{
+      const letter=round.letters[cell.id],visited=state.visited.includes(cell.id),finish=cell.id===config.finishCell;
+      return `<button type="button" class="letter-maze-cell has-letter${visited?' is-visited':''}${finish?' is-finish':''}" data-action="${escape(action.move)}" data-game="${game}" data-cell="${escape(cell.id)}" aria-label="${escape(letter)}${finish?', finish':''}" style="left:${cell.x}%;top:${cell.y}%"></button>`;
     }).join('');
     const labels=config.cells.filter(cell=>cell.id!==config.startCell && round.letters[cell.id]).map(cell=>{
       const labelX=percent(cell.x+(cell.labelOffsetX||0)),labelY=percent(cell.y+(cell.labelOffsetY||0)),letter=round.letters[cell.id],visited=state.visited.includes(cell.id);

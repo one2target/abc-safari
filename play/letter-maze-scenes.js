@@ -77,9 +77,9 @@ const LETTER_MAZE_SCENES=(()=>{
         round('follow-f','F','Follow only F.',['p01','p06','p08','p11','p13','p15','p19','p21','p24','p25','finish'],'D')
       ]),
       copy:Object.freeze({
-        ready:'Tap the next stone.',
+        ready:'Tap the next correct letter.',
         wrongLetter:'Try another letter.',
-        notAdjacent:'Choose the next stone beside Marius.',
+        notAdjacent:'Choose the next letter in order.',
         roundComplete:'Great! The next path is ready.',
         nextRound:'Next round',
         completeTitle:'Marius reached the camp!',

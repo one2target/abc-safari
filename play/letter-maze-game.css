@@ -39,7 +39,7 @@
 }
 .letter-maze-character .letter-maze-marius {
   position:absolute;width:10.2%;min-width:39px;margin:0;transform:translate(-50%,-82%);
-  transition:left .4s cubic-bezier(.2,.75,.25,1),top .4s cubic-bezier(.2,.75,.25,1);
+  transition:left .15s cubic-bezier(.2,.75,.25,1),top .15s cubic-bezier(.2,.75,.25,1);
   background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;
   filter:none;overflow:visible;pointer-events:none!important;
 }

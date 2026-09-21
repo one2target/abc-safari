@@ -1863,13 +1863,15 @@ function replayFindObjectGame(gameId){
  AppState.findObjectGames[gameId]=HiddenObjectGame.initialState(entry.scene);AppState.cursor.phase=entry.phase;go('course');
 }
 /* LETTER MAZE — generic rules plus a course adapter and the shared character renderer. */
+const LETTER_MAZE_STEP_MS=150;
+let letterMazeAnimating=false;
 function renderLetterMazeGame(){
  const entry=activeLetterMazeEntry();if(!entry)return '';
  const state=letterMazeState(entry.scene);
  const character=renderCharacter('gameplay',{includeBackground:false,className:'gameplay-marius letter-maze-marius',decorative:false});
  return LetterMazeGame.render(entry.scene,state,{icons,characterHTML:character});
 }
-function updateLetterMazeView(message,result,targetId){
+function updateLetterMazeView(message,result,targetId,moveActor=true){
  const entry=activeLetterMazeEntry();if(!entry)return;
  const config=entry.scene,state=letterMazeState(config),cell=LetterMazeGame.getCell(config,state.currentCell),copy=config.copy||{};
  document.querySelectorAll('.letter-maze-cell,.letter-maze-label').forEach(node=>{
@@ -1879,42 +1881,62 @@ function updateLetterMazeView(message,result,targetId){
  const targets=targetId?document.querySelectorAll(`.letter-maze-cell[data-cell="${targetId}"],.letter-maze-label[data-cell="${targetId}"]`):[];
  targets.forEach(target=>target.classList.add(result==='wrong-letter'?'is-wrong':result==='not-adjacent'?'is-blocked':'is-correct'));
  const actor=$('#letter-maze-marius .letter-maze-marius');
- if(actor){actor.style.left=`${cell.x}%`;actor.style.top=`${cell.y}%`;}
+ if(actor&&moveActor){actor.style.left=`${cell.x}%`;actor.style.top=`${cell.y}%`;}
  const feedback=$('#letter-maze-feedback'),next=$('#letter-maze-next'),roundDone=LetterMazeGame.roundComplete(config,state);
  if(feedback)feedback.textContent=message||(roundDone?state.gameCompleted?copy.completeMessage:copy.roundComplete:copy.ready);
  if(next){next.hidden=!roundDone;if(roundDone){next.dataset.action=state.gameCompleted?'letter-maze-continue':'letter-maze-next';next.textContent=state.gameCompleted?(copy.continueLabel||'Continue'):(copy.nextRound||'Next round');}}
 }
+function setLetterMazeInputsEnabled(enabled){document.querySelectorAll('.letter-maze-cell').forEach(button=>{button.disabled=!enabled;});}
+function animateLetterMazeSegment(config,segment,epoch){
+ const actor=$('#letter-maze-marius .letter-maze-marius');
+ if(!actor||!segment.length)return Promise.resolve(true);
+ const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches,stepMs=DEMO||reduced?20:LETTER_MAZE_STEP_MS;
+ return new Promise(resolve=>{
+  let index=0;
+  const advance=()=>{
+   if(epoch!==viewEpoch||!actor.isConnected){resolve(false);return;}
+   const cell=LetterMazeGame.getCell(config,segment[index++]);
+   actor.style.left=`${cell.x}%`;actor.style.top=`${cell.y}%`;
+   setTimeout(()=>{if(index<segment.length)advance();else resolve(epoch===viewEpoch);},stepMs);
+  };
+  advance();
+ });
+}
 function wireLetterMazeScene(){
  const entry=activeLetterMazeEntry(),img=$('#letter-maze-image'),scene=document.querySelector('.letter-maze-scene');if(!entry||!img||!scene)return;
- const ready=()=>{if(!img.isConnected)return;img.dataset.letterMazeReady='true';document.querySelectorAll('.letter-maze-cell').forEach(button=>button.disabled=false);};
- const failed=()=>{if(!img.isConnected)return;img.dataset.letterMazeReady='false';document.querySelectorAll('.letter-maze-cell').forEach(button=>button.disabled=true);const feedback=$('#letter-maze-feedback');if(feedback)feedback.textContent='The maze scene could not load.';};
+ const ready=()=>{if(!img.isConnected)return;img.dataset.letterMazeReady='true';setLetterMazeInputsEnabled(!letterMazeAnimating);};
+ const failed=()=>{if(!img.isConnected)return;img.dataset.letterMazeReady='false';setLetterMazeInputsEnabled(false);const feedback=$('#letter-maze-feedback');if(feedback)feedback.textContent='The maze scene could not load.';};
  img.addEventListener('load',ready,{once:true});img.addEventListener('error',failed,{once:true});
  scene.addEventListener('click',event=>{
   if(event.target.closest('.letter-maze-copy,.letter-maze-status-panel,.letter-maze-cell'))return;
   const rect=scene.getBoundingClientRect(),x=(event.clientX-rect.left)/rect.width*100,y=(event.clientY-rect.top)/rect.height*100;
-  const cell=LetterMazeGame.cellAtPoint(entry.scene,x,y);if(!cell)return;
+  const cell=LetterMazeGame.letterAtPoint(entry.scene,letterMazeState(entry.scene),x,y);if(!cell)return;
   event.preventDefault();letterMazeMove(cell.id,entry.scene.id);
  });
  if(img.complete){if(img.naturalWidth>0)ready();else failed();}
 }
 function selectLetterMazeCell(id,gameId){
- const entry=activeLetterMazeEntry();if(view!=='course'||!entry||entry.scene.id!==gameId)return;
+ const entry=activeLetterMazeEntry();if(letterMazeAnimating||view!=='course'||!entry||entry.scene.id!==gameId)return;
  const config=entry.scene,state=letterMazeState(config),copy=config.copy||{},round=LetterMazeGame.currentRound(config,state),landedLetter=LetterMazeGame.letterAt(config,state,id);
+ const segment=LetterMazeGame.pathSegmentTo(config,state,id)||[];
  const result=LetterMazeGame.move(config,state,id);if(result==='ignored')return;
  saveProgress();
  if(result==='wrong-letter'||result==='not-adjacent'){
   updateLetterMazeView(result==='wrong-letter'?copy.wrongLetter:copy.notAdjacent,result,id);AudioManager.play(ru('try_again'));
   setTimeout(()=>document.querySelectorAll(`.letter-maze-cell[data-cell="${id}"],.letter-maze-label[data-cell="${id}"]`).forEach(node=>node.classList.remove('is-wrong','is-blocked')),420);return;
  }
- updateLetterMazeView(result==='round-complete'?copy.roundComplete:result==='game-complete'?copy.completeMessage:copy.ready,result,id);
+ letterMazeAnimating=true;setLetterMazeInputsEnabled(false);
+ updateLetterMazeView(result==='round-complete'?copy.roundComplete:result==='game-complete'?copy.completeMessage:copy.ready,result,id,false);
+ const epoch=viewEpoch,movementDone=animateLetterMazeSegment(config,segment,epoch);
  const audioDone=landedLetter===round.targetLetter?AudioManager.play(enName(byLetter.get(round.targetLetter))):Promise.resolve(true);
- if(result==='correct-letter'||result==='correct-empty')return;
+ if(result==='correct-letter'){
+  movementDone.then(moved=>{if(!moved||epoch!==viewEpoch)return;letterMazeAnimating=false;if($('#letter-maze-image')?.dataset.letterMazeReady==='true')setLetterMazeInputsEnabled(true);});return;
+ }
  celebrate();
- const epoch=viewEpoch;
  const delay=new Promise(resolve=>{transitionTimer=setTimeout(resolve,DEMO?100:650);});
- Promise.all([audioDone,delay]).then(()=>{if(epoch!==viewEpoch)return;if(result==='game-complete')continueLetterMazeGame(gameId);else nextLetterMazeRound(gameId);});
+ Promise.all([audioDone,movementDone,delay]).then(()=>{if(epoch!==viewEpoch)return;letterMazeAnimating=false;if(result==='game-complete')continueLetterMazeGame(gameId);else nextLetterMazeRound(gameId);});
 }
-function letterMazeMove(id,gameId){const img=$('#letter-maze-image');if(img?.dataset.letterMazeReady==='false')return;unlockAudio();selectLetterMazeCell(id,gameId);}
+function letterMazeMove(id,gameId){const img=$('#letter-maze-image');if(letterMazeAnimating||img?.dataset.letterMazeReady==='false')return;unlockAudio();selectLetterMazeCell(id,gameId);}
 function nextLetterMazeRound(gameId){
  const entry=activeLetterMazeEntry();if(view!=='course'||!entry||entry.scene.id!==gameId)return;
  if(LetterMazeGame.next(entry.scene,letterMazeState(entry.scene)))go('course');
@@ -1929,7 +1951,7 @@ function renderCourse(){const c=AppState.cursor;let content;if(c.phase==='lesson
  else if(FIND_OBJECT_COURSE[c.phase])content=renderFindObjectGame();else if(LETTER_MAZE_COURSE[c.phase])content=renderLetterMazeGame();else if(c.phase==='mini')content=renderMiniGame();else if(c.phase==='final')content=renderFinalChallenge();else if(c.phase==='results')content=renderResults();else content=renderInterlude(c.phase);
  return `<div class="screen learning">${content}${c.phase==='lesson'?journeyStrip():''}</div>`;}
 function showScreen(){
- viewEpoch++;const epoch=viewEpoch;clearTimeout(transitionTimer);transitionTimer=null;answerLocked=false;stopAudio();$('#confetti').replaceChildren();
+ viewEpoch++;const epoch=viewEpoch;clearTimeout(transitionTimer);transitionTimer=null;answerLocked=false;letterMazeAnimating=false;stopAudio();$('#confetti').replaceChildren();
  document.body.classList.toggle('maze-active',view==='course'&&Boolean(activeLetterMazeEntry()));
  $('#main').innerHTML=view==='home'?renderHome():view==='progress'?renderWardrobe():view==='reward'?renderReward():renderCourse();
  if(DEMO)$('#main').insertAdjacentHTML('beforeend','<div class="demo-bar" lang="ru"><span>DEMO · отдельный прогресс</span><button data-action="demo-next">Следующий этап →</button></div>');
@@ -2088,7 +2110,7 @@ const actions={
    else if(['mini','final'].includes(c.phase))checkAnswer(document.querySelector(`[data-answer="${AppState.question.letter}"]`));
    else if(c.phase==='letterReward')advanceAfterLetter();
    else if(entry){const config=entry.scene;const state=findObjectState(config);if(state.gameCompleted)continueFindObjectGame(config.id);else if(HiddenObjectGame.roundComplete(config,state))nextFindObjectRound(config.id);else findObjectPick(HiddenObjectGame.currentRound(config,state).targets.find(id=>!state.foundObjects.includes(id)),config.id);}
-   else if(mazeEntry){const config=mazeEntry.scene,state=letterMazeState(config);if(state.gameCompleted)continueLetterMazeGame(config.id);else if(LetterMazeGame.roundComplete(config,state))nextLetterMazeRound(config.id);else selectLetterMazeCell(LetterMazeGame.nextPathCell(config,state),config.id);}
+   else if(mazeEntry){const config=mazeEntry.scene,state=letterMazeState(config);if(state.gameCompleted)continueLetterMazeGame(config.id);else if(LetterMazeGame.roundComplete(config,state))nextLetterMazeRound(config.id);else selectLetterMazeCell(LetterMazeGame.nextLetterCell(config,state),config.id);}
    else if(c.phase==='miniIntro')startGame();
    else if(c.phase==='miniResult')advanceAfterMini();
    else if(c.phase==='finalIntro')startGame(true);

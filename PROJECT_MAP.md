@@ -13,7 +13,7 @@
 | `play/hidden-object-game.js` | Универсальные правила, state API, валидация и HTML-шаблон `HiddenObjectGame`. |
 | `play/hidden-object-game.css` | Общий адаптивный layout find-object сцен, прозрачные кнопки, подсказки и debug-границы. |
 | `play/letter-maze-scenes.js` | Данные вертикального лабиринта D/E/F: background, процентные клетки, соседства, буквы и маршруты. |
-| `play/letter-maze-game.js` | Переиспользуемые правила, state API, валидация и HTML-шаблон letter maze. |
+| `play/letter-maze-game.js` | Переиспользуемые правила, state API, выбор следующей буквы, сегменты автопрохода, валидация и HTML-шаблон letter maze. |
 | `play/letter-maze-game.css` | Mobile-first вертикальный layout, буквы на камнях, перемещение общего character stack. |
 | `play/audio-manager.js` | `createAudioManager()`: воспроизведение записей и речевой fallback. Загружается после каталога ресурсов. |
 | `play/manifest.webmanifest` | Название приложения, запуск, область действия, цвета и иконки для установки на домашний экран. |
@@ -153,7 +153,7 @@
 | `HiddenObjectGame` | `play/hidden-object-game.js` | Валидация config, изолированное состояние, выбор/hint/progress/round/completion и общий HTML find-object игры. |
 | `FIND_OBJECT_SCENES` | `play/find-object-scenes.js` | Изображения, объекты, процентные hotspots, раунды и тексты конкретных сцен. |
 | `FIND_OBJECT_COURSE` | `play/index.html` | Связь scene ID с существующей фазой курса и следующим экраном. |
-| `LetterMazeGame` | `play/letter-maze-game.js` | Соседние ходы, проверка буквы, раунды, restore и общий HTML лабиринта. |
+| `LetterMazeGame` | `play/letter-maze-game.js` | Следующая буква, автопроход по пустому сегменту, проверка порядка, раунды, restore и общий HTML лабиринта. |
 | `LETTER_MAZE_SCENES` | `play/letter-maze-scenes.js` | Background 941×1672, 36 клеток, D/E/F и правильные маршруты. |
 | `LETTER_MAZE_COURSE` | `play/index.html` | Фаза `maze` после F и переход к существующей награде D/E/F. |
 | `showAnswerFeedback()`, `renderCompletionSticker()` | `play/index.html` | Отдельные сюжетные реакции, несовместимые с inventory overlays. |
@@ -266,12 +266,12 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 
 - `play/images/marius-letter-maze-def.png` — предоставленный пользователем неизменённый portrait PNG 941 × 1672. Он зарегистрирован как `MEDIA_ASSETS.images.marius_letter_maze_def` и служит основным фоном, а не референсом.
 - `play/letter-maze-scenes.js` — `LETTER_MAZE_SCENES.campDEF`. Каждая клетка имеет стабильный `id`, `x/y` в процентах и симметричный список `neighbors`; при необходимости `labelOffsetX/labelOffsetY` в процентных пунктах калибруют только видимую букву относительно нарисованного камня. Раунд задаёт `targetLetter`, `instruction`, разреженный словарь из 12 букв и проверенный `path` от `start` к `finish`; пустая строка означает обычную проходную плитку. `hitArea` задаёт единую расширенную область tap без offsets клеток.
-- `play/letter-maze-game.js` — `LetterMazeGame.validate/initialState/restore/currentRound/cellAtPoint/move/next/render`. Движок выбирает ближайшую клетку координатным hit-test, запрещает несоседние ходы, пропускает пустые клетки, не перемещает героя на неверную букву и завершает игру только после финиша F. Кнопки hit-layer и отдельный `letter-maze-label` overlay используют независимые координаты.
+- `play/letter-maze-game.js` — `LetterMazeGame.validate/initialState/restore/currentRound/letterAtPoint/nextLetterCell/pathSegmentTo/move/next/render`. Игрок выбирает только буквы: движок находит следующую контрольную букву в существующем `round.path`, запрещает перескочить её, проходит до неё только через промежуточные пустые клетки и атомарно сохраняет конечную позицию. Неверная буква не перемещает героя. Координатный hit-test выбирает ближайшую видимую букву; пустые клетки не создают кнопки и не перехватывают tap.
 - `AppState.mazeGames['marius-camp-def']` хранит раунд, текущую клетку, посещённые клетки, мягкие ошибки и completion. Каждый ход сохраняется в прежнем localStorage key.
-- `renderLetterMazeGame()` передаёт в движок `renderCharacter('gameplay', {includeBackground:false, className:'gameplay-marius letter-maze-marius'})`. Stage с body/outfit и всеми transparent overlays позиционируется целиком, поэтому экипировка движется вместе с Мариусом; maze CSS принудительно убирает фон, скругление, рамку и тень wrapper.
+- `renderLetterMazeGame()` передаёт в движок `renderCharacter('gameplay', {includeBackground:false, className:'gameplay-marius letter-maze-marius'})`. Stage с body/outfit и всеми transparent overlays позиционируется целиком, поэтому экипировка движется вместе с Мариусом; `animateLetterMazeSegment()` быстро и последовательно переставляет весь stack по клеткам принятого сегмента, блокируя новый ввод на время движения. Maze CSS принудительно убирает фон, скругление, рамку и тень wrapper.
 - `play/letter-maze-game.css` сохраняет полное изображение через исходный aspect ratio, использует компактный maze mode без footer и рассчитывает ширину от `svh`. Отдельной горизонтальной сцены или mobile/desktop координат нет.
 - `continueLetterMazeGame()` переводит курс в `miniResult`, вызывает прежний `finishBlock()` и тем самым открывает неизменённую награду второго блока.
-- `tests/letter-maze-engine.test.cjs` проверяет asset, разреженные буквы, пустые ходы, расширенный детерминированный hit-test, неверную букву, аудио D/E/F, mute, D → E → F, restore и completion; course regression подтверждает переход к `reward_def` и сохранение общего прогресса.
+- `tests/letter-maze-engine.test.cjs` проверяет asset, targets только на буквах, автопроход нескольких пустых клеток одним ответом, последовательную анимацию, запрет пропуска следующей буквы, nearest-target hit-test, неверную букву, аудио D/E/F, mute, D → E → F, restore и completion; course regression подтверждает переход к `reward_def` и сохранение общего прогресса.
 
 ## 18. Значение слов A–F
 

@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict');
 const {createContext,saved}=require('./support/trainer-harness.cjs');
 function playRoom(a){a.run(`for(let round=0;round<ABC_FIND_OBJECT_GAME.rounds.length;round++){for(const id of HiddenObjectGame.currentRound(ABC_FIND_OBJECT_GAME,findObjectState()).targets)selectFindObject(id,ABC_FIND_OBJECT_GAME.id);if(round<ABC_FIND_OBJECT_GAME.rounds.length-1)nextFindObjectRound(ABC_FIND_OBJECT_GAME.id);}continueFindObjectGame(ABC_FIND_OBJECT_GAME.id);`);}
-function playMaze(a){a.run(`for(let round=0;round<DEF_LETTER_MAZE.rounds.length;round++){while(!LetterMazeGame.roundComplete(DEF_LETTER_MAZE,letterMazeState()))LetterMazeGame.move(DEF_LETTER_MAZE,letterMazeState(),LetterMazeGame.nextPathCell(DEF_LETTER_MAZE,letterMazeState()));if(round<DEF_LETTER_MAZE.rounds.length-1)LetterMazeGame.next(DEF_LETTER_MAZE,letterMazeState());}continueLetterMazeGame(DEF_LETTER_MAZE.id);`);}
+function playMaze(a){a.run(`for(let round=0;round<DEF_LETTER_MAZE.rounds.length;round++){while(!LetterMazeGame.roundComplete(DEF_LETTER_MAZE,letterMazeState()))LetterMazeGame.move(DEF_LETTER_MAZE,letterMazeState(),LetterMazeGame.nextLetterCell(DEF_LETTER_MAZE,letterMazeState()));if(round<DEF_LETTER_MAZE.rounds.length-1)LetterMazeGame.next(DEF_LETTER_MAZE,letterMazeState());}continueLetterMazeGame(DEF_LETTER_MAZE.id);`);}
 (async()=>{
  const a=createContext();assert.equal(a.played.length,0);assert.equal(a.run('AppState.version'),3);assert.equal(a.run('AppState.characterState.ownedItems.length'),0);
  a.run('toggleSound();begin()');let phases=[],answers=0,translationAnswers=0,rewards=[];
