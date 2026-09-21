@@ -121,6 +121,9 @@ const MEDIA_ASSETS = {
     "apple": {
       "src": "./audio/apple.mp3"
     },
+    "apple_ru": {
+      "src": "./audio/apple_ru.mp3"
+    },
     "b_ball": {
       "src": "./audio/b_ball.mp3"
     },
@@ -132,6 +135,9 @@ const MEDIA_ASSETS = {
     },
     "ball": {
       "src": "./audio/ball.mp3"
+    },
+    "ball_ru": {
+      "src": "./audio/ball_ru.mp3"
     },
     "c_cat": {
       "src": "./audio/c_cat.mp3"
@@ -145,6 +151,9 @@ const MEDIA_ASSETS = {
     "cat": {
       "src": "./audio/cat.mp3"
     },
+    "cat_ru": {
+      "src": "./audio/cat_ru.mp3"
+    },
     "d_dog": {
       "src": "./audio/d_dog.mp3"
     },
@@ -156,6 +165,9 @@ const MEDIA_ASSETS = {
     },
     "dog": {
       "src": "./audio/dog.mp3"
+    },
+    "dog_ru": {
+      "src": "./audio/dog_ru.mp3"
     },
     "e_egg": {
       "src": "./audio/e_egg.mp3"
@@ -169,6 +181,9 @@ const MEDIA_ASSETS = {
     "egg": {
       "src": "./audio/egg.mp3"
     },
+    "egg_ru": {
+      "src": "./audio/egg_ru.mp3"
+    },
     "f_fish": {
       "src": "./audio/f_fish.mp3"
     },
@@ -180,6 +195,9 @@ const MEDIA_ASSETS = {
     },
     "fish": {
       "src": "./audio/fish.mp3"
+    },
+    "fish_ru": {
+      "src": "./audio/fish_ru.mp3"
     }
   },
   "images": {

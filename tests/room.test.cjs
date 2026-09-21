@@ -6,7 +6,7 @@ function reachRoom(a){
  a.run('begin()');
  for(let letter=0;letter<3;letter++){
   assert.equal(a.run('AppState.cursor.index'),letter);
-  a.run('nextLessonStep();nextLessonStep()');
+  a.run('nextLessonStep();nextLessonStep();nextLessonStep();ensureQuestion();completeQuestion();go("course")');
   for(let question=0;question<3;question++)a.run('ensureQuestion();completeQuestion();go("course")');
   assert.equal(phase(a),'letterReward');a.run('advanceAfterLetter()');
  }

@@ -25,6 +25,7 @@ assert.equal((compact.match(/class="character-actor"/g)||[]).length,1);
 const gameplayScreens=[
  a.run('renderLearnLetter()'),
  a.run('renderWordScreen()'),
+ a.run('renderWordMeaningCard()'),
  a.run("renderInterlude('miniIntro')"),
  a.run("renderInterlude('miniResult')"),
  a.run("renderInterlude('finalIntro')")

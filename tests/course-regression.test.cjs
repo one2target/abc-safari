@@ -4,9 +4,9 @@ const {createContext,saved}=require('./support/trainer-harness.cjs');
 function playRoom(a){a.run(`for(let round=0;round<ABC_FIND_OBJECT_GAME.rounds.length;round++){for(const id of HiddenObjectGame.currentRound(ABC_FIND_OBJECT_GAME,findObjectState()).targets)selectFindObject(id,ABC_FIND_OBJECT_GAME.id);if(round<ABC_FIND_OBJECT_GAME.rounds.length-1)nextFindObjectRound(ABC_FIND_OBJECT_GAME.id);}continueFindObjectGame(ABC_FIND_OBJECT_GAME.id);`);}
 function playMaze(a){a.run(`for(let round=0;round<DEF_LETTER_MAZE.rounds.length;round++){while(!LetterMazeGame.roundComplete(DEF_LETTER_MAZE,letterMazeState()))LetterMazeGame.move(DEF_LETTER_MAZE,letterMazeState(),LetterMazeGame.nextPathCell(DEF_LETTER_MAZE,letterMazeState()));if(round<DEF_LETTER_MAZE.rounds.length-1)LetterMazeGame.next(DEF_LETTER_MAZE,letterMazeState());}continueLetterMazeGame(DEF_LETTER_MAZE.id);`);}
 (async()=>{
- const a=createContext();assert.equal(a.played.length,0);assert.equal(a.run('AppState.version'),2);assert.equal(a.run('AppState.characterState.ownedItems.length'),0);
- a.run('toggleSound();begin()');let phases=[],answers=0,rewards=[];
- for(let guard=0;guard<170;guard++){
+ const a=createContext();assert.equal(a.played.length,0);assert.equal(a.run('AppState.version'),3);assert.equal(a.run('AppState.characterState.ownedItems.length'),0);
+ a.run('toggleSound();begin()');let phases=[],answers=0,translationAnswers=0,rewards=[];
+ for(let guard=0;guard<220;guard++){
   const c=JSON.parse(a.run('JSON.stringify(AppState.cursor)'));phases.push(c.phase);
   if(a.run('Boolean(AppState.rewardFlow)')){
    const id=a.run('AppState.rewardFlow.id');rewards.push(id);
@@ -19,14 +19,14 @@ function playMaze(a){a.run(`for(let round=0;round<DEF_LETTER_MAZE.rounds.length;
    await a.tick(1000);a.run('continueReward()');continue;
   }
   if(c.phase==='results')break;
-  if(c.phase==='lesson'&&c.step<2)a.run('nextLessonStep()');
+  if(c.phase==='lesson'&&a.run('currentLessonStep().kind')==='card')a.run('nextLessonStep()');
   else if(c.phase==='lesson'||['mini','final'].includes(c.phase)){
    const q=JSON.parse(a.run('JSON.stringify(ensureQuestion())'));assert.equal(q.options.length,3);assert.equal(new Set(q.options).size,3);assert.ok(q.options.includes(q.letter));
-   if(!answers){a.run('registerMistake(AppState.question)');const same=createContext({saved:saved(a)});assert.equal(same.run('AppState.stats.A.mistakes'),1);assert.equal(same.run('AppState.cursor.step'),2);}
-   a.run('completeQuestion();go("course")');answers++;
+   if(q.type!=='translationPicture'&&!answers){a.run('registerMistake(AppState.question)');const same=createContext({saved:saved(a)});assert.equal(same.run('AppState.stats.A.mistakes'),1);assert.equal(same.run('AppState.cursor.step'),4);}
+   a.run('completeQuestion();go("course")');if(q.type==='translationPicture')translationAnswers++;else answers++;
   }else if(c.phase==='letterReward')a.run('advanceAfterLetter()');else if(c.phase==='room')playRoom(a);else if(c.phase==='maze')playMaze(a);else if(c.phase==='miniIntro')a.run('startGame(false)');else if(c.phase==='miniResult')a.run('advanceAfterMini()');else if(c.phase==='finalIntro')a.run('startGame(true)');else throw Error(c.phase);
  }
- assert.equal(answers,33);assert.deepEqual(rewards,['reward_abc','reward_def']);assert.equal(a.run('AppState.completed'),true);assert.equal(a.run('letters.every(d=>AppState.stats[d.letter].mastery===3)'),true);assert.equal(a.run('AppState.characterState.ownedItems.length'),2);
+ assert.equal(answers,33);assert.equal(translationAnswers,6);assert.deepEqual(rewards,['reward_abc','reward_def']);assert.equal(a.run('AppState.completed'),true);assert.equal(a.run('letters.every(d=>AppState.stats[d.letter].mastery===3)'),true);assert.equal(a.run('AppState.characterState.ownedItems.length'),2);
  assert.equal(a.run("equipItem('jacket_racer')"),false);assert.equal(a.run("equipItem('accessory_bouquet')"),false);const resumed=createContext({saved:saved(a)});assert.equal(resumed.run('AppState.characterState.equipped.outfit'),'jacket_stars');assert.equal(resumed.run('AppState.characterState.equipped.hand_right'),'accessory_balloon');assert.equal(resumed.run('AppState.rewardFlow'),null);
 
  // Upgrade legacy v2 with both category options unlocked: retain only equipped.
@@ -55,16 +55,16 @@ function playMaze(a){a.run(`for(let round=0;round<DEF_LETTER_MAZE.rounds.length;
  assert.equal(development.run('JSON.stringify(AppState.characterState.ownedItems)'),JSON.stringify(['jacket_stars','accessory_balloon']));
  assert.equal(development.run('AppState.rewardFlow'),null);
  // Flow B through all real course handlers, then reload and verify locks.
- const b=createContext();b.run('toggleSound();begin()');let bAnswers=0;
- for(let i=0;i<160;i++){
+ const b=createContext();b.run('toggleSound();begin()');let bAnswers=0,bTranslationAnswers=0;
+ for(let i=0;i<220;i++){
   const c=JSON.parse(b.run('JSON.stringify(AppState.cursor)'));
   if(b.run('Boolean(AppState.rewardFlow)')){b.run('chooseReward(AppState.rewardFlow.id==="reward_abc"?"jacket_racer":"accessory_bouquet")');await b.tick(1000);b.run('continueReward()');continue;}
   if(c.phase==='results')break;
-  if(c.phase==='lesson'&&c.step<2)b.run('nextLessonStep()');
-  else if(c.phase==='lesson'||['mini','final'].includes(c.phase)){b.run('ensureQuestion();completeQuestion();go("course")');bAnswers++;}
+  if(c.phase==='lesson'&&b.run('currentLessonStep().kind')==='card')b.run('nextLessonStep()');
+  else if(c.phase==='lesson'||['mini','final'].includes(c.phase)){const type=b.run('ensureQuestion().type');b.run('completeQuestion();go("course")');if(type==='translationPicture')bTranslationAnswers++;else bAnswers++;}
   else if(c.phase==='letterReward')b.run('advanceAfterLetter()');else if(c.phase==='room')playRoom(b);else if(c.phase==='maze')playMaze(b);else if(c.phase==='miniIntro')b.run('startGame(false)');else if(c.phase==='miniResult')b.run('advanceAfterMini()');else if(c.phase==='finalIntro')b.run('startGame(true)');else throw Error(c.phase);
  }
- assert.equal(bAnswers,33);
+ assert.equal(bAnswers,33);assert.equal(bTranslationAnswers,6);
  const bReload=createContext({saved:saved(b)});
  assert.equal(bReload.run('AppState.characterState.equipped.outfit'),'jacket_racer');
  assert.equal(bReload.run('AppState.characterState.equipped.hand_right'),'accessory_bouquet');
@@ -79,8 +79,8 @@ function playMaze(a){a.run(`for(let round=0;round<DEF_LETTER_MAZE.rounds.length;
  const old=JSON.parse(a.store.get('alfie-abc-v1'));old.version=1;delete old.characterState;delete old.claimedRewards;delete old.completedBlocks;delete old.rewardFlow;old.completed=false;old.cursor={index:2,phase:'miniIntro',step:4};
  const noGift=createContext({saved:{'alfie-abc-v1':JSON.stringify(old)}});assert.equal(noGift.run('AppState.completedBlocks.length'),0);
  old.cursor={index:3,phase:'lesson',step:2};old.stats.D.correct=4;old.stats.D.mistakes=2;
- const migrated=createContext({saved:{'alfie-abc-v1':JSON.stringify(old)}});assert.equal(migrated.run('AppState.cursor.index'),3);assert.equal(migrated.run('AppState.cursor.step'),2);assert.equal(migrated.run('AppState.stats.D.correct'),4);assert.equal(migrated.run('AppState.stats.D.mistakes'),2);assert.equal(migrated.run('AppState.rewardFlow.id'),'reward_abc');
- migrated.run("chooseReward('jacket_racer')");await migrated.tick(1000);migrated.run('continueReward()');assert.equal(migrated.run('AppState.cursor.index'),3);assert.equal(migrated.run('AppState.cursor.step'),2);
+ const migrated=createContext({saved:{'alfie-abc-v1':JSON.stringify(old)}});assert.equal(migrated.run('AppState.cursor.index'),3);assert.equal(migrated.run('AppState.cursor.step'),4);assert.equal(migrated.run('AppState.stats.D.correct'),4);assert.equal(migrated.run('AppState.stats.D.mistakes'),2);assert.equal(migrated.run('AppState.rewardFlow.id'),'reward_abc');
+ migrated.run("chooseReward('jacket_racer')");await migrated.tick(1000);migrated.run('continueReward()');assert.equal(migrated.run('AppState.cursor.index'),3);assert.equal(migrated.run('AppState.cursor.step'),4);
  old.completed=true;old.cursor={index:5,phase:'results',step:4};const oldDone=createContext({saved:{'alfie-abc-v1':JSON.stringify(old)}});assert.equal(oldDone.run('AppState.completedBlocks.length'),2);assert.equal(oldDone.run('AppState.completed'),true);
  resumed.run('resetProgress()');assert.equal(resumed.run('AppState.soundEnabled'),false);assert.equal(resumed.run('AppState.claimedRewards.length'),0);assert.equal(resumed.run('AppState.characterState.ownedItems.length'),0);assert.equal(resumed.run("ITEM_SLOTS.every(slot=>AppState.characterState.equipped[slot]===null)"),true);
  const blocked=createContext({blocked:true});blocked.run('begin();nextLessonStep()');assert.equal(blocked.run('storageAvailable'),false);
@@ -88,10 +88,12 @@ function playMaze(a){a.run(`for(let round=0;round<DEF_LETTER_MAZE.rounds.length;
  a.run("AppState.reviews=[{letter:'E',due:AppState.questionSerial}]");assert.equal(a.run('getWeightedRandomLetter(letters).letter'),'E');
  for(let i=0;i<500;i++)assert.equal(a.run("(()=>{const q=createQuestion('find',letters[0],letters,true);return q.options.length===3&&new Set(q.options).size===3&&q.options.includes('A');})()"),true);
  for(let i=0;i<40;i++){a.run('startGame(true)');assert.equal(a.run('new Set(AppState.game.types).size'),5);}
- const clicks=createContext();clicks.run("toggleSound();begin();AppState.cursor.step=2;showScreen();var target={dataset:{answer:'A'},classList:{add(){},remove(){}}};checkAnswer(target);checkAnswer(target);");assert.equal(clicks.run('AppState.stats.A.correct'),1);assert.equal(clicks.run('AppState.cursor.step'),3);await clicks.tick(1100);assert.equal(clicks.run('answerLocked'),false);
- const midway=createContext({saved:saved(clicks)});assert.equal(midway.run('AppState.cursor.step'),3);
+ const clicks=createContext();clicks.run("toggleSound();begin();AppState.cursor.step=4;showScreen();var target={dataset:{answer:'A'},classList:{add(){},remove(){}}};checkAnswer(target);checkAnswer(target);");assert.equal(clicks.run('AppState.stats.A.correct'),1);assert.equal(clicks.run('AppState.cursor.step'),5);await clicks.tick(1100);assert.equal(clicks.run('answerLocked'),false);
+ const midway=createContext({saved:saved(clicks)});assert.equal(midway.run('AppState.cursor.step'),5);
  const audio=createContext();audio.run('begin()');await audio.tick(3000);assert.deepEqual(audio.played.map(x=>x.src),['./audio/03_new_letter.mp3','./audio/a_name.mp3','./audio/a_sound.mp3','./audio/apple.mp3']);assert.equal(audio.spoken.length,0);assert.ok(audio.played.slice(1).every((x,i)=>x.at-audio.played[i].at>=500));
- audio.run('AppState.cursor.step=2;showScreen()');await audio.tick(1000);assert.deepEqual(audio.played.slice(-2).map(x=>x.src),['./audio/06_find_letter.mp3','./audio/a_name.mp3']);const before=audio.played.length;
+ audio.run('AppState.cursor.step=2;showScreen()');await audio.tick(1000);assert.deepEqual(audio.played.slice(-2).map(x=>x.src),['./audio/apple.mp3','./audio/apple_ru.mp3']);let before=audio.played.length;
+ audio.run('repeatInstruction()');await audio.tick(1000);assert.deepEqual(audio.played.slice(before).map(x=>x.src),['./audio/apple.mp3','./audio/apple_ru.mp3']);
+ audio.run('AppState.cursor.step=4;showScreen()');await audio.tick(1000);assert.deepEqual(audio.played.slice(-2).map(x=>x.src),['./audio/06_find_letter.mp3','./audio/a_name.mp3']);before=audio.played.length;
  audio.run('repeatInstruction()');await audio.tick(1000);assert.deepEqual(audio.played.slice(before).map(x=>x.src),['./audio/06_find_letter.mp3','./audio/a_name.mp3']);
  audio.run('repeatInstruction();repeatInstruction();repeatInstruction();toggleSound()');await audio.tick(3000);const count=audio.played.length;audio.run('repeatInstruction()');await audio.tick(3000);assert.equal(audio.played.length,count);assert.equal(audio.stats().objects,1);assert.equal(audio.stats().maxActive,1);
  // Cancellation during a 500ms pause prevents the following stale letter.
@@ -104,5 +106,5 @@ function playMaze(a){a.run(`for(let round=0;round<DEF_LETTER_MAZE.rounds.length;
  imageFailure.run("document.querySelectorAll=selector=>selector==='img[data-character-asset]'?[brokenClothing]:[];wireMedia();wireMedia()");assert.equal(imageFailure.context.brokenClothing.hidden,true);assert.equal(imageFailure.warnings.length,1);
  // Parent access still uses a two-second hold.
  const hold=createContext();hold.run("startHold({type:'keydown',key:'Enter',repeat:false,preventDefault(){}})");await hold.tick(1999);assert.equal(hold.nodes.get('#modal-layer')?.innerHTML||'','');await hold.tick(1);assert.ok(hold.nodes.get('#modal-layer').innerHTML.includes('Для родителей'));
- console.log(JSON.stringify({passed:true,answers,miniQuestions:5,mazeRounds:3,finalQuestions:10,rewards,wardrobePersistence:true,lockedAlternatives:true,flowBAnswers:bAnswers,legacyBothUnlockedMigration:true,retiredHeadwearReplacement:true,doubleRewardTapGuard:true,pendingRewardResume:true,selectedRewardResume:true,oldProgressMigration:true,noPrematureGifts:true,noRepeatedGifts:true,resetAndMute:true,questionResume:true,doubleTapGuard:true,weightedReview:true,choiceTrials:500,finalCoverageTrials:40,audioSequenceAndPause:true,audioRepeat:true,audioCancellation:true,audioMute:true,reusedAudioObjects:audio.stats().objects,maxConcurrentAudio:audio.stats().maxActive,normalTTSCalls:audio.spoken.length,missingFileFallbackLanguages:true,autoplayDoesNotTriggerTTS:true,parentHold:true,brokenImageFallback:true},null,2));
+ console.log(JSON.stringify({passed:true,answers,translationAnswers,miniQuestions:5,mazeRounds:3,finalQuestions:10,rewards,wardrobePersistence:true,lockedAlternatives:true,flowBAnswers:bAnswers,flowBTranslationAnswers:bTranslationAnswers,legacyBothUnlockedMigration:true,retiredHeadwearReplacement:true,doubleRewardTapGuard:true,pendingRewardResume:true,selectedRewardResume:true,oldProgressMigration:true,noPrematureGifts:true,noRepeatedGifts:true,resetAndMute:true,questionResume:true,doubleTapGuard:true,weightedReview:true,choiceTrials:500,finalCoverageTrials:40,audioSequenceAndPause:true,audioRepeat:true,audioCancellation:true,audioMute:true,reusedAudioObjects:audio.stats().objects,maxConcurrentAudio:audio.stats().maxActive,normalTTSCalls:audio.spoken.length,missingFileFallbackLanguages:true,autoplayDoesNotTriggerTTS:true,parentHold:true,brokenImageFallback:true},null,2));
 })().catch(e=>{console.error(e);process.exitCode=1});

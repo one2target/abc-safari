@@ -56,7 +56,7 @@
 Интерфейс тренажёра — в `play/index.html`. Лендинг имеет собственные стили и скрипт в корневом `index.html`.
 
 - Каркас: `.topbar`, `#main`, `.footer`, `#modal-layer`, `#confetti`.
-- Экраны: `renderHome()`, `renderCourse()`, `renderWardrobe()`, `renderReward()`, `renderResults()`. Учебные экраны: `renderLearnLetter()`, `renderWordScreen()`, `questionBody()`, `renderInterlude()`.
+- Экраны: `renderHome()`, `renderCourse()`, `renderWardrobe()`, `renderReward()`, `renderResults()`. Учебные экраны: `renderLearnLetter()`, `renderWordScreen()`, `renderWordMeaningCard()`, `renderTranslationQuiz()`, `questionBody()`, `renderInterlude()`.
 - Навигация: `view`, `lastView`, `go()`, `showScreen()`, `openProgress()`. Маршрутизация переключает содержимое `#main`; URL-роутера нет.
 - Действия: объект `actions` и делегированный обработчик `document` для кнопок с `data-action` / `data-answer`; кнопки верхней панели имеют отдельные обработчики.
 - Кнопки и карточки: `.primary`, `.secondary`, `.icon-button`, `.choice`, `.outfit-option`; карточки одежды строит `outfitOptions()`.
@@ -67,13 +67,14 @@
 
 Всё в `play/index.html`:
 
-- `letters` — A–F, слова, звуки, emoji, цвета, отвлекающие буквы. Отдельного хранилища готовых заданий нет.
-- `CORE_TYPES` — `find`, `letterPicture`, `pictureLetter`; `MINI_TYPES` добавляет `wordPicture`, `FINAL_TYPES` — `lowercase`.
+- `letters` — A–F, слова, русские значения, звуки, emoji, цвета, отвлекающие буквы и привязки английского/русского аудио. Отдельного хранилища готовых заданий нет.
+- `lessonSteps()` строит урок из данных буквы: знакомство, английское слово, карточка значения, `translationPicture`, затем прежние три упражнения. Если visual, английская или русская запись отсутствует, два шага значения не добавляются.
+- `CORE_TYPES` — `find`, `letterPicture`, `pictureLetter`; `TRANSLATION_TYPE` — отдельная проверка значения без влияния на mastery; `MINI_TYPES` добавляет `wordPicture`, `FINAL_TYPES` — `lowercase`.
 - `GROUP_SIZE`, `MINI_LENGTH`, `FINAL_LENGTH`, `groups` — группы по три буквы, мини-игры по пять вопросов, финал из десяти.
 - `startGame()` задаёт последовательность типов; `gamePool()` выбирает набор букв; `getWeightedRandomLetter()` учитывает ошибки и очередь повторений.
 - `ensureQuestion()` восстанавливает подходящий вопрос либо вызывает `createQuestion()`; `validQuestion()` проверяет структуру сохранённого вопроса.
 - `questionPrompt()` / `questionBody()` выводят вопрос и варианты.
-- `checkAnswer()` сравнивает `button.dataset.answer` с `q.letter`, запускает реакцию и блокирует повторное нажатие. Ошибка вызывает `registerMistake()` и повторную попытку; успех — `completeQuestion()` / `registerCorrectAnswer()`.
+- `checkAnswer()` сравнивает `button.dataset.answer` с `q.letter`, запускает реакцию и блокирует повторное нажатие. В прежних упражнениях ошибка вызывает `registerMistake()`, а успех — `registerCorrectAnswer()`; meaning quiz даёт мягкий retry без статистического штрафа, а при успехе проигрывает русское слово и переходит к прежним упражнениям.
 - Переходы: `nextLessonStep()`, `advanceAfterLetter()`, `advanceAfterMini()`, `completeQuestion()`, затем `go()` / `showScreen()`.
 
 ## 5. Progress and state
@@ -84,7 +85,7 @@
 - `stats` по каждой букве: `attempts`, `correct`, `mistakes`, `mastery`, `skills`, `practiceDebt`. Итоги для родителей вычисляет `renderParentView()`.
 - `game`, `question`, `reviews`, `questionSerial` сохраняют позицию игры, вопрос и повторения; `started`, `completed`, `soundEnabled` — общие флаги.
 - Награды: `characterState.ownedItems`, стандартные слоты `characterState.equipped`, `completedBlocks`, `claimedRewards`, `rewardFlow`.
-- `localStorage`: `alfie-abc-v1`; при `?demo=1` — отдельный `alfie-abc-demo-v1`. Общая версия состояния — 2; загрузчик принимает версии 1 и 2. Инвентарь отдельно мигрирует `migrateRewards()` с `REWARD_STATE_VERSION = 3`.
+- `localStorage`: `alfie-abc-v1`; при `?demo=1` — отдельный `alfie-abc-demo-v1`. Общая версия состояния — 3; загрузчик принимает версии 1–3. Для сохранений v1/v2 прежние lesson steps 2–4 сдвигаются на два места, сохраняя точное упражнение. Инвентарь отдельно мигрирует `migrateRewards()` с `REWARD_STATE_VERSION = 3`.
 - При невозможности записи состояние остаётся в памяти вкладки, показывается `#storage-notice`. Сохранение также вызывается при скрытии страницы и `pagehide`. Сброс сохраняет настройку звука.
 - `view`, блокировки, таймеры и история выбора стикеров — временные переменные вне сохранения.
 
@@ -124,7 +125,7 @@
 ## 9. Assets
 
 - `play/images/` — сцены, персонаж, одежда, аксессуары и изображения карточек; `play/images/stickers/` — реакции.
-- `play/audio/` — 60 MP3: нумерованные русские реплики, английские названия/звуки букв, слова и сочетания «буква — слово».
+- `play/audio/` — 66 MP3: прежние реплики плюс русские записи значений `apple_ru.mp3` … `fish_ru.mp3`.
 - `play/assets.js` — каталог активных изображений и аудио. Стикеры перечисляются отдельно в `play/index.html`.
 - Учебные буквы выводятся текстом, картинки слов сейчас — emoji (`letters[].image === null`, `media()`). Иконки управления — встроенные SVG в `icons` и emoji; иконки установки — корневые `play/icon-*.png`.
 - Отдельной фоновой музыки и отдельного каталога изображений букв нет.
@@ -133,13 +134,13 @@
 
 `play/audio-manager.js`: `createAudioManager()` создаёт один переиспользуемый `Audio`; `unlock()` подготавливает его по жесту пользователя, `play()` / `playSequence()` воспроизводят очередь, `stop()` отменяет её, `setEnabled()` управляет звуком. `setInstruction()` / `repeatLastInstruction()` запоминают и повторяют инструкцию. При отсутствии/ошибке файла используется `speechSynthesis`, если у реплики есть текст.
 
-`play/index.html`: `announceScreen()` озвучивает экран/задание, `checkAnswer()` — ошибку или похвалу, `toggleSound()` — настройку звука, действие `repeat` — повтор. `AUDIO_TEXT`, `ru()`, `enName()`, `enSound()`, `enWord()` задают тексты и ключи файлов из `MEDIA_ASSETS.audio`. Между репликами по умолчанию 500 мс; смена экрана останавливает старую очередь.
+`play/index.html`: `announceScreen()` озвучивает экран/задание, `checkAnswer()` — ошибку или похвалу, `toggleSound()` — настройку звука, действие `repeat` — повтор. `AUDIO_TEXT`, `ru()`, `enName()`, `enSound()`, `enWord()`, `translatedWord()` задают ключи файлов из `MEDIA_ASSETS.audio`. Карточка значения проигрывает English → пауза 500 мс → Russian; meaning quiz при входе произносит английское слово, а при правильном выборе — только готовую русскую запись. У translation item намеренно нет TTS-текста: отсутствующий русский файл не подменяется синтезом. Смена экрана останавливает старую очередь.
 
 ## 11. Important functions and modules
 
 | Function / Module | File | Purpose |
 | --- | --- | --- |
-| `letters`, `CORE_TYPES`, `rewardConfig` | `play/index.html` | Данные курса, типы вопросов и условия подарков. |
+| `letters`, `lessonSteps()`, `CORE_TYPES`, `rewardConfig` | `play/index.html` | Данные курса, последовательность урока, типы вопросов и условия подарков. |
 | `ITEM_SLOTS`, `ITEMS`, `itemCatalog` | `play/index.html` | Слоты и единый каталог всех предметов. |
 | `ensureQuestion()`, `createQuestion()` | `play/index.html` | Восстановление/генерация текущего задания. |
 | `checkAnswer()`, `completeQuestion()` | `play/index.html` | Ответ, обратная связь, статистика и следующий этап. |
@@ -166,6 +167,7 @@
 
 - Главный экран → `play/index.html`: `renderHome()`, `.home`, `.hero-scene`.
 - Упражнение/учебный материал → `play/index.html`: `letters`, типы вопросов, `ensureQuestion()`, `questionBody()`.
+- Карточка значения / meaning quiz → `play/index.html`: `lessonSteps()`, `renderWordMeaningCard()`, `renderTranslationQuiz()`, `translatedWord()`.
 - Проверка ответа → `play/index.html`: `checkAnswer()`, `registerMistake()`, `registerCorrectAnswer()`, `completeQuestion()`.
 - Inventory-совместимый Marius → `play/index.html`: `renderCharacter()`, `buddy()`, `CHARACTER_LAYER_ORDER`, `.character-stage`.
 - Сюжетная реакция Marius → `play/index.html`: `showAnswerFeedback()`, `pickSuccessSticker()`, `renderCompletionSticker()`; `play/images/stickers/`.
@@ -215,6 +217,7 @@ Mobile CSS → play/index.html: <style> / @media / .character-actor
 Audio → play/audio-manager.js; play/index.html: announceScreen; play/assets.js
 Find-object game → play/hidden-object-game.js; play/find-object-scenes.js; play/index.html: FIND_OBJECT_COURSE
 Letter maze → play/letter-maze-game.js; play/letter-maze-scenes.js; play/letter-maze-game.css; play/index.html: LETTER_MAZE_COURSE
+Word meaning → play/index.html: letters / lessonSteps / renderWordMeaningCard / renderTranslationQuiz; play/audio/*_ru.mp3
 Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 ```
 
@@ -269,3 +272,14 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 - `play/letter-maze-game.css` сохраняет полное изображение через исходный aspect ratio, использует компактный maze mode без footer и рассчитывает ширину от `svh`. Отдельной горизонтальной сцены или mobile/desktop координат нет.
 - `continueLetterMazeGame()` переводит курс в `miniResult`, вызывает прежний `finishBlock()` и тем самым открывает неизменённую награду второго блока.
 - `tests/letter-maze-engine.test.cjs` проверяет asset, разреженные буквы, пустые ходы, расширенный детерминированный hit-test, неверную букву, аудио D/E/F, mute, D → E → F, restore и completion; course regression подтверждает переход к `reward_def` и сохранение общего прогресса.
+
+## 18. Значение слов A–F
+
+В каждом доступном уроке после прежнего English word intro добавляются два шага: карточка значения и meaning quiz. На карточке остаются существующая картинка/emoji и английское слово без видимого русского перевода; звук идёт `word.mp3` → 500 мс → `word_ru.mp3`. В quiz английское слово сопровождается тремя перемешанными visuals: правильным и двумя словами курса.
+
+- Данные находятся в `letters[]`: `translation` и `translationAudio` дополняют прежние `word`, `image`/`emoji` и `wordAudio`. `translation` не выводится в интерфейсе, а хранит смысловую связь и используется тестами/будущим контентом.
+- `lessonSteps()` условно добавляет `wordMeaning` и `translationPicture`; renderer и переходы не ветвятся вручную по A–F.
+- Пустой/ошибочный русский audio asset не вызывает speech synthesis, чтобы ребёнок не слышал системный голос вместо подготовленной записи.
+- Неверная картинка не меняет прогресс, статистику, lives или mastery; правильная проигрывает соответствующий `*_ru.mp3` и возвращает урок к прежним трём упражнениям. Mute обрабатывается общим AudioManager.
+- Для G/H/I нужно добавить визуал, English word audio, русский файл `<word>_ru.mp3`, зарегистрировать его в `MEDIA_ASSETS.audio` и заполнить `translation`/`translationAudio`. Остальной UI, shuffle и переходы переиспользуются автоматически.
+- `tests/translation-lessons.test.cjs` проверяет все шесть файлов и привязок, English → Russian, repeat, отсутствие русского текста, три shuffled visuals, retry без прогресса, correct Russian audio, mute, отсутствие TTS и миграцию v2.

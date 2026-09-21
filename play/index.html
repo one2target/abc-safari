@@ -523,6 +523,19 @@ main {
   font-size:1.12em;
   animation:pop .45s both;
 }
+.translation-word {
+  color:var(--accent);
+  font-size:clamp(40px,8vw,58px);
+  font-weight:850;
+  letter-spacing:.04em;
+  line-height:1.08;
+  margin:4px 0 20px;
+  text-transform:uppercase;
+}
+.word-meaning-card .word-art {margin:4px 0 0;}
+.translation-quiz .translation-word {margin:12px 0 16px;}
+.translation-quiz .choices {margin:8px 0 14px;}
+.translation-quiz .choice {min-width:0;touch-action:manipulation;}
 .question-cue {
   min-height:142px;
   display:flex;
@@ -1142,6 +1155,9 @@ main {
   .word-label {
     font-size:42px;
   }
+  .translation-word {font-size:42px;margin-bottom:16px;}
+  .word-meaning-card .word-art {font-size:108px;}
+  .translation-quiz .choice {height:105px;}
   .question-cue {
     font-size:100px;
     min-height:135px;
@@ -1239,6 +1255,8 @@ main {
   .lesson-heading {
     font-size:23px;
   }
+  .translation-word {font-size:34px;}
+  .word-meaning-card .word-art {font-size:96px;}
 }
 @media(max-height:760px) and (max-width:650px) {
   .home {
@@ -1301,6 +1319,7 @@ main {
   .letter-pair { font-size:100px; margin:8px 0; }
   .word-art { font-size:84px; }
   .word-label { font-size:36px; margin-bottom:12px; }
+  .translation-word {font-size:34px;margin-bottom:10px;}
   .interlude { min-height:0; padding:20px 0; }
   .interlude .gameplay-marius-interlude { width:72px; }
 }
@@ -1430,12 +1449,12 @@ const DEBUG = false;
 const DEMO = new URLSearchParams(location.search).get('demo') === '1';
 const STORAGE_KEY = DEMO ? 'alfie-abc-demo-v1' : 'alfie-abc-v1';
 const letters = [
- {letter:'A',lowercase:'a',sound:'æ',name:'ay',word:'Apple',emoji:'🍎',color:'#c85b33',tint:'#fff0e4',image:null,letterAudio:null,soundAudio:null,wordAudio:null,distractors:['M','S']},
- {letter:'B',lowercase:'b',sound:'b',name:'bee',word:'Ball',emoji:'⚽',color:'#426ac1',tint:'#e9efff',image:null,letterAudio:null,soundAudio:null,wordAudio:null,distractors:['P','T']},
- {letter:'C',lowercase:'c',sound:'k',name:'see',word:'Cat',emoji:'🐱',color:'#92631a',tint:'#fff1d1',image:null,letterAudio:null,soundAudio:null,wordAudio:null,distractors:['G','O']},
- {letter:'D',lowercase:'d',sound:'d',name:'dee',word:'Dog',emoji:'🐶',color:'#7961ad',tint:'#f0eafa',image:null,letterAudio:null,soundAudio:null,wordAudio:null,distractors:['B','P']},
- {letter:'E',lowercase:'e',sound:'ɛ',name:'ee',word:'Egg',emoji:'🥚',color:'#287b59',tint:'#e4f5e9',image:null,letterAudio:null,soundAudio:null,wordAudio:null,distractors:['F','L']},
- {letter:'F',lowercase:'f',sound:'f',name:'ef',word:'Fish',emoji:'🐟',color:'#217e91',tint:'#e2f4f8',image:null,letterAudio:null,soundAudio:null,wordAudio:null,distractors:['T','E']}
+ {letter:'A',lowercase:'a',sound:'æ',name:'ay',word:'Apple',translation:'Яблоко',emoji:'🍎',color:'#c85b33',tint:'#fff0e4',image:null,letterAudio:null,soundAudio:null,wordAudio:null,translationAudio:null,distractors:['M','S']},
+ {letter:'B',lowercase:'b',sound:'b',name:'bee',word:'Ball',translation:'Мяч',emoji:'⚽',color:'#426ac1',tint:'#e9efff',image:null,letterAudio:null,soundAudio:null,wordAudio:null,translationAudio:null,distractors:['P','T']},
+ {letter:'C',lowercase:'c',sound:'k',name:'see',word:'Cat',translation:'Кошка',emoji:'🐱',color:'#92631a',tint:'#fff1d1',image:null,letterAudio:null,soundAudio:null,wordAudio:null,translationAudio:null,distractors:['G','O']},
+ {letter:'D',lowercase:'d',sound:'d',name:'dee',word:'Dog',translation:'Собака',emoji:'🐶',color:'#7961ad',tint:'#f0eafa',image:null,letterAudio:null,soundAudio:null,wordAudio:null,translationAudio:null,distractors:['B','P']},
+ {letter:'E',lowercase:'e',sound:'ɛ',name:'ee',word:'Egg',translation:'Яйцо',emoji:'🥚',color:'#287b59',tint:'#e4f5e9',image:null,letterAudio:null,soundAudio:null,wordAudio:null,translationAudio:null,distractors:['F','L']},
+ {letter:'F',lowercase:'f',sound:'f',name:'ef',word:'Fish',translation:'Рыба',emoji:'🐟',color:'#217e91',tint:'#e2f4f8',image:null,letterAudio:null,soundAudio:null,wordAudio:null,translationAudio:null,distractors:['T','E']}
 ];
 const AUDIO_TEXT = {
  welcome:'Привет! Давай учить английские буквы!',start:'Начнём!',new_letter:'Познакомимся с новой буквой.',look_letter:'Посмотри на букву.',listen:'Послушай внимательно.',find_letter:'Найди эту букву.',find_small_letter:'Найди маленькую букву.',find_picture:'Найди правильную картинку.',which_starts:'Какое слово начинается с этой буквы?',which_letter:'С какой буквы начинается это слово?',choose_letter:'Выбери правильную букву.',choose_picture:'Выбери правильную картинку.',listen_word:'Послушай слово.',repeat:'Послушай ещё раз.',try_again:'Попробуй ещё раз.',almost:'Почти получилось!',correct:'Правильно!',great:'Отлично!',well_done:'Молодец!',super:'Супер!',amazing:'Замечательно!',next:'Дальше!',level_complete:'Уровень пройден!',reward:'Ты получил подарок для жирафика!',choose_reward:'Выбери подарок.',new_clothes:'У жирафика новая одежда!',new_item:'У жирафика новый подарок!',dress_giraffe:'Давай оденем жирафика!',challenge:'Поиграем с буквами!',final_challenge:'Последнее испытание!',three_correct:'Три правильных ответа!',all_done:'Ты всё прошёл!',come_again:'Приходи играть ещё!',repeat_letters:'Повторим буквы.',need_practice:'Давай потренируемся ещё.',giraffe_happy:'Жирафик очень рад!'
@@ -1444,7 +1463,10 @@ const ru=key=>({key,text:AUDIO_TEXT[key]||'',lang:'ru-RU'});
 const enName=d=>({key:d.lowercase+'_name',text:d.name||d.letter,lang:'en-US'});
 const enSound=d=>({key:d.lowercase+'_sound',text:`Listen to the first sound in ${d.word}. ${d.word}.`,lang:'en-US'});
 const enWord=d=>({key:d.word.toLowerCase(),text:d.word,lang:'en-US'});
-for(const d of letters){d.letterAudio=MEDIA_ASSETS.audio[d.lowercase+'_name']?.src||null;d.soundAudio=MEDIA_ASSETS.audio[d.lowercase+'_sound']?.src||null;d.wordAudio=MEDIA_ASSETS.audio[d.word.toLowerCase()]?.src||null;}
+// Translation items intentionally omit fallback text: prepared *_ru.mp3 files
+// are the only voice source for meaning cards and meaning quiz success.
+const translatedWord=d=>({key:d.word.toLowerCase()+'_ru'});
+for(const d of letters){const wordKey=d.word.toLowerCase();d.letterAudio=MEDIA_ASSETS.audio[d.lowercase+'_name']?.src||null;d.soundAudio=MEDIA_ASSETS.audio[d.lowercase+'_sound']?.src||null;d.wordAudio=MEDIA_ASSETS.audio[wordKey]?.src||null;d.translationAudio=MEDIA_ASSETS.audio[wordKey+'_ru']?.src||null;}
 /* INVENTORY — course rewards reference item IDs; rendering and ownership live here.
    Every asset uses the same 2:3 stage and shared actor coordinate system. */
 const REWARD_STATE_VERSION=3;
@@ -1479,8 +1501,19 @@ const GROUP_SIZE=3, MINI_LENGTH=5, FINAL_LENGTH=10;
 const CORE_TYPES=['find','letterPicture','pictureLetter'];
 const MINI_TYPES=[...CORE_TYPES,'wordPicture'];
 const FINAL_TYPES=[...MINI_TYPES,'lowercase'];
+const TRANSLATION_TYPE='translationPicture';
+const ALL_QUESTION_TYPES=[...FINAL_TYPES,TRANSLATION_TYPE];
+const hasTranslationLesson=d=>Boolean((d.image||d.emoji)&&d.wordAudio&&d.translationAudio);
+const lessonSteps=d=>[
+ {id:'letter',kind:'card'},
+ {id:'word',kind:'card'},
+ ...(hasTranslationLesson(d)?[{id:'wordMeaning',kind:'card'},{id:TRANSLATION_TYPE,kind:'question',type:TRANSLATION_TYPE}]:[]),
+ ...CORE_TYPES.map(type=>({id:type,kind:'question',type}))
+];
 const groups=Array.from({length:Math.ceil(letters.length/GROUP_SIZE)},(_,i)=>letters.slice(i*GROUP_SIZE,(i+1)*GROUP_SIZE));
 const byLetter=new Map(letters.map(item=>[item.letter,item]));
+const currentLessonStep=(cursor=AppState?.cursor)=>cursor?.phase==='lesson'?lessonSteps(letters[cursor.index])[cursor.step]||null:null;
+const MAX_LESSON_STEPS=Math.max(...letters.map(d=>lessonSteps(d).length));
 const $=selector=>document.querySelector(selector);
 const escapeHTML=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const log=(...args)=>{if(DEBUG)console.log('[Alfie]',...args);};
@@ -1501,13 +1534,13 @@ const LETTER_MAZE_COURSE_BY_GAME=new Map(Object.values(LETTER_MAZE_COURSE).map(e
 const LETTER_MAZE_CONFIGS=[...new Set(Object.values(LETTER_MAZE_COURSE).map(entry=>entry.scene))];
 const blankLetterMazeGames=()=>Object.fromEntries(LETTER_MAZE_CONFIGS.map(config=>[config.id,LetterMazeGame.initialState(config)]));
 /* STATE & STORAGE — keep the v1 key so existing progress survives. */
-const initialState=()=>({version:2,rewardStateVersion:REWARD_STATE_VERSION,characterState:blankCharacter(),findObjectGames:blankFindObjectGames(),mazeGames:blankLetterMazeGames(),completedBlocks:[],claimedRewards:[],rewardFlow:null,started:false,completed:false,soundEnabled:true,cursor:{phase:'lesson',index:0,step:0},stats:Object.fromEntries(letters.map(d=>[d.letter,blankStats()])),game:null,question:null,reviews:[],questionSerial:0});
+const initialState=()=>({version:3,rewardStateVersion:REWARD_STATE_VERSION,characterState:blankCharacter(),findObjectGames:blankFindObjectGames(),mazeGames:blankLetterMazeGames(),completedBlocks:[],claimedRewards:[],rewardFlow:null,started:false,completed:false,soundEnabled:true,cursor:{phase:'lesson',index:0,step:0},stats:Object.fromEntries(letters.map(d=>[d.letter,blankStats()])),game:null,question:null,reviews:[],questionSerial:0});
 let storageAvailable=true;
 function loadProgress(){
  const fresh=initialState();
  try{
   const raw=localStorage.getItem(STORAGE_KEY);if(!raw)return fresh;
-  const saved=JSON.parse(raw);if(![1,2].includes(saved.version))return fresh;
+  const saved=JSON.parse(raw);if(![1,2,3].includes(saved.version))return fresh;
   fresh.soundEnabled=saved.soundEnabled!==false;
   fresh.started=Boolean(saved.started);fresh.completed=Boolean(saved.completed);
   for(const d of letters){const s=saved.stats?.[d.letter];if(!s)continue;const t=fresh.stats[d.letter];
@@ -1517,7 +1550,13 @@ function loadProgress(){
   }
   const c=saved.cursor;
   const phases=['lesson','letterReward',...Object.keys(FIND_OBJECT_COURSE),...Object.keys(LETTER_MAZE_COURSE),'miniIntro','mini','miniResult','finalIntro','final','results'];
-  if(c&&phases.includes(c.phase)&&Number.isInteger(c.index)&&c.index>=0&&c.index<letters.length&&Number.isInteger(c.step)&&c.step>=0&&c.step<5)fresh.cursor=c;
+  if(c&&phases.includes(c.phase)&&Number.isInteger(c.index)&&c.index>=0&&c.index<letters.length&&Number.isInteger(c.step)&&c.step>=0){
+   // State v1/v2 had five lesson steps. Preserve the exact old exercise by
+   // moving its index past the two newly inserted meaning steps.
+   const legacyOffset=saved.version<3&&c.phase==='lesson'&&c.step>=2&&hasTranslationLesson(letters[c.index])?2:0;
+   const step=c.step+legacyOffset,limit=c.phase==='lesson'?lessonSteps(letters[c.index]).length:MAX_LESSON_STEPS;
+   if(step<limit)fresh.cursor={...c,step};
+  }
   for(const config of FIND_OBJECT_CONFIGS){
    const legacy=config.id===ABC_FIND_OBJECT_GAME.id?saved.roomABC:undefined;
    fresh.findObjectGames[config.id]=HiddenObjectGame.restore(config,saved.findObjectGames?.[config.id]??legacy);
@@ -1567,7 +1606,7 @@ function unequipItem(id,state=AppState,persist){
  if(persist===true||(persist===undefined&&state===AppState))saveProgress();
  log('Unequipped',id);return true;
 }
-function validQuestion(q){return byLetter.has(q.letter)&&FINAL_TYPES.includes(q.type)&&Array.isArray(q.options)&&q.options.length>=1&&q.options.length<=3&&new Set(q.options).size===q.options.length&&q.options.includes(q.letter)&&q.options.every(x=>typeof x==='string'&&x.length<=2&&(q.type==='find'||byLetter.has(x)));}
+function validQuestion(q){return byLetter.has(q.letter)&&ALL_QUESTION_TYPES.includes(q.type)&&Array.isArray(q.options)&&q.options.length>=1&&q.options.length<=3&&new Set(q.options).size===q.options.length&&q.options.includes(q.letter)&&q.options.every(x=>typeof x==='string'&&x.length<=2&&(q.type==='find'||byLetter.has(x)));}
 /* Migration uses course position, not mastery alone: a completed mini challenge
    is required. A pending gift never replaces the saved lesson/question. */
 function migrateRewards(state,saved){
@@ -1658,7 +1697,8 @@ function startGame(final=false){const types=final?FINAL_TYPES:MINI_TYPES,count=f
  AppState.game={index:0,types:bag.slice(0,count),recent:[]};AppState.cursor.phase=final?'final':'mini';AppState.question=null;go('course');}
 function ensureQuestion(){
  const c=AppState.cursor;
- const type=c.phase==='lesson'?CORE_TYPES[c.step-2]:AppState.game.types[AppState.game.index];
+ const type=c.phase==='lesson'?currentLessonStep(c)?.type:AppState.game.types[AppState.game.index];
+ if(!type)return null;
  const pool=c.phase==='lesson'?letters:gamePool();
  const saved=AppState.question;
  const fits=saved&&validQuestion(saved)&&saved.type===type&&(c.phase==='lesson'?saved.letter===letters[c.index].letter:pool.some(d=>d.letter===saved.letter)&&saved.options.every(l=>pool.some(d=>d.letter===l)));
@@ -1734,11 +1774,13 @@ function continueReward(){if(!rewardReady||!AppState.rewardFlow?.selected)return
 
 /* SCREENS — existing lessons plus character and gift views. */
 function renderHome(){return `<section class="screen"><div class="home"><div class="home-copy"><p class="eyebrow">A little adventure in English</p><h1>ABC<br><em>Safari</em></h1><p class="subline">Учим буквы вместе с жирафиком</p><div class="home-actions"><button class="primary" data-action="start">${AppState.started?'CONTINUE':'START'} ${icons.arrow}</button>${AppState.started?'<button class="text-button" data-action="reset">START OVER</button>':''}</div></div><div class="hero-scene">${renderCharacter("home")}</div></div>${journeyStrip()}</section>`;}
-function lessonTop(){const c=AppState.cursor;return `<div class="lesson-top"><span class="lesson-label">УЧИМ ${escapeHTML(letters[c.index].letter)}</span><div class="step-track" role="progressbar" aria-label="Lesson steps" aria-valuemin="0" aria-valuemax="5" aria-valuenow="${c.step+1}">${Array.from({length:5},(_,i)=>`<span class="${i<=c.step?'done':''}"></span>`).join('')}</div></div>`;}
+function lessonTop(){const c=AppState.cursor,steps=lessonSteps(letters[c.index]);return `<div class="lesson-top"><span class="lesson-label">УЧИМ ${escapeHTML(letters[c.index].letter)}</span><div class="step-track" role="progressbar" aria-label="Lesson steps" aria-valuemin="0" aria-valuemax="${steps.length}" aria-valuenow="${c.step+1}">${steps.map((_,i)=>`<span class="${i<=c.step?'done':''}"></span>`).join('')}</div></div>`;}
 function panelStyle(d){return `style="--accent:${d.color||'#17664c'};--tint:${d.tint||'#dff4e7'}"`;}
 function renderLearnLetter(){const d=letters[AppState.cursor.index];return `${lessonTop()}<section class="lesson-panel" ${panelStyle(d)}><div class="alfie-line">${buddy()}<span>Знакомься: ${escapeHTML(d.letter)}</span></div><h1 class="letter-pair" id="audio-focus" tabindex="-1" aria-label="${d.letter}, lowercase ${d.lowercase}">${escapeHTML(d.letter)}<span>${escapeHTML(d.lowercase)}</span></h1><p class="sound-label">Звук /${escapeHTML(d.sound)}/</p><button class="repeat" data-action="repeat" aria-label="Hear the letter name and sound">${icons.speaker} Послушать</button></section><div class="lesson-actions"><button class="primary" data-action="next">LET'S GO ${icons.arrow}</button></div>`;}
-function renderWordScreen(){const d=letters[AppState.cursor.index];return `${lessonTop()}<section class="lesson-panel" ${panelStyle(d)}><div class="alfie-line">${buddy()}<span>${escapeHTML(d.letter)} — как в слове…</span></div><div class="word-art" id="audio-focus">${media(d,'picture')}</div><h1 class="word-label" tabindex="-1"><strong>${escapeHTML(d.word[0])}</strong>${escapeHTML(d.word.slice(1))}</h1><button class="repeat" data-action="repeat" aria-label="Hear ${d.letter}, ${d.word}">${icons.speaker} Послушать</button></section><div class="lesson-actions"><button class="primary" data-action="next">LET'S PLAY ${icons.arrow}</button></div>`;}
-function questionPrompt(q){const d=byLetter.get(q.letter);return {find:`Найди букву ${d.letter}`,letterPicture:`Что начинается с ${d.letter}?`,pictureLetter:`С какой буквы начинается ${d.word}?`,wordPicture:`Найди ${d.word}`,lowercase:`Найди маленькую ${d.letter}`}[q.type];}
+function renderWordScreen(){const d=letters[AppState.cursor.index];return `${lessonTop()}<section class="lesson-panel" ${panelStyle(d)}><div class="alfie-line">${buddy()}<span>${escapeHTML(d.letter)} — как в слове…</span></div><div class="word-art" id="audio-focus">${media(d,'picture')}</div><h1 class="word-label" tabindex="-1"><strong>${escapeHTML(d.word[0])}</strong>${escapeHTML(d.word.slice(1))}</h1><button class="repeat" data-action="repeat" aria-label="Hear ${d.letter}, ${d.word}">${icons.speaker} Послушать</button></section><div class="lesson-actions"><button class="primary" data-action="next">NEXT ${icons.arrow}</button></div>`;}
+function renderWordMeaningCard(){const d=letters[AppState.cursor.index];return `${lessonTop()}<section class="lesson-panel word-meaning-card" data-word-meaning ${panelStyle(d)}><div class="alfie-line">${buddy()}<span>Слушай и запоминай</span></div><div class="word-art translation-art" id="audio-focus">${media(d,'picture')}</div><h1 class="translation-word" tabindex="-1">${escapeHTML(d.word.toUpperCase())}</h1><button class="repeat" data-action="repeat" aria-label="Hear ${escapeHTML(d.word)} and its meaning">${icons.speaker} Послушать</button></section><div class="lesson-actions"><button class="primary" data-action="next">LET'S PLAY ${icons.arrow}</button></div>`;}
+function renderTranslationQuiz(q){const d=byLetter.get(q.letter);return `<section class="lesson-panel translation-quiz" data-translation-quiz ${panelStyle(d)}><h1 class="translation-word" id="audio-focus" tabindex="-1">${escapeHTML(d.word.toUpperCase())}</h1><p class="sound-label">Выбери картинку</p><div class="choices" role="group" aria-label="Choose the picture for ${escapeHTML(d.word)}">${q.options.map(letter=>{const option=byLetter.get(letter);return `<button class="choice translation-choice" data-answer="${escapeHTML(letter)}" aria-label="${escapeHTML(option.word)}">${media(option,'picture')}</button>`;}).join('')}</div><div class="feedback" id="feedback" role="status" aria-live="polite"></div><button class="repeat question-repeat" data-action="repeat" aria-label="Hear ${escapeHTML(d.word)} again">${icons.speaker} Послушать ещё</button></section>`;}
+function questionPrompt(q){const d=byLetter.get(q.letter);return {find:`Найди букву ${d.letter}`,letterPicture:`Что начинается с ${d.letter}?`,pictureLetter:`С какой буквы начинается ${d.word}?`,wordPicture:`Найди ${d.word}`,lowercase:`Найди маленькую ${d.letter}`,translationPicture:d.word.toUpperCase()}[q.type];}
 function questionBody(q){const d=byLetter.get(q.letter),pictures=['letterPicture','wordPicture'].includes(q.type);
  let cue=q.type==='pictureLetter'?media(d,'picture'):q.type==='letterPicture'?escapeHTML(d.letter):q.type==='lowercase'?`${escapeHTML(d.letter)}<span class="arrow" aria-hidden="true">→</span><span aria-hidden="true">?</span>`:q.type==='wordPicture'?icons.speaker:'?';
  return `<section class="lesson-panel" ${panelStyle(d)}><h1 class="lesson-heading" tabindex="-1">${escapeHTML(questionPrompt(q))}</h1><div class="question-cue ${q.type==='find'?'small-cue':''}" aria-hidden="true">${cue}</div><div class="choices" role="group" aria-label="Choose an answer">${q.options.map(l=>{const option=byLetter.get(l),label=pictures?option.word:q.type==='lowercase'?option.lowercase:l;return `<button class="choice" data-answer="${escapeHTML(l)}" aria-label="${escapeHTML(label)}">${pictures?media(option,'picture'):escapeHTML(label)}</button>`;}).join('')}</div><div class="feedback" id="feedback" role="status" aria-live="polite"></div><button class="repeat question-repeat" data-action="repeat" aria-label="Repeat the question">${icons.speaker} Послушать ещё</button></section>`;
@@ -1883,7 +1925,7 @@ function continueLetterMazeGame(gameId){
  AppState.cursor.phase=entry.nextPhase;AppState.game=null;AppState.question=null;finishBlock();go('course');
 }
 function renderResults(){return `<section class="interlude"><p class="eyebrow">Все задания пройдены</p><h1>У тебя получилось!</h1><p>Ты выучил буквы ${escapeHTML(letters[0].letter)}–${escapeHTML(letters.at(-1).letter)}!</p>${renderCharacter()}<div class="stars" aria-label="${letters.length} звёзд">${'★'.repeat(Math.min(letters.length,6))}</div><button class="primary" data-action="replay">Играть ещё ${icons.arrow}</button><button class="text-button" data-action="progress">👕 Жирафик</button></section>`;}
-function renderCourse(){const c=AppState.cursor;let content;if(c.phase==='lesson'){if(c.step===0)content=renderLearnLetter();else if(c.step===1)content=renderWordScreen();else{const q=ensureQuestion();content=lessonTop()+({find:renderFindLetter,letterPicture:renderLetterToPicture,pictureLetter:renderPictureToLetter}[q.type])(q);}}
+function renderCourse(){const c=AppState.cursor;let content;if(c.phase==='lesson'){const step=currentLessonStep(c);if(step?.id==='letter')content=renderLearnLetter();else if(step?.id==='word')content=renderWordScreen();else if(step?.id==='wordMeaning')content=renderWordMeaningCard();else{const q=ensureQuestion();content=lessonTop()+(q.type===TRANSLATION_TYPE?renderTranslationQuiz(q):({find:renderFindLetter,letterPicture:renderLetterToPicture,pictureLetter:renderPictureToLetter}[q.type])(q));}}
  else if(FIND_OBJECT_COURSE[c.phase])content=renderFindObjectGame();else if(LETTER_MAZE_COURSE[c.phase])content=renderLetterMazeGame();else if(c.phase==='mini')content=renderMiniGame();else if(c.phase==='final')content=renderFinalChallenge();else if(c.phase==='results')content=renderResults();else content=renderInterlude(c.phase);
  return `<div class="screen learning">${content}${c.phase==='lesson'?journeyStrip():''}</div>`;}
 function showScreen(){
@@ -1903,20 +1945,30 @@ function announceScreen(){const c=AppState.cursor,d=letters[c.index];
  if(view==='reward'){setInstruction(AppState.rewardFlow?.selected?[ru(AppState.rewardFlow.id==='reward_def'?'new_item':'new_clothes'),ru('giraffe_happy')]:[ru('level_complete'),ru('reward'),ru('choose_reward')]);return;}
  if(LETTER_MAZE_COURSE[c.phase]){const config=activeLetterMazeEntry().scene,state=letterMazeState(config),round=LetterMazeGame.currentRound(config,state),letter=byLetter.get(round.targetLetter);setInstruction(state.gameCompleted?[ru('well_done')]:[ru('challenge'),ru('find_letter'),enName(letter)]);return;}
  if(FIND_OBJECT_COURSE[c.phase]){const config=activeFindObjectEntry().scene;const state=findObjectState(config),round=HiddenObjectGame.currentRound(config,state),letter=byLetter.get(round.letter);setInstruction(state.gameCompleted?[ru('well_done')]:[ru('find_letter'),enName(letter),ru('find_picture'),enWord(letter)]);return;}
- if(c.phase==='lesson'&&c.step===0)setInstruction([ru('new_letter'),enName(d),enSound(d),enWord(d)]);
- else if(c.phase==='lesson'&&c.step===1)setInstruction([ru('listen_word'),enName(d),enWord(d)]);
- else if(['mini','final'].includes(c.phase)||(c.phase==='lesson'&&c.step>=2)){
+ if(c.phase==='lesson'){
+  const step=currentLessonStep(c);
+  if(step?.id==='letter')setInstruction([ru('new_letter'),enName(d),enSound(d),enWord(d)]);
+  else if(step?.id==='word')setInstruction([ru('listen_word'),enName(d),enWord(d)]);
+  else if(step?.id==='wordMeaning')setInstruction([enWord(d),translatedWord(d)]);
+  else if(step?.type===TRANSLATION_TYPE)setInstruction([enWord(d)]);
+  else{
+   const q=AppState.question,target=byLetter.get(q.letter),command={find:'find_letter',letterPicture:'which_starts',pictureLetter:'which_letter'}[q.type];
+   setInstruction([ru(command),q.type==='pictureLetter'?enWord(target):enName(target)]);
+  }
+ }else if(['mini','final'].includes(c.phase)){
   const q=AppState.question,target=byLetter.get(q.letter),command={find:'find_letter',letterPicture:'which_starts',pictureLetter:'which_letter',wordPicture:'find_picture',lowercase:'find_small_letter'}[q.type];
   setInstruction([ru(command),['pictureLetter','wordPicture'].includes(q.type)?enWord(target):enName(target)]);
  }else setInstruction(c.phase==='results'?[ru('all_done'),ru('giraffe_happy')]:c.phase==='letterReward'?[ru('well_done'),enName(d)]:c.phase==='miniResult'?[ru('level_complete')]:[ru(c.phase==='finalIntro'?'final_challenge':'challenge')]);
 }
 function begin(){unlockAudio();AppState.started=true;go('course');preloadFeedbackStickers();}
 function nextLessonStep(){if(answerLocked)return;AppState.cursor.step++;AppState.question=null;go('course');}
+function completeTranslationQuestion(){const c=AppState.cursor;if(c.phase!=='lesson'||currentLessonStep(c)?.type!==TRANSLATION_TYPE)return false;c.step++;AppState.question=null;saveProgress();return true;}
 function advanceAfterLetter(){const c=AppState.cursor;if((c.index+1)%GROUP_SIZE===0||c.index===letters.length-1)c.phase=c.index===2&&!findObjectComplete(ABC_FIND_OBJECT_GAME)?'room':c.index===5?'maze':'miniIntro';else{c.index++;c.phase='lesson';c.step=0;}AppState.question=null;go('course');}
 function advanceAfterMini(){const c=AppState.cursor;if(c.index===letters.length-1)c.phase='finalIntro';else{c.index++;c.phase='lesson';c.step=0;}AppState.game=null;AppState.question=null;go('course');}
 function completeQuestion(){const c=AppState.cursor,q=AppState.question;
+ if(c.phase==='lesson'&&q?.type===TRANSLATION_TYPE)return completeTranslationQuestion();
  registerCorrectAnswer(q);
- if(c.phase==='lesson'){if(c.step<4)c.step++;else c.phase='letterReward';}
+ if(c.phase==='lesson'){if(c.step<lessonSteps(letters[c.index]).length-1)c.step++;else c.phase='letterReward';}
  else{AppState.game.recent.push(q.letter);AppState.game.recent=AppState.game.recent.slice(-3);AppState.game.index++;const length=c.phase==='final'?FINAL_LENGTH:MINI_LENGTH;if(AppState.game.index>=length){if(c.phase==='final'){c.phase='results';AppState.completed=true;}else {c.phase='miniResult';finishBlock();}AppState.game=null;}}
  AppState.question=null;saveProgress();
 }
@@ -1961,10 +2013,16 @@ function showAnswerFeedback(kind,message){
  box.appendChild(text);
 }
 function checkAnswer(button){
- if(answerLocked||!AppState.question)return;answerLocked=true;unlockAudio();stopAudio();const q=AppState.question,correct=button.dataset.answer===q.letter;
+ if(answerLocked||!AppState.question)return;answerLocked=true;unlockAudio();stopAudio();const q=AppState.question,translationQuiz=q.type===TRANSLATION_TYPE,correct=button.dataset.answer===q.letter;
  document.querySelectorAll('.choice').forEach(b=>b.disabled=true);
- if(!correct){registerMistake(q);button.classList.add('wrong');showAnswerFeedback('retry','Попробуй ещё раз!');AudioManager.play(ru('try_again'));const epoch=viewEpoch;transitionTimer=setTimeout(()=>{if(epoch!==viewEpoch)return;answerLocked=false;button.classList.remove('wrong');document.querySelectorAll('.choice').forEach(b=>b.disabled=false);button.focus({preventScroll:true});},DEMO?100:700);return;}
+ if(!correct){if(!translationQuiz)registerMistake(q);button.classList.add('wrong');showAnswerFeedback('retry','Попробуй ещё раз!');AudioManager.play(ru('try_again'));const epoch=viewEpoch;transitionTimer=setTimeout(()=>{if(epoch!==viewEpoch)return;answerLocked=false;button.classList.remove('wrong');document.querySelectorAll('.choice').forEach(b=>b.disabled=false);button.focus({preventScroll:true});},DEMO?100:700);return;}
  const d=byLetter.get(q.letter);button.classList.add('correct');celebrate();const praise=getRandomItems(['correct','great','well_done','super','amazing'],1)[0];
+ if(translationQuiz){
+  showAnswerFeedback('success',`${d.word} ${d.emoji}`);
+  const finishFeedback=AudioManager.play(translatedWord(d));
+  completeQuestion();document.querySelectorAll('#main button').forEach(b=>b.disabled=true);
+  const epoch=viewEpoch;transitionTimer=setTimeout(()=>{finishFeedback.then(()=>{if(epoch!==viewEpoch)return;showScreen();});},DEMO?100:1100);return;
+ }
  showAnswerFeedback('success',['letterPicture','pictureLetter','wordPicture'].includes(q.type)?`${d.letter} → ${d.word} ${d.emoji}`:q.type==='lowercase'?`${d.letter} → ${d.lowercase} ★`:AUDIO_TEXT[praise]);
  const finishFeedback=AudioManager.playSequence([ru(praise),enName(d),enWord(d)]);
  // Commit the next position immediately. Closing during confetti never counts twice.
@@ -2026,7 +2084,7 @@ const actions={
  else if(view==='reward'){if(AppState.rewardFlow?.selected)continueReward();}
   else{
    const c=AppState.cursor,entry=activeFindObjectEntry(),mazeEntry=activeLetterMazeEntry();
-   if(c.phase==='lesson'){if(c.step<2)nextLessonStep();else checkAnswer(document.querySelector(`[data-answer="${AppState.question.letter}"]`));}
+   if(c.phase==='lesson'){if(currentLessonStep(c)?.kind==='card')nextLessonStep();else checkAnswer(document.querySelector(`[data-answer="${AppState.question.letter}"]`));}
    else if(['mini','final'].includes(c.phase))checkAnswer(document.querySelector(`[data-answer="${AppState.question.letter}"]`));
    else if(c.phase==='letterReward')advanceAfterLetter();
    else if(entry){const config=entry.scene;const state=findObjectState(config);if(state.gameCompleted)continueFindObjectGame(config.id);else if(HiddenObjectGame.roundComplete(config,state))nextFindObjectRound(config.id);else findObjectPick(HiddenObjectGame.currentRound(config,state).targets.find(id=>!state.foundObjects.includes(id)),config.id);}
