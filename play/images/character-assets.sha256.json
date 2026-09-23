@@ -1,0 +1,12 @@
+{
+  "algorithm": "sha256",
+  "assets": {
+    "play/images/giraffe_base.png": "a42def0da3071f8f6fc1e01fc8252c56e1524f2b9bee1c230eb369a69c7a7a37",
+    "play/images/giraffe_jacket_racer.png": "43d8db6dd3df209d734d079b576ede00c4f75a264cdfbe49daa5d7f92c0febe0",
+    "play/images/giraffe_jacket_stars.png": "94f431ace40f53d1530c89f4a44041728ed1f39bb55cb74ec1fe13a1ebe4cfb8",
+    "play/images/marius_hat_adventure.png": "d4e57342d04cd3f2375801004216166d06389928c9df7f5d961262a28930076d",
+    "play/images/marius_hat_straw_bow.png": "6b243352839ff00f834cf28965b9fcf7acd4297b44fcb16015f799d7e6208c3f",
+    "play/images/accessory_bouquet.png": "58f2c329af70afe3789757cf02f91d6e73dea19ffeddc259001a47882a035a39",
+    "play/images/accessory_balloon.png": "8e63975f292879875b01bb6fdec6b1150b0474e167dc90c26e3a3a3de21d79f2"
+  }
+}

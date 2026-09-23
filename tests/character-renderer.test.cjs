@@ -2,8 +2,10 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const {createContext,saved}=require('./support/trainer-harness.cjs');
+const {verifyCharacterAssets}=require('./character-assets.test.cjs');
 
 const root=path.resolve(__dirname,'..');
+const verifiedAssets=verifyCharacterAssets();
 const a=createContext();
 a.run("['jacket_stars','jacket_racer','accessory_bouquet','accessory_balloon','hat_straw_bow','hat_adventure'].forEach(id=>unlockItem(id))");
 
@@ -168,6 +170,7 @@ for(const asset of ['marius-captain.png','marius-traveler.png','marius-surfer.pn
 
 console.log(JSON.stringify({
  passed:true,
+ verifiedCharacterAssets:verifiedAssets.length,
  layerOrder:['background','back','body/outfit','face','head','hand_left','hand_right','extra'],
  gameplayRendererScreens:gameplayScreens.length+5,
  outfitReplacement:true,

@@ -82,6 +82,7 @@ play/index.html содержит исходное обучение и сцены
 Сборщика и package.json нет. Проверки без установки зависимостей:
 
 ```sh
+node tests/character-assets.test.cjs
 node tests/character-renderer.test.cjs
 node tests/inventory.test.cjs
 node tests/find-object-engine.test.cjs
@@ -90,6 +91,8 @@ node tests/letter-maze-engine.test.cjs
 node tests/translation-lessons.test.cjs
 node tests/course-regression.test.cjs
 ```
+
+SHA-256 ключевых character PNG зафиксированы в `play/images/character-assets.sha256.json`. Проверка подтверждает наличие файлов, Git tracking и совпадение хэшей; при намеренной замене ассета manifest обновляется вместе с PNG.
 
 Для ручной проверки запустите HTTP-сервер из корня репозитория и откройте `/play/?demo=1`: это отдельное тестовое сохранение, основной прогресс не затрагивается. Кнопка деморежима «Следующий этап» позволяет пройти A, B, C быстрее; в комнате используйте реальные объекты. Проверьте раунды на 1440×900, 1024×768, 768×1024, 390×844, 360×800 и 844×390, а также Tab, Enter/Space, reload, переключатель звука и последующий тест.
 

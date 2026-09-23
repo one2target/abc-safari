@@ -125,6 +125,7 @@
 ## 9. Assets
 
 - `play/images/` — сцены, персонаж, одежда, аксессуары и изображения карточек; `play/images/stickers/` — реакции.
+- `play/images/character-assets.sha256.json` фиксирует SHA-256 ключевых body/head/hand PNG; `tests/character-assets.test.cjs` проверяет наличие, Git tracking и точное совпадение хэшей. Перед диагностикой renderer сначала проверить фактический asset path, SHA-256 и Git tracking. При намеренной замене PNG manifest обновляется вместе с файлом.
 - `play/audio/` — 81 MP3: прежние 66 записей плюс по пять файлов для Goat, Hat и Iguana.
 - `play/assets.js` — каталог активных изображений и аудио. Стикеры перечисляются отдельно в `play/index.html`.
 - Учебные буквы выводятся текстом, картинки слов сейчас — семантические emoji (`letters[].image === null`, `media()`), включая Goat/Hat/Iguana. Отдельных raster-файлов слов в `play/images/` нет. Иконки управления — встроенные SVG в `icons` и emoji; иконки установки — корневые `play/icon-*.png`.
@@ -258,6 +259,7 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 - `tests/room.test.cjs`: текущая механика, сохранения и миграция `roomABC`, повтор, старые данные, загрузка изображения и расчёт размеров зон.
 - `tests/course-regression.test.cjs`: два полных прохода A–I с комнатой, лабиринтом, G/H/I review, тремя наградами и миграцией завершённого A–F; адаптер DOM/audio — `tests/support/trainer-harness.cjs`.
 - `tests/inventory.test.cjs`: шесть предметов, восемь слотов, ownership/lock новой награды, head equip/unequip, перезагрузка и миграция rewardStateVersion 2 → 3.
+- `tests/character-assets.test.cjs`: manifest, наличие, Git tracking и SHA-256 семи ключевых character PNG; также автоматически запускается из `tests/character-renderer.test.cjs`.
 - `tests/character-renderer.test.cjs`: общий stack на игровых экранах, порядок слоёв, замена outfit/head/hand_right, full-canvas hat overlays, снятие, reload и изоляция сюжетных иллюстраций.
 
 ## 17. Лабиринт D/E/F

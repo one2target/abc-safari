@@ -1450,6 +1450,7 @@ main {
 /* DATA — A–I curriculum. Assets are indexed from real files. */
 const DEBUG = false;
 const DEMO = new URLSearchParams(location.search).get('demo') === '1';
+const BUILD_ID = MEDIA_ASSETS.images.marius_hat_adventure.src.match(/[?&]v=([^&]+)/)?.[1]||'dev';
 const STORAGE_KEY = DEMO ? 'alfie-abc-demo-v1' : 'alfie-abc-v1';
 const letters = [
  {letter:'A',lowercase:'a',sound:'æ',name:'ay',word:'Apple',translation:'Яблоко',emoji:'🍎',color:'#c85b33',tint:'#fff0e4',image:null,letterAudio:null,soundAudio:null,wordAudio:null,translationAudio:null,distractors:['M','S']},
@@ -1972,7 +1973,7 @@ function showScreen(){
  viewEpoch++;const epoch=viewEpoch;clearTimeout(transitionTimer);transitionTimer=null;answerLocked=false;letterMazeAnimating=false;stopAudio();$('#confetti').replaceChildren();
  document.body.classList.toggle('maze-active',view==='course'&&Boolean(activeLetterMazeEntry()));
  $('#main').innerHTML=view==='home'?renderHome():view==='progress'?renderWardrobe():view==='reward'?renderReward():renderCourse();
- if(DEMO)$('#main').insertAdjacentHTML('beforeend','<div class="demo-bar" lang="ru"><span>DEMO · отдельный прогресс</span><button data-action="demo-next">Следующий этап →</button></div>');
+ if(DEMO)$('#main').insertAdjacentHTML('beforeend',`<div class="demo-bar" lang="ru"><span>DEMO · отдельный прогресс · BUILD ${escapeHTML(BUILD_ID)}</span><button data-action="demo-next">Следующий этап →</button></div>`);
  $('#home-button').classList.toggle('hide',view==='home');updateSoundButton();wireMedia();wireFindObjectScene();wireLetterMazeScene();
  announceScreen();
  if(view!=='home'){const heading=$('#main h1');heading?.setAttribute('tabindex','-1');heading?.focus({preventScroll:true});}

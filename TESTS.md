@@ -2,6 +2,7 @@
 
 Команды из корня репозитория:
 
+- `node tests/character-assets.test.cjs`
 - `node tests/character-renderer.test.cjs`
 - `node tests/find-object-engine.test.cjs`
 - `node tests/inventory.test.cjs`
@@ -10,7 +11,7 @@
 - `node tests/translation-lessons.test.cjs`
 - `node tests/course-regression.test.cjs`
 
-Все семь проверок проходят. Character renderer: одиннадцать inventory-совместимых экранных контекстов используют общий stack; проверены обе куртки, bouquet/balloon, обе head-шляпы, замена внутри слота, одновременные outfit + head + hand_right, снятие, reload, порядок слоёв, лабиринт и изоляция сюжетных иллюстраций. Все четыре сочетания bouquet/balloon × straw/adventure проверяются в wardrobe, reward, mini-result и explicit `results` context. Head/hand reward/wardrobe preview-карточки используют canonical `renderCharacter('item-preview')`; final stage не сжимается во flex-layout, а full-canvas слои заполняют один 2:3 coordinate space без собственных offsets/crop.
+Все восемь проверок проходят. `character-assets.test.cjs` сверяет наличие, Git tracking и SHA-256 семи ключевых PNG с `play/images/character-assets.sha256.json`; он также автоматически вызывается из `character-renderer.test.cjs`. Character renderer: одиннадцать inventory-совместимых экранных контекстов используют общий stack; проверены обе куртки, bouquet/balloon, обе head-шляпы, замена внутри слота, одновременные outfit + head + hand_right, снятие, reload, порядок слоёв, лабиринт и изоляция сюжетных иллюстраций. Все четыре сочетания bouquet/balloon × straw/adventure проверяются в wardrobe, reward, mini-result и explicit `results` context. Head/hand reward/wardrobe preview-карточки используют canonical `renderCharacter('item-preview')`; final stage не сжимается во flex-layout, а full-canvas слои заполняют один 2:3 coordinate space без собственных offsets/crop.
 
 Значения слов: для A–I проверены девять русских MP3, все 15 новых Goat/Hat/Iguana записей и пути, `g_goat` / `h_hat` / `i_iguana`, отдельный `i_sound.mp3` для /ɪ/, карточка без видимого русского текста, English → пауза → Russian и repeat, meaning quiz из трёх перемешанных visuals, retry без учебного штрафа, правильная русская запись, mute, отсутствие translation TTS и безопасный сдвиг старых lesson steps.
 
