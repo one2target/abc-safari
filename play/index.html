@@ -1323,29 +1323,13 @@ main {
   .interlude { min-height:0; padding:20px 0; }
   .interlude .gameplay-marius-interlude { width:72px; }
 }
-/* CHARACTER & REWARDS — full canvases, responsive registration, unchanged PNGs. */
+/* LARGE MARIUS — one browser canvas; PNG composition happens only in JS. */
 .character-stage {position:relative;isolation:isolate;flex:none;width:min(100%,310px);aspect-ratio:2/3;margin:0 auto;overflow:hidden;border-radius:28px;background:#e3efcb;user-select:none;-webkit-user-select:none;pointer-events:none;box-shadow:0 5px 20px #1e453512;}
-.character-layer {position:absolute;inset:0;pointer-events:none;z-index:var(--character-layer,1);}
-.character-layer img {position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:top center;user-select:none;-webkit-user-select:none;}
-.character-actor {
-  /* All character/accessory PNGs use the same full 1024×1536 canvas as the scene.
-     Keep the actor on the scene's exact coordinate system. */
-  /* Fine registration against the forest background.
-     All giraffe variants and handheld accessories move together. */
-  --character-x: -3%;
-  --character-y: 0%;
-  --character-scale: 1;
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  z-index:1;
-  transform:translate(var(--character-x),var(--character-y)) scale(var(--character-scale));
-  transform-origin:center center;
-}
+.marius-stage-background {position:absolute;inset:0;display:block;width:100%;height:100%;margin:0;padding:0;max-width:none;max-height:none;object-fit:fill;object-position:0 0;transform:none;translate:none;scale:none;rotate:none;z-index:0;pointer-events:none;}
+.marius-composite {position:relative;z-index:1;display:block;width:100%;height:auto;aspect-ratio:2/3;margin:0;padding:0;}
 .character-fallback {display:none;font-size:100px;position:absolute;inset:0;align-items:center;justify-content:center;}
-.base-unavailable .character-fallback {display:flex;}
-.base-unavailable .character-layer {display:none;}
+.composite-unavailable>.character-fallback {display:flex;}
+.composite-unavailable>.marius-composite {display:none;}
 .gameplay-marius {background:transparent;border-radius:0;box-shadow:none;overflow:hidden;flex:none;}
 .gameplay-marius-interlude {width:112px;margin:0 auto 4px;}
 .hero-scene {background:none;border-radius:28px;padding:0;min-height:0;}
@@ -1365,12 +1349,14 @@ main {
 .outfit-option.locked .outfit-art {opacity:.4;}
 .outfit-art {position:relative;width:100%;height:110px;overflow:hidden;}
 .outfit-art>img {position:absolute;max-width:none;object-fit:contain;}
-/* Raw jacket/hand-item card art keeps its authored crop from HEAD. Head items
-   use the canonical 2:3 character renderer below. */
+/* Preview cards intentionally keep a renderer and geometry independent from
+   the large Marius stack. */
 .jacket-art>img {width:auto;height:190%;left:50%;top:-52%;transform:translateX(-50%);}
 .accessory-art>img {width:auto;height:240%;left:50%;top:-20%;transform:translateX(-80%);}
 .character-art {display:flex;align-items:center;justify-content:center;}
-.character-art .character-stage {width:auto;height:100%;max-width:100%;margin:0;aspect-ratio:2/3;}
+.item-preview-stage {position:relative;display:block;width:auto;height:100%;max-width:100%;margin:0;aspect-ratio:2/3;overflow:hidden;}
+.item-preview-actor {position:absolute;inset:0;width:100%;height:100%;transform:translate(-3%,0);transform-origin:center center;}
+.item-preview-layer {position:absolute;inset:0;display:block;width:100%;height:100%;max-width:none;max-height:none;object-fit:fill;object-position:0 0;}
 .outfit-name {font-size:13px;font-weight:800;line-height:1.25;margin-top:6px;}
 .outfit-status {font-size:11px;color:var(--muted);line-height:1.3;margin-top:5px;}
 .outfit-check {display:none;position:absolute;top:7px;right:8px;background:var(--green);color:white;border-radius:50%;width:25px;height:25px;line-height:25px;font-size:15px;}
@@ -1381,11 +1367,6 @@ main {
 .reward-next .primary {width:100%;}
 .reward-next .primary:disabled {opacity:.65;}
 .outfit-category+.outfit-category {margin-top:22px;}
-.dressed .character-actor {animation:character-pop .5s ease;}
-@keyframes character-pop {
- from {transform:translate(var(--character-x),var(--character-y)) scale(calc(var(--character-scale) * .85));}
- to {transform:translate(var(--character-x),var(--character-y)) scale(var(--character-scale));}
-}
 @media(max-width:650px){
  .brand{gap:8px;} .brand small{font-size:8px;letter-spacing:1.4px;} .tools .icon-button{width:52px;height:52px;}
  .reward-layout,.wardrobe-layout {grid-template-columns:1fr;gap:12px;margin:12px auto 18px;}
@@ -1439,7 +1420,7 @@ main {
 <footer class="footer"><span class="footer-note">Made for little explorers <span aria-hidden="true">✦</span></span><button id="parent-button" class="parent-button" aria-label="Parent view. Hold for two seconds" title="Hold for 2 seconds · Удерживайте 2 секунды">⚙ <span>Parents</span></button></footer>
 </div>
 <div id="modal-layer" class="backdrop" hidden></div><div id="confetti" class="confetti" aria-hidden="true"></div>
-<script src="./assets.js?v=reward2"></script>
+<script src="./assets.js?v=character-canvas4"></script>
 <script src="./audio-manager.js"></script>
 <script src="./find-object-scenes.js"></script>
 <script src="./hidden-object-game.js"></script>
@@ -1449,8 +1430,11 @@ main {
 'use strict';
 /* DATA — A–I curriculum. Assets are indexed from real files. */
 const DEBUG = false;
-const DEMO = new URLSearchParams(location.search).get('demo') === '1';
-const BUILD_ID = MEDIA_ASSETS.images.marius_hat_adventure.src.match(/[?&]v=([^&]+)/)?.[1]||'dev';
+const BUILD_ID = MEDIA_ASSETS.images.giraffe_base.src.match(/[?&]v=([^&]+)/)?.[1]||'dev';
+const QUERY_PARAMS = new URLSearchParams(location.search);
+const DEMO = QUERY_PARAMS.get('demo') === '1';
+const DEMO_LETTER = (QUERY_PARAMS.get('letter')||'').toUpperCase();
+const DEMO_SCREEN = QUERY_PARAMS.get('screen')||'';
 const STORAGE_KEY = DEMO ? 'alfie-abc-demo-v1' : 'alfie-abc-v1';
 const letters = [
  {letter:'A',lowercase:'a',sound:'æ',name:'ay',word:'Apple',translation:'Яблоко',emoji:'🍎',color:'#c85b33',tint:'#fff0e4',image:null,letterAudio:null,soundAudio:null,wordAudio:null,translationAudio:null,distractors:['M','S']},
@@ -1463,6 +1447,13 @@ const letters = [
  {letter:'H',lowercase:'h',sound:'h',name:'aitch',word:'Hat',translation:'Шляпа',emoji:'🎩',color:'#86559e',tint:'#f4eafa',image:null,letterAudio:null,soundAudio:null,letterWordAudio:null,wordAudio:null,translationAudio:null,distractors:['N','A'],preferLetterWordAudio:true},
  {letter:'I',lowercase:'i',sound:'ɪ',name:'eye',word:'Iguana',translation:'Игуана',emoji:'🦎',color:'#3f8460',tint:'#e5f5e9',image:null,letterAudio:null,soundAudio:null,letterWordAudio:null,wordAudio:null,translationAudio:null,distractors:['L','T'],preferLetterWordAudio:true}
 ];
+const DEMO_LETTER_INDEX=DEMO?letters.findIndex(item=>item.letter===DEMO_LETTER):-1;
+const DEMO_REWARD_PREVIEW=DEMO&&DEMO_SCREEN==='reward_ghi';
+const DEMO_INVENTORY_PREVIEW=DEMO&&DEMO_SCREEN==='inventory';
+const DEMO_SHORTCUT_ACTIVE=DEMO&&(DEMO_LETTER_INDEX>=0||DEMO_REWARD_PREVIEW||DEMO_INVENTORY_PREVIEW);
+const REWARD_RENDER_TOKEN=String(Date.now());
+const DEMO_REWARD_FLOW={id:'reward_ghi',resume:'course',selected:null};
+let demoRewardHeadAsset='marius_hat_adventure';
 const AUDIO_TEXT = {
  welcome:'Привет! Давай учить английские буквы!',start:'Начнём!',new_letter:'Познакомимся с новой буквой.',look_letter:'Посмотри на букву.',listen:'Послушай внимательно.',find_letter:'Найди эту букву.',find_small_letter:'Найди маленькую букву.',find_picture:'Найди правильную картинку.',which_starts:'Какое слово начинается с этой буквы?',which_letter:'С какой буквы начинается это слово?',choose_letter:'Выбери правильную букву.',choose_picture:'Выбери правильную картинку.',listen_word:'Послушай слово.',repeat:'Послушай ещё раз.',try_again:'Попробуй ещё раз.',almost:'Почти получилось!',correct:'Правильно!',great:'Отлично!',well_done:'Молодец!',super:'Супер!',amazing:'Замечательно!',next:'Дальше!',level_complete:'Уровень пройден!',reward:'Ты получил подарок для жирафика!',choose_reward:'Выбери подарок.',new_clothes:'У жирафика новая одежда!',new_item:'У жирафика новый подарок!',dress_giraffe:'Давай оденем жирафика!',challenge:'Поиграем с буквами!',final_challenge:'Последнее испытание!',three_correct:'Три правильных ответа!',all_done:'Ты всё прошёл!',come_again:'Приходи играть ещё!',repeat_letters:'Повторим буквы.',need_practice:'Давай потренируемся ещё.',giraffe_happy:'Жирафик очень рад!'
 };
@@ -1480,7 +1471,6 @@ for(const d of letters){const wordKey=d.word.toLowerCase();d.letterAudio=MEDIA_A
 const REWARD_STATE_VERSION=3;
 const ITEM_SLOTS=Object.freeze(['outfit','head','face','hand_left','hand_right','back','extra','background']);
 const CHARACTER_LAYER_ORDER=Object.freeze(['back','body','face','head','hand_left','hand_right','extra']);
-const CHARACTER_LAYER_INDEX=Object.freeze(Object.fromEntries(CHARACTER_LAYER_ORDER.map((layer,index)=>[layer,index+1])));
 const SLOT_CONFIG=Object.freeze({
  outfit:{label:'Куртка'},head:{label:'На голове'},face:{label:'На лице'},
  hand_left:{label:'В левой руке'},hand_right:{label:'В руках'},back:{label:'За спиной'},
@@ -1594,7 +1584,7 @@ function loadProgress(){
   return fresh;
  }catch(e){log('Storage unavailable or invalid',e);return fresh;}
 }
-function saveProgress(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(AppState));storageAvailable=true;}catch(e){storageAvailable=false;log('Progress kept in memory',e);}$('#storage-notice').classList.toggle('hide',storageAvailable);}
+function saveProgress(){if(DEMO_SHORTCUT_ACTIVE)return;try{localStorage.setItem(STORAGE_KEY,JSON.stringify(AppState));storageAvailable=true;}catch(e){storageAvailable=false;log('Progress kept in memory',e);}$('#storage-notice').classList.toggle('hide',storageAvailable);}
 function getItemById(id){return itemCatalog.get(id)||null;}
 function isItemOwned(id,state=AppState){return Boolean(getItemById(id)&&state.characterState.ownedItems.includes(id));}
 function unlockItem(id,state=AppState,persist){
@@ -1674,13 +1664,15 @@ function ensureRewardFlow(state=AppState){
  if(reward)state.rewardFlow={id:reward.id,resume:state.cursor.phase==='miniResult'&&reward.afterLetters.at(-1)===letters[state.cursor.index].letter?'after-mini':'course',selected:null};
 }
 const AppState=loadProgress();
+if(DEMO_LETTER_INDEX>=0){AppState.cursor={phase:'lesson',index:DEMO_LETTER_INDEX,step:0};AppState.question=null;AppState.game=null;AppState.rewardFlow=null;}
+const visibleRewardFlow=()=>DEMO_REWARD_PREVIEW?DEMO_REWARD_FLOW:AppState.rewardFlow;
 function activeFindObjectEntry(){return FIND_OBJECT_COURSE[AppState.cursor.phase]||null;}
 function findObjectState(config=activeFindObjectEntry()?.scene){return config?AppState.findObjectGames[config.id]||null:null;}
 function findObjectComplete(config=ABC_FIND_OBJECT_GAME){return Boolean(findObjectState(config)?.gameCompleted);}
 function activeLetterMazeEntry(){return LETTER_MAZE_COURSE[AppState.cursor.phase]||null;}
 function letterMazeState(config=activeLetterMazeEntry()?.scene){return config?AppState.mazeGames[config.id]||null:null;}
 function letterMazeComplete(config=DEF_LETTER_MAZE){return Boolean(letterMazeState(config)?.gameCompleted);}
-let view=AppState.rewardFlow?'reward':'home',lastView='home',answerLocked=false,transitionTimer=null,viewEpoch=0,restoreFocus=null,rewardReady=Boolean(AppState.rewardFlow?.selected);
+let view=DEMO_LETTER_INDEX>=0?'course':DEMO_REWARD_PREVIEW?'reward':DEMO_INVENTORY_PREVIEW?'progress':AppState.rewardFlow?'reward':'home',lastView='home',answerLocked=false,transitionTimer=null,viewEpoch=0,restoreFocus=null,rewardReady=Boolean(visibleRewardFlow()?.selected);
 /* AUDIO — all screen instructions and reactions pass through this manager. */
 const AudioManager=createAudioManager({assets:MEDIA_ASSETS.audio,enabled:AppState.soundEnabled,debug:DEBUG,gap:500});
 function unlockAudio(){AudioManager.unlock();}
@@ -1724,40 +1716,117 @@ function ensureQuestion(){
 function media(item,cls=''){return `<span class="${cls}" aria-hidden="true">${item.image?`<img src="${escapeHTML(item.image)}" alt="" data-fallback="${escapeHTML(item.emoji)}">`:item.emoji}</span>`;}
 function buddy(placement='inline'){return renderCharacter('gameplay',{includeBackground:false,className:`gameplay-marius gameplay-marius-${placement}`,decorative:true});}
 const failedImages=new Set();
-function wireMedia(){
- document.querySelectorAll('img[data-feedback-sticker]').forEach(prepareFeedbackSticker);
- document.querySelectorAll('img[data-fallback]').forEach(img=>{const fallback=()=>{img.replaceWith(document.createTextNode(img.dataset.fallback));};img.addEventListener('error',fallback,{once:true});if(img.complete&&img.naturalWidth===0)fallback();});
- document.querySelectorAll('img[data-character-asset]').forEach(img=>{const fallback=()=>{const src=img.getAttribute('src');if(!failedImages.has(src)){failedImages.add(src);console.warn('[Alfie image] Image could not be loaded:',src);}img.hidden=true;if(img.dataset.characterAsset.startsWith('giraffe_'))img.closest('.character-actor')?.classList.add('base-unavailable');};img.addEventListener('error',fallback,{once:true});if(img.complete&&img.naturalWidth===0)fallback();});
+const characterImagePromises=new Map();
+function loadCharacterImage(source){
+ if(!source)return Promise.reject(new Error('Missing character asset source'));
+ if(characterImagePromises.has(source))return characterImagePromises.get(source);
+ const promise=new Promise((resolve,reject)=>{
+  const image=new Image();
+  image.decoding='async';
+  image.onload=()=>resolve(image);
+  image.onerror=()=>{if(!failedImages.has(source)){failedImages.add(source);console.warn('[Alfie image] Image could not be loaded:',source);}reject(new Error(`Character image failed: ${source}`));};
+  image.src=source;
+  if(image.complete&&image.naturalWidth>0)resolve(image);
+ });
+ characterImagePromises.set(source,promise);
+ return promise;
+}
+async function renderMariusComposite(canvas,composition,loadImage=loadCharacterImage){
+ const context=canvas?.getContext?.('2d');
+ if(!context)return false;
+ const renderId=String((Number(canvas.dataset.mariusRenderId)||0)+1);
+ canvas.dataset.mariusRenderId=renderId;
+ const sources=CHARACTER_LAYER_ORDER.map(slot=>composition[slot]).filter(Boolean);
+ let images;
+ try{images=await Promise.all(sources.map(source=>loadImage(source)));}
+ catch(error){if(canvas.dataset.mariusRenderId!==renderId)return false;context.clearRect(0,0,characterConfig.width,characterConfig.height);throw error;}
+ if(canvas.dataset.mariusRenderId!==renderId||canvas.isConnected===false)return false;
+ context.clearRect(0,0,characterConfig.width,characterConfig.height);
+ images.forEach(image=>context.drawImage(image,0,0,characterConfig.width,characterConfig.height));
+ return true;
+}
+function wireCharacterComposites(root=document,loadImage=loadCharacterImage){
+ const draws=[...root.querySelectorAll('canvas[data-marius-sources]')].map(canvas=>{
+  const slots=(canvas.dataset.mariusSlots||'').split(',').filter(Boolean),sources=canvas.dataset.mariusSources.split('|').filter(Boolean);
+  const composition=Object.fromEntries(slots.map((slot,index)=>[slot,sources[index]]).filter(([,source])=>source));
+  return renderMariusComposite(canvas,composition,loadImage).then(drawn=>{if(drawn)canvas.closest('.character-stage')?.classList.remove('composite-unavailable');return drawn;}).catch(()=>{canvas.closest('.character-stage')?.classList.add('composite-unavailable');return false;});
+ });
+ return Promise.all(draws);
+}
+function wireMedia(root=document){
+ root.querySelectorAll('img[data-feedback-sticker]').forEach(prepareFeedbackSticker);
+ root.querySelectorAll('img[data-fallback]').forEach(img=>{const fallback=()=>{img.replaceWith(document.createTextNode(img.dataset.fallback));};img.addEventListener('error',fallback,{once:true});if(img.complete&&img.naturalWidth===0)fallback();});
+ root.querySelectorAll('img[data-character-asset]').forEach(img=>{const fallback=()=>{const src=img.getAttribute('src');if(!failedImages.has(src)){failedImages.add(src);console.warn('[Alfie image] Image could not be loaded:',src);}img.hidden=true;};img.addEventListener('error',fallback,{once:true});if(img.complete&&img.naturalWidth===0)fallback();});
+ wireCharacterComposites(root);
 }
 function letterStrip(){return `<div class="letter-strip" aria-label="Letter progress">${letters.map((d,i)=>`<div class="letter-chip ${AppState.stats[d.letter].mastery===3?'mastered':''} ${view==='course'&&i===AppState.cursor.index&&AppState.cursor.phase==='lesson'?'current':''}" aria-label="${d.letter}: ${AppState.stats[d.letter].mastery===3?'mastered':'learning'}"><span>${escapeHTML(d.letter)}</span><span class="star" aria-hidden="true">${AppState.stats[d.letter].mastery===3?'★':'☆'}</span></div>`).join('')}</div>`;}
 function journeyStrip(){return `<div class="journey-strip"><div class="journey-copy"><b>Буква за буквой — к новым открытиям</b><span>Учись и выбирай подарки для жирафика.</span></div>${letterStrip()}</div>`;}
 /* CHARACTER — the only renderer for the inventory-compatible 1024×1536 pose.
    Outfit is a full body variant; the remaining wearable slots are overlays. */
+function characterAssetSource(assetKey,freshReward=false){
+ const source=MEDIA_ASSETS.images[assetKey]?.src;
+ if(!source)return '';
+ return freshReward?`${source.split('?')[0]}?reward=${REWARD_RENDER_TOKEN}`:source;
+}
+function mariusLayerEntries(scene='home'){
+ if(DEMO_REWARD_PREVIEW&&scene==='reward')return [
+  {slot:'body',asset:characterConfig.baseAsset},
+  {slot:'head',asset:demoRewardHeadAsset},
+  {slot:'hand_right',asset:'accessory_bouquet'}
+ ];
+ return CHARACTER_LAYER_ORDER.map(slot=>{
+  const item=slot==='body'?getEquippedItem('outfit'):getEquippedItem(slot);
+  return {slot,asset:slot==='body'?(item?.asset||characterConfig.baseAsset):item?.asset};
+ }).filter(entry=>entry.asset&&MEDIA_ASSETS.images[entry.asset]);
+}
+function mariusComposition(entries,scene='home'){
+ return Object.fromEntries(entries.map(entry=>[entry.slot,characterAssetSource(entry.asset,scene==='reward')]));
+}
+function setMariusCanvasComposition(canvas,entries,scene='home',loadImage=loadCharacterImage){
+ const composition=mariusComposition(entries,scene);
+ canvas.dataset.mariusAssets=entries.map(entry=>entry.asset).join(',');
+ canvas.dataset.mariusSlots=entries.map(entry=>entry.slot).join(',');
+ canvas.dataset.mariusSources=entries.map(entry=>composition[entry.slot]).join('|');
+ return renderMariusComposite(canvas,composition,loadImage);
+}
+function redrawRewardMarius(canvas=document.querySelector('#character-preview canvas.marius-composite'),loadImage=loadCharacterImage){
+ if(!canvas)return Promise.resolve(false);
+ return setMariusCanvasComposition(canvas,mariusLayerEntries('reward'),'reward',loadImage);
+}
 function renderCharacter(scene='home',options={}){
- const {includeBackground=true,className='',decorative=false,itemOverrides={}}=options;
- const equippedFor=slot=>Object.prototype.hasOwnProperty.call(itemOverrides,slot)?getItemById(itemOverrides[slot]):getEquippedItem(slot);
+ const {includeBackground=true,className='',decorative=false}=options;
+ const equippedFor=slot=>getEquippedItem(slot);
  const outfit=equippedFor('outfit'),backgroundItem=includeBackground?equippedFor('background'):null;
- const actor=outfit?.asset||characterConfig.baseAsset;
  const background=backgroundItem?.asset||characterConfig.backgrounds[scene]||characterConfig.backgrounds.home;
  const overlaySlots=CHARACTER_LAYER_ORDER.filter(slot=>slot!=='body');
  const overlays=overlaySlots.map(equippedFor).filter(Boolean);
- const layer=(key,kind,slot='',order=0)=>MEDIA_ASSETS.images[key]?`<div class="character-layer" data-layer="${kind}" data-layer-order="${order}"${slot?` data-slot="${slot}"`:''} style="--character-layer:${order}"><img src="${escapeHTML(MEDIA_ASSETS.images[key].src)}" data-character-asset="${key}" alt="" draggable="false"></div>`:'';
- const labels=[outfit,...overlays,backgroundItem].filter(Boolean).map(item=>item.name);
- const itemLayers=overlays.map(item=>layer(item.asset,'item',item.slot,CHARACTER_LAYER_INDEX[item.slot])).join('');
+ const entries=mariusLayerEntries(scene),assetKeys=entries.map(entry=>entry.asset),slots=entries.map(entry=>entry.slot);
+ const labels=DEMO_REWARD_PREVIEW&&scene==='reward'?[]:[outfit,...overlays,backgroundItem].filter(Boolean).map(item=>item.name);
  const accessibility=decorative?'aria-hidden="true"':`role="img" aria-label="Жирафик${labels.length?' — '+escapeHTML(labels.join(', ')):''}"`;
- return `<div class="character-stage character-${escapeHTML(scene)} ${escapeHTML(className)}" data-character-context="${escapeHTML(scene)}" ${accessibility}>${includeBackground?layer(background,'background','background',0):''}<div class="character-actor"><span class="character-fallback" aria-hidden="true">🦒</span>${layer(actor,'body','outfit',CHARACTER_LAYER_INDEX.body)}${itemLayers}</div></div>`;
+ const backgroundLayer=includeBackground&&MEDIA_ASSETS.images[background]?`<img class="marius-stage-background" src="${escapeHTML(MEDIA_ASSETS.images[background].src)}" width="${characterConfig.width}" height="${characterConfig.height}" data-character-asset="${background}" data-layer="background" data-layer-order="0" data-slot="background" alt="" draggable="false">`:'';
+ const composition=mariusComposition(entries,scene),sources=slots.map(slot=>composition[slot]).join('|');
+ return `<div class="character-stage character-${escapeHTML(scene)} ${escapeHTML(className)}" data-character-context="${escapeHTML(scene)}" ${accessibility}>${backgroundLayer}<span class="character-fallback" aria-hidden="true">🦒</span><canvas class="marius-composite" width="${characterConfig.width}" height="${characterConfig.height}" data-marius-assets="${escapeHTML(assetKeys.join(','))}" data-marius-slots="${escapeHTML(slots.join(','))}" data-marius-sources="${escapeHTML(sources)}" aria-hidden="true"></canvas></div>`;
+}
+/* Card previews deliberately do not reuse the large-character renderer. */
+function renderItemPreview(item,freshReward=false){
+ const outfit=getEquippedItem('outfit'),actor=outfit?.asset||characterConfig.baseAsset;
+ const equippedFor=slot=>slot===item.slot?item:getEquippedItem(slot);
+ const overlays=CHARACTER_LAYER_ORDER.filter(slot=>slot!=='body').map(equippedFor).filter(Boolean);
+ const layer=key=>MEDIA_ASSETS.images[key]?`<img class="item-preview-layer" src="${escapeHTML(characterAssetSource(key,freshReward))}" data-character-asset="${key}" alt="" draggable="false">`:'';
+ return `<span class="item-preview-stage" aria-hidden="true"><span class="item-preview-actor">${layer(actor)}${overlays.map(entry=>layer(entry.asset)).join('')}</span></span>`;
 }
 function outfitOptions(reward,action){
- const choosing=action==='claim-reward'&&AppState.rewardFlow?.id===reward.id&&!AppState.rewardFlow.selected&&!AppState.claimedRewards.includes(reward.id);
+ const flow=visibleRewardFlow();
+ const choosing=action==='claim-reward'&&flow?.id===reward.id&&(DEMO_REWARD_PREVIEW||(!flow.selected&&!AppState.claimedRewards.includes(reward.id)));
  const items=rewardItems(reward),slot=items[0]?.slot;
  return `<div class="outfit-options" role="group" aria-label="${escapeHTML(SLOT_CONFIG[slot]?.label||'Предметы')}">${items.map(item=>{
-  const owned=isItemOwned(item.id),selected=getEquippedItem(item.slot)?.id===item.id;
+  const owned=isItemOwned(item.id),selected=DEMO_REWARD_PREVIEW?item.asset===demoRewardHeadAsset:getEquippedItem(item.slot)?.id===item.id;
   const enabled=choosing||(action==='equip'&&owned),locked=!owned&&!choosing;
   const icon=MEDIA_ASSETS.images[item.icon]?.src;
   const itemAction=action==='equip'&&selected&&item.slot==='head'?'unequip':action;
   const headItem=item.slot==='head';
   const artClass=item.slot==='outfit'?'jacket-art':headItem?'character-art':'accessory-art';
-  const art=headItem?renderCharacter('item-preview',{includeBackground:false,className:'gameplay-marius',decorative:true,itemOverrides:{head:item.id}}):(icon?`<img src="${escapeHTML(icon)}" data-character-asset="${item.icon}" alt="" draggable="false">`:'');
+  const art=headItem?renderItemPreview(item,action==='claim-reward'):(icon?`<img src="${escapeHTML(icon)}" data-character-asset="${item.icon}" alt="" draggable="false">`:'');
   return `<button class="outfit-option ${selected?'selected':''} ${locked?'locked':''}" data-action="${itemAction}" data-item="${item.id}" ${enabled?'':'disabled'} aria-label="${escapeHTML(item.name)}${locked?' — закрыто':itemAction==='unequip'?' — снять':''}" aria-pressed="${selected}"><span class="outfit-art ${artClass}">${art}</span><span class="outfit-name">${escapeHTML(item.name)}</span><span class="outfit-check" aria-hidden="true">${locked?'🔒':'✓'}</span><span class="outfit-status">${locked?'Закрыто':itemAction==='unequip'?'Снять':selected?'Твой подарок':owned?'Получено':'Выбрать'}</span></button>`;
  }).join('')}</div>`;
 }
@@ -1774,17 +1843,37 @@ function finishBlock(){
  ensureRewardFlow();log('Reward available',reward.id);
 }
 function renderReward(){
- const flow=AppState.rewardFlow,r=rewardConfig.find(r=>r.id===flow?.id);
+ const flow=visibleRewardFlow(),r=rewardConfig.find(r=>r.id===flow?.id);
  if(!r)return renderWardrobe();
- return `<section class="screen reward-screen"><div class="stars" aria-hidden="true">★ ★ ★</div><h1>${flow.selected?'Как здорово!':'Уровень пройден!'}</h1><p>${flow.selected?'Жирафик рад новому подарку.':'Один из этих подарков станет твоим.'}</p><div class="reward-layout"><div id="character-preview" class="${flow.selected?'dressed':''}">${renderCharacter('reward')}</div><div class="reward-choices"><h2>${escapeHTML(r.prompt)}</h2>${outfitOptions(r,'claim-reward')}<div class="reward-next" aria-live="polite">${flow.selected?`<p>Подарок сохранён ✓</p><button class="primary" data-action="reward-next" ${rewardReady?'':'disabled'}>Дальше ${icons.arrow}</button>`:'<p>Выбери тот, который тебе нравится.</p>'}</div></div></div><button class="repeat" data-action="repeat" aria-label="Повторить инструкцию">${icons.speaker} Послушать</button></section>`;
+ return `<section class="screen reward-screen"><div class="stars" aria-hidden="true">★ ★ ★</div><h1>${flow.selected?'Как здорово!':'Уровень пройден!'}</h1><p>${flow.selected?'Жирафик рад новому подарку.':'Один из этих подарков станет твоим.'}</p><div class="reward-layout"><div id="character-preview">${renderCharacter('reward')}</div><div class="reward-choices">${renderRewardChoices(flow,r)}</div></div><button class="repeat" data-action="repeat" aria-label="Повторить инструкцию">${icons.speaker} Послушать</button></section>`;
+}
+function renderRewardChoices(flow,reward){
+ return `<h2>${escapeHTML(reward.prompt)}</h2>${outfitOptions(reward,'claim-reward')}<div class="reward-next" aria-live="polite">${flow.selected?`<p>Подарок сохранён ✓</p><button class="primary" data-action="reward-next" ${rewardReady?'':'disabled'}>Дальше ${icons.arrow}</button>`:'<p>Выбери тот, который тебе нравится.</p>'}</div>`;
+}
+function refreshRewardGHI(){
+ const flow=visibleRewardFlow(),reward=rewardConfig.find(entry=>entry.id===flow?.id);
+ if(reward?.id!=='reward_ghi')return false;
+ const screen=document.querySelector('.reward-screen');
+ if(!screen)return false;
+ const heading=screen.querySelector('h1'),copy=screen.querySelector('p'),choices=screen.querySelector('.reward-choices');
+ if(heading)heading.textContent=flow.selected?'Как здорово!':'Уровень пройден!';
+ if(copy)copy.textContent=flow.selected?'Жирафик рад новому подарку.':'Один из этих подарков станет твоим.';
+ if(choices){choices.innerHTML=renderRewardChoices(flow,reward);wireMedia(choices);}
+ redrawRewardMarius();
+ return true;
 }
 function chooseReward(id){
+ if(DEMO_REWARD_PREVIEW){
+  const item=getItemById(id),r=rewardConfig.find(entry=>entry.id===DEMO_REWARD_FLOW.id);
+  if(!item||item.slot!=='head'||!r.itemIds.includes(id))return false;
+  demoRewardHeadAsset=item.asset;refreshRewardGHI();return true;
+ }
  const flow=AppState.rewardFlow,r=rewardConfig.find(r=>r.id===flow?.id);
  if(!r||flow.selected||AppState.claimedRewards.includes(r.id)||!AppState.completedBlocks.includes(r.id)||!r.itemIds.includes(id))return false;
  // One atomic save before animation. A queued second tap cannot change the gift.
  if(!unlockItem(id,AppState,false)||!equipItem(id,AppState,false))return false;
  flow.selected=id;AppState.claimedRewards.push(r.id);saveProgress();
- rewardReady=false;showScreen();celebrate();
+ rewardReady=false;if(r.id==='reward_ghi')refreshRewardGHI();else showScreen();celebrate();
  const epoch=viewEpoch;
  transitionTimer=setTimeout(()=>{if(epoch!==viewEpoch)return;rewardReady=true;const b=document.querySelector('[data-action="reward-next"]');if(b)b.disabled=false;},1000);
  return true;
@@ -1983,7 +2072,7 @@ function go(next){if(next==='course'){if(AppState.cursor.phase==='miniIntro'&&Ap
 function announceScreen(){const c=AppState.cursor,d=letters[c.index];
  if(view==='home'){setInstruction([ru('welcome')]);return;}
  if(view==='progress'){setInstruction([ru('dress_giraffe')]);return;}
- if(view==='reward'){setInstruction(AppState.rewardFlow?.selected?[ru(AppState.rewardFlow.id==='reward_def'?'new_item':'new_clothes'),ru('giraffe_happy')]:[ru('level_complete'),ru('reward'),ru('choose_reward')]);return;}
+ if(view==='reward'){const flow=visibleRewardFlow();setInstruction(flow?.selected?[ru(flow.id==='reward_def'?'new_item':'new_clothes'),ru('giraffe_happy')]:[ru('level_complete'),ru('reward'),ru('choose_reward')]);return;}
  if(LETTER_MAZE_COURSE[c.phase]){const config=activeLetterMazeEntry().scene,state=letterMazeState(config),round=LetterMazeGame.currentRound(config,state),letter=byLetter.get(round.targetLetter);setInstruction(state.gameCompleted?[ru('well_done')]:[ru('challenge'),ru('find_letter'),enName(letter)]);return;}
  if(FIND_OBJECT_COURSE[c.phase]){const config=activeFindObjectEntry().scene;const state=findObjectState(config),round=HiddenObjectGame.currentRound(config,state),letter=byLetter.get(round.letter);setInstruction(state.gameCompleted?[ru('well_done')]:[ru('find_letter'),enName(letter),ru('find_picture'),enWord(letter)]);return;}
  if(c.phase==='lesson'){

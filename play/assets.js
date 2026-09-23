@@ -257,57 +257,57 @@ const MEDIA_ASSETS = {
       "height": 1402
     },
     "accessory_balloon": {
-      "src": "./images/accessory_balloon.png?v=reward2",
+      "src": "./images/accessory_balloon.png?v=character-canvas4",
       "width": 1024,
       "height": 1535
     },
     "accessory_bouquet": {
-      "src": "./images/accessory_bouquet.png?v=reward2",
+      "src": "./images/accessory_bouquet.png?v=character-canvas4",
       "width": 1024,
       "height": 1536
     },
     "background_home": {
-      "src": "./images/background_home.png?v=reward2",
+      "src": "./images/background_home.png?v=character-canvas4",
       "width": 1024,
       "height": 1536
     },
     "background_reward": {
-      "src": "./images/background_reward.png?v=reward2",
+      "src": "./images/background_reward.png?v=character-canvas4",
       "width": 1024,
       "height": 1536
     },
     "giraffe_base": {
-      "src": "./images/giraffe_base.png?v=reward2",
+      "src": "./images/giraffe_base.png?v=character-canvas4",
       "width": 1024,
       "height": 1536
     },
     "giraffe_jacket_racer": {
-      "src": "./images/giraffe_jacket_racer.png?v=reward2",
+      "src": "./images/giraffe_jacket_racer.png?v=character-canvas4",
       "width": 1024,
       "height": 1536
     },
     "giraffe_jacket_stars": {
-      "src": "./images/giraffe_jacket_stars.png?v=reward2",
+      "src": "./images/giraffe_jacket_stars.png?v=character-canvas4",
       "width": 1024,
       "height": 1536
     },
     "reward_icon_jacket_racer": {
-      "src": "./images/reward_icon_jacket_racer.png?v=reward2",
+      "src": "./images/reward_icon_jacket_racer.png?v=character-canvas4",
       "width": 1024,
       "height": 1536
     },
     "reward_icon_jacket_stars": {
-      "src": "./images/reward_icon_jacket_stars.png?v=reward2",
+      "src": "./images/reward_icon_jacket_stars.png?v=character-canvas4",
       "width": 1024,
       "height": 1536
     },
     "marius_hat_straw_bow": {
-      "src": "./images/marius_hat_straw_bow.png?v=reward3",
+      "src": "./images/marius_hat_straw_bow.png?v=character-canvas4",
       "width": 1024,
       "height": 1536
     },
     "marius_hat_adventure": {
-      "src": "./images/marius_hat_adventure.png?v=reward3",
+      "src": "./images/marius_hat_adventure.png?v=character-canvas4",
       "width": 1024,
       "height": 1536
     }

@@ -38,7 +38,7 @@ Production автоматически публикуется Netlify из сущ
 - marius-room-abc.png — цельная сцена поиска предметов A/B/C;
 - marius-letter-maze-def.png, 941 × 1672 — неизменённый вертикальный фон лабиринта D/E/F.
 
-На первом экране предзагружаются только background_home и giraffe_base; остальные изображения запрашиваются по мере отображения. renderCharacter() создаёт несжимаемый общий контейнер 2:3: фон, back, полный body/outfit, face, head, обе руки и extra. Каждый full-canvas слой заполняет одни и те же границы (inset:0, width/height:100%), с общей поправкой translate(-3%,0) и scale(1). Все слои перемещаются и масштабируются вместе; для head/hand PNG нет отдельных top/left/scale/crop. Компактный вариант того же renderer без фона используется при знакомстве с буквой/словом, на вводных/итоговых экранах mini/final и в preview-карточках выбора head/hand предметов.
+На первом экране предзагружаются только background_home и giraffe_base; остальные изображения запрашиваются по мере отображения. `renderCharacter()` оставляет фон отдельным элементом stage и создаёт один `<canvas width="1024" height="1536">` для большого Мариуса. Compositor асинхронно загружает выбранный BODY и equipped overlays, очищает canvas и по порядку вызывает `drawImage(image, 0, 0, 1024, 1536)` для каждого PNG. CSS масштабирует только готовый canvas целиком; внутри composite нет `<img>`, offsets, transform или slot-specific geometry. Character-ассеты и `assets.js` используют общий cache-busting `character-canvas4`. Preview-карточки имеют отдельную разметку и сохраняют собственную authored-геометрию.
 
 Отдельных Goat/Hat/Iguana PNG в `play/images/` нет. Как и A–F, слова G–I используют семантические emoji через `letters[].image === null` и общий `media()`.
 

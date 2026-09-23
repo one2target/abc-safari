@@ -115,12 +115,12 @@
 - База — `play/images/giraffe_base.png`. Куртки — полные изображения `giraffe_jacket_stars.png` / `giraffe_jacket_racer.png`, заменяющие базу.
 - Прозрачные аксессуары — `play/images/accessory_bouquet.png`, `play/images/accessory_balloon.png`; head overlays — `play/images/marius_hat_straw_bow.png`, `play/images/marius_hat_adventure.png`; иконки карточек курток — `play/images/reward_icon_jacket_*.png`.
 - `renderCharacter(scene, options)` получает предметы стандартных слотов из каталога. `outfit` заменяет полный вариант жирафика, потому что обе активные куртки являются готовыми full-body PNG, а остальные wearable-слоты выводятся прозрачными слоями на том же холсте. `includeBackground:false` создаёт компактный игровой stack и намеренно не применяет inventory-слот `background` к упражнениям.
-- Системный порядок `CHARACTER_LAYER_ORDER`: background (0) → back (1) → body/outfit (2) → face (3) → head (4) → hand_left (5) → hand_right (6) → extra (7). Порядок записывается в `data-layer-order` / `--character-layer`, а не задаётся отдельными правилами экрана.
-- CSS `.character-stage`, `.character-actor`, `.character-layer` задаёт единую несжимаемую сцену 2:3. Base/outfit и все overlays находятся внутри одного `.character-actor`, поэтому `translate(-3%, 0)` и адаптивный scale применяются ко всем слоям вместе. Full-canvas изображения заполняют точные границы слоя; это не позволяет intrinsic-размеру отдельного PNG создать собственный fit внутри final flex-card.
+- Системный порядок `CHARACTER_LAYER_ORDER`: background отдельно → back → body/outfit → face → head → hand_left → hand_right → extra. `renderCharacter()` передаёт выбранные asset keys Canvas compositor в этом порядке; CSS z-index между предметами не используется.
+- Большой текущий skin — один `.marius-composite` с intrinsic-размером 1024×1536. Общая для reward и остальных inventory-совместимых экранов функция `renderMariusComposite()` дожидается всех PNG, вызывает `clearRect(0,0,1024,1536)`, затем рисует BODY и overlays только через `drawImage(image,0,0,1024,1536)`. CSS масштабирует уже готовый canvas целиком.
 - `characterState.ownedItems` хранит владение; `characterState.equipped` всегда содержит все восемь слотов. Обе куртки занимают `outfit`, букет и шарик — `hand_right`, обе новые шляпы — `head`. Выбранную шляпу можно снять и снова надеть через `outfitOptions()` / `renderWardrobe()`; альтернативная награда остаётся locked.
 - Старые `play/images/jacket_*.png` и `play/images/headwear_*.png` остаются в каталоге, но не подключены через `MEDIA_ASSETS`; старые идентификаторы учитывает `migrateRewards()`.
 
-Новый экран с совместимой основной позой должен вызывать `renderCharacter()`; для декоративного компактного Мариуса внутри упражнения — `buddy('inline')` или `buddy('interlude')`. Не копировать разметку `.character-layer` в экран и не читать `characterState.equipped` напрямую. Новый overlay должен быть зарегистрирован в `MEDIA_ASSETS`, добавлен в `ITEMS` и подготовлен на совместимом холсте 1024×1536. Сюжетные позы подключаются отдельной иллюстрацией и не проходят через renderer.
+Новый экран с совместимой основной позой должен вызывать `renderCharacter()`; для декоративного компактного Мариуса внутри упражнения — `buddy('inline')` или `buddy('interlude')`. Не создавать отдельные `<img>`-слои большого персонажа и не читать `characterState.equipped` напрямую. Новый overlay должен быть зарегистрирован в `MEDIA_ASSETS`, добавлен в `ITEMS` и подготовлен на совместимом холсте 1024×1536. Сюжетные позы подключаются отдельной иллюстрацией и не проходят через compositor.
 
 ## 9. Assets
 
@@ -186,7 +186,7 @@
 - `checkAnswer()`, `completeQuestion()`, `answerLocked`, `viewEpoch`, `transitionTimer` связывают ответ, немедленное сохранение, аудио и отложенный переход; нарушение порядка может повторно засчитать ответ или показать старый экран.
 - `go()` / `showScreen()` обслуживают все экраны и незавершённый выбор подарка.
 - `FIND_OBJECT_COURSE`, `AppState.findObjectGames` и миграция прежнего `roomABC` связывают find-object state с курсом. Не переиспользовать `scene.id` для другой сцены и не хранить найденные объекты вне словаря по ID.
-- `:root`, общие кнопки, `.character-actor`, `.gameplay-marius` и поздние `@media` влияют на несколько экранов и совмещение аксессуаров с персонажем. Не масштабировать слои внутри actor независимо.
+- `:root`, общие кнопки, `.character-stage`, `.gameplay-marius` и поздние `@media` влияют на несколько экранов. `.marius-composite` разрешено масштабировать только целиком; координаты исходных PNG задаются исключительно Canvas compositor.
 - `createAudioManager()` общий для всех реплик; подготовка одного аудиоэлемента по пользовательскому жесту важна для Safari. Отмена очереди предотвращает наложение старых инструкций на новый экран.
 
 ## 14. Deployment-related files
@@ -214,7 +214,7 @@ Assets → play/assets.js; play/images/; play/audio/
 Inventory → play/index.html: ITEM_SLOTS / ITEMS / itemCatalog / equipItem
 Rewards → play/index.html: rewardConfig / chooseReward / finishBlock
 Progress → play/index.html: initialState / loadProgress / saveProgress
-Mobile CSS → play/index.html: <style> / @media / .character-actor
+Mobile CSS → play/index.html: <style> / @media / .character-stage
 Audio → play/audio-manager.js; play/index.html: announceScreen; play/assets.js
 Find-object game → play/hidden-object-game.js; play/find-object-scenes.js; play/index.html: FIND_OBJECT_COURSE
 Letter maze → play/letter-maze-game.js; play/letter-maze-scenes.js; play/letter-maze-game.css; play/index.html: LETTER_MAZE_COURSE
@@ -260,7 +260,7 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 - `tests/course-regression.test.cjs`: два полных прохода A–I с комнатой, лабиринтом, G/H/I review, тремя наградами и миграцией завершённого A–F; адаптер DOM/audio — `tests/support/trainer-harness.cjs`.
 - `tests/inventory.test.cjs`: шесть предметов, восемь слотов, ownership/lock новой награды, head equip/unequip, перезагрузка и миграция rewardStateVersion 2 → 3.
 - `tests/character-assets.test.cjs`: manifest, наличие, Git tracking и SHA-256 семи ключевых character PNG; также автоматически запускается из `tests/character-renderer.test.cjs`.
-- `tests/character-renderer.test.cjs`: общий stack на игровых экранах, порядок слоёв, замена outfit/head/hand_right, full-canvas hat overlays, снятие, reload и изоляция сюжетных иллюстраций.
+- `tests/character-renderer.test.cjs`: Canvas compositor на игровых экранах, порядок draw calls, замена outfit/head/hand_right, снятие, reload и изоляция сюжетных иллюстраций.
 
 ## 17. Лабиринт D/E/F
 
@@ -291,7 +291,7 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 Порядок третьего блока: G/Goat → H/Hat → I/Iguana → `miniIntro` → review из пяти вопросов по G/H/I → `reward_ghi` → общий финал A–I. Переход после `reward_def` использует прежний `advanceAfterMini()`; отдельного маршрутизатора или mini-game для блока нет.
 
 - `reward_ghi.itemIds`: `hat_straw_bow`, `hat_adventure`. Оба предмета имеют `slot:'head'`; `chooseReward()` разблокирует и экипирует только выбранный ID.
-- `marius_hat_straw_bow.png` и `marius_hat_adventure.png` зарегистрированы как 1024×1536. `renderCharacter()` выводит выбранный asset обычным `character-layer` с `data-slot="head"`, `inset:0`, `width/height:100%` и без индивидуальных координат, crop или transform.
-- В reward/wardrobe карточках head и hand_right предметы также показываются через `renderCharacter('item-preview')`: `itemOverrides` подставляет только preview-предмет без изменения inventory. Поэтому карточки и основной персонаж используют один actor coordinate space 2:3; сырые full-canvas overlay PNG отдельно в коротком `.outfit-art` не масштабируются.
+- `marius_hat_straw_bow.png` и `marius_hat_adventure.png` зарегистрированы как 1024×1536. Выбранный head asset передаётся compositor после BODY и рисуется тем же `drawImage(...,0,0,1024,1536)`, без индивидуальных координат, crop или transform.
+- Reward/wardrobe preview-карточки изолированы от большого renderer: head использует отдельный `renderItemPreview()`, а hand_right сохраняет authored crop `.accessory-art`. Изменения `.marius-composite` не должны влиять на их геометрию.
 - Нажатие на выбранную head-вещь в гардеробе вызывает общий `unequipItem()`; повторный выбор owned-вещи снова вызывает `equipItem()`. Одновременно в `equipped.head` хранится один ID.
-- `tests/course-regression.test.cjs`, `tests/inventory.test.cjs`, `tests/translation-lessons.test.cjs`, `tests/character-renderer.test.cjs` покрывают flow, звуки/переводы, ownership/lock, equip/unequip, миграцию A–F и full-canvas overlay.
+- `tests/course-regression.test.cjs`, `tests/inventory.test.cjs`, `tests/translation-lessons.test.cjs`, `tests/character-renderer.test.cjs` и `tests/character-assets.test.cjs` покрывают flow, звуки/переводы, ownership/lock, equip/unequip, миграцию A–F, Canvas compositor и целостность character assets.

@@ -44,8 +44,7 @@
   filter:none;overflow:visible;pointer-events:none!important;
 }
 .letter-maze-character * {pointer-events:none!important;}
-.letter-maze-character .character-actor,.letter-maze-character .character-layer {background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;}
-.letter-maze-character .character-actor {--character-x:-3%;}
+.letter-maze-character .marius-composite {background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;}
 .letter-maze-status-panel {
   position:absolute;z-index:7;left:6%;right:6%;bottom:2.2%;display:flex;flex-direction:column;align-items:center;gap:7px;
   text-align:center;pointer-events:none;

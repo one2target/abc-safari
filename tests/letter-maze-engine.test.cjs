@@ -95,6 +95,8 @@ assert.match(css,/\.letter-maze-cell \{[\s\S]*transform:translate\(-50%,-50%\);w
 assert.match(css,/\.letter-maze-label \{[\s\S]*transform:translate\(-50%,-50%\);width:9\.5%;height:4%;[\s\S]*font-size:clamp\(14px,4vw,20px\)[\s\S]*pointer-events:none/);
 assert.match(css,/\.letter-maze-character \*[^{]*\{pointer-events:none!important;\}/);
 assert.match(css,/\.letter-maze-character \.letter-maze-marius \{[\s\S]*background:transparent!important;[\s\S]*border-radius:0!important;[\s\S]*box-shadow:none!important/);
+assert.match(css,/\.letter-maze-character \.marius-composite \{background:transparent!important;/);
+assert.ok(!css.includes('--character-x'));
 assert.match(css,/transition:left \.15s[\s\S]*top \.15s/);
 
 // Course adapter: only a visible target checkpoint speaks the existing letter-name audio.
