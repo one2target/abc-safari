@@ -1411,6 +1411,7 @@ main {
 </style>
 <link rel="stylesheet" href="./hidden-object-game.css">
 <link rel="stylesheet" href="./letter-maze-game.css">
+<link rel="stylesheet" href="./balloon-pop-game.css">
 </head>
 <body>
 <div class="app" id="app">
@@ -1426,6 +1427,7 @@ main {
 <script src="./hidden-object-game.js"></script>
 <script src="./letter-maze-scenes.js"></script>
 <script src="./letter-maze-game.js"></script>
+<script src="./balloon-pop-game.js"></script>
 <script>
 'use strict';
 /* DATA — A–I curriculum. Assets are indexed from real files. */
@@ -1450,7 +1452,8 @@ const letters = [
 const DEMO_LETTER_INDEX=DEMO?letters.findIndex(item=>item.letter===DEMO_LETTER):-1;
 const DEMO_REWARD_PREVIEW=DEMO&&DEMO_SCREEN==='reward_ghi';
 const DEMO_INVENTORY_PREVIEW=DEMO&&DEMO_SCREEN==='inventory';
-const DEMO_SHORTCUT_ACTIVE=DEMO&&(DEMO_LETTER_INDEX>=0||DEMO_REWARD_PREVIEW||DEMO_INVENTORY_PREVIEW);
+const DEMO_BALLOON_PREVIEW=DEMO&&DEMO_SCREEN==='balloon_ghi';
+const DEMO_SHORTCUT_ACTIVE=DEMO&&(DEMO_LETTER_INDEX>=0||DEMO_REWARD_PREVIEW||DEMO_INVENTORY_PREVIEW||DEMO_BALLOON_PREVIEW);
 const REWARD_RENDER_TOKEN=String(Date.now());
 const DEMO_REWARD_FLOW={id:'reward_ghi',resume:'course',selected:null};
 let demoRewardHeadAsset='marius_hat_adventure';
@@ -1522,6 +1525,7 @@ const icons={arrow:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 const blankStats=()=>({attempts:0,correct:0,mistakes:0,mastery:0,skills:[],practiceDebt:0});
 const ABC_FIND_OBJECT_GAME=FIND_OBJECT_SCENES.mariusRoomABC;
 const DEF_LETTER_MAZE=LETTER_MAZE_SCENES.campDEF;
+const GHI_BALLOON_GAME=BalloonPopGame.CONFIG;
 const FIND_OBJECT_COURSE=Object.freeze({
  room:Object.freeze({phase:'room',scene:ABC_FIND_OBJECT_GAME,courseIndex:2,nextPhase:'miniIntro'})
 });
@@ -1534,8 +1538,9 @@ const blankFindObjectGames=()=>Object.fromEntries(FIND_OBJECT_CONFIGS.map(config
 const LETTER_MAZE_COURSE_BY_GAME=new Map(Object.values(LETTER_MAZE_COURSE).map(entry=>[entry.scene.id,entry]));
 const LETTER_MAZE_CONFIGS=[...new Set(Object.values(LETTER_MAZE_COURSE).map(entry=>entry.scene))];
 const blankLetterMazeGames=()=>Object.fromEntries(LETTER_MAZE_CONFIGS.map(config=>[config.id,LetterMazeGame.initialState(config)]));
+const blankBalloonPop=()=>BalloonPopGame.initialState(GHI_BALLOON_GAME);
 /* STATE & STORAGE — keep the v1 key so existing progress survives. */
-const initialState=()=>({version:3,rewardStateVersion:REWARD_STATE_VERSION,characterState:blankCharacter(),findObjectGames:blankFindObjectGames(),mazeGames:blankLetterMazeGames(),completedBlocks:[],claimedRewards:[],rewardFlow:null,started:false,completed:false,soundEnabled:true,cursor:{phase:'lesson',index:0,step:0},stats:Object.fromEntries(letters.map(d=>[d.letter,blankStats()])),game:null,question:null,reviews:[],questionSerial:0});
+const initialState=()=>({version:3,rewardStateVersion:REWARD_STATE_VERSION,characterState:blankCharacter(),findObjectGames:blankFindObjectGames(),mazeGames:blankLetterMazeGames(),balloonPop:blankBalloonPop(),completedBlocks:[],claimedRewards:[],rewardFlow:null,started:false,completed:false,soundEnabled:true,cursor:{phase:'lesson',index:0,step:0},stats:Object.fromEntries(letters.map(d=>[d.letter,blankStats()])),game:null,question:null,reviews:[],questionSerial:0});
 let storageAvailable=true;
 function loadProgress(){
  const fresh=initialState();
@@ -1550,7 +1555,7 @@ function loadProgress(){
    t.attempts=t.correct+t.mistakes;
   }
   const c=saved.cursor;
-  const phases=['lesson','letterReward',...Object.keys(FIND_OBJECT_COURSE),...Object.keys(LETTER_MAZE_COURSE),'miniIntro','mini','miniResult','finalIntro','final','results'];
+  const phases=['lesson','letterReward',...Object.keys(FIND_OBJECT_COURSE),...Object.keys(LETTER_MAZE_COURSE),'miniIntro','mini','miniResult','balloon_ghi','finalIntro','final','results'];
   if(c&&phases.includes(c.phase)&&Number.isInteger(c.index)&&c.index>=0&&c.index<letters.length&&Number.isInteger(c.step)&&c.step>=0){
    // State v1/v2 had five lesson steps. Preserve the exact old exercise by
    // moving its index past the two newly inserted meaning steps.
@@ -1563,10 +1568,12 @@ function loadProgress(){
    fresh.findObjectGames[config.id]=HiddenObjectGame.restore(config,saved.findObjectGames?.[config.id]??legacy);
   }
   for(const config of LETTER_MAZE_CONFIGS)fresh.mazeGames[config.id]=LetterMazeGame.restore(config,saved.mazeGames?.[config.id]);
+  fresh.balloonPop=BalloonPopGame.restore(GHI_BALLOON_GAME,saved.balloonPop);
   const findObjectEntry=FIND_OBJECT_COURSE[fresh.cursor.phase];
   if(findObjectEntry&&fresh.cursor.index!==findObjectEntry.courseIndex)fresh.cursor.phase='lesson';
   const mazeEntry=LETTER_MAZE_COURSE[fresh.cursor.phase];
   if(mazeEntry&&fresh.cursor.index!==mazeEntry.courseIndex)fresh.cursor.phase='lesson';
+  if(fresh.cursor.phase==='balloon_ghi'&&fresh.cursor.index!==letters.length-1)fresh.cursor.phase='lesson';
   fresh.questionSerial=Math.max(0,Number(saved.questionSerial)||0);
   fresh.reviews=Array.isArray(saved.reviews)?saved.reviews.filter(r=>byLetter.has(r.letter)&&Number.isFinite(r.due)):[];
   const g=saved.game;
@@ -1618,7 +1625,8 @@ function migrateRewards(state,saved){
  state.completedBlocks=Array.isArray(saved.completedBlocks)?[...new Set(saved.completedBlocks.filter(id=>known.includes(id)))]:[];
  for(const reward of rewardConfig){
   const end=letters.findIndex(d=>d.letter===reward.afterLetters.at(-1)),c=state.cursor;
-  const passed=end>=0&&(c.index>end||(c.index===end&&['miniResult','finalIntro','final','results'].includes(c.phase))||state.completed);
+  const alreadyEarned=state.completedBlocks.includes(reward.id)||saved.claimedRewards?.includes(reward.id)||saved.rewardFlow?.id===reward.id;
+  const passed=reward.id==='reward_ghi'?alreadyEarned:end>=0&&(c.index>end||(c.index===end&&['miniResult','finalIntro','final','results'].includes(c.phase))||state.completed);
   if(passed&&!state.completedBlocks.includes(reward.id))state.completedBlocks.push(reward.id);
  }
  const previous=saved.characterState||{},equipped=previous.equipped||{},flow=saved.rewardFlow;
@@ -1665,6 +1673,7 @@ function ensureRewardFlow(state=AppState){
 }
 const AppState=loadProgress();
 if(DEMO_LETTER_INDEX>=0){AppState.cursor={phase:'lesson',index:DEMO_LETTER_INDEX,step:0};AppState.question=null;AppState.game=null;AppState.rewardFlow=null;}
+if(DEMO_BALLOON_PREVIEW){AppState.cursor={phase:'balloon_ghi',index:letters.length-1,step:lessonSteps(letters.at(-1)).length-1};AppState.balloonPop=blankBalloonPop();AppState.question=null;AppState.game=null;AppState.rewardFlow=null;}
 const visibleRewardFlow=()=>DEMO_REWARD_PREVIEW?DEMO_REWARD_FLOW:AppState.rewardFlow;
 function activeFindObjectEntry(){return FIND_OBJECT_COURSE[AppState.cursor.phase]||null;}
 function findObjectState(config=activeFindObjectEntry()?.scene){return config?AppState.findObjectGames[config.id]||null:null;}
@@ -1672,7 +1681,8 @@ function findObjectComplete(config=ABC_FIND_OBJECT_GAME){return Boolean(findObje
 function activeLetterMazeEntry(){return LETTER_MAZE_COURSE[AppState.cursor.phase]||null;}
 function letterMazeState(config=activeLetterMazeEntry()?.scene){return config?AppState.mazeGames[config.id]||null:null;}
 function letterMazeComplete(config=DEF_LETTER_MAZE){return Boolean(letterMazeState(config)?.gameCompleted);}
-let view=DEMO_LETTER_INDEX>=0?'course':DEMO_REWARD_PREVIEW?'reward':DEMO_INVENTORY_PREVIEW?'progress':AppState.rewardFlow?'reward':'home',lastView='home',answerLocked=false,transitionTimer=null,viewEpoch=0,restoreFocus=null,rewardReady=Boolean(visibleRewardFlow()?.selected);
+function balloonPopState(){return AppState.balloonPop;}
+let view=DEMO_LETTER_INDEX>=0||DEMO_BALLOON_PREVIEW?'course':DEMO_REWARD_PREVIEW?'reward':DEMO_INVENTORY_PREVIEW?'progress':AppState.rewardFlow?'reward':'home',lastView='home',answerLocked=false,transitionTimer=null,viewEpoch=0,restoreFocus=null,rewardReady=Boolean(visibleRewardFlow()?.selected);
 /* AUDIO — all screen instructions and reactions pass through this manager. */
 const AudioManager=createAudioManager({assets:MEDIA_ASSETS.audio,enabled:AppState.soundEnabled,debug:DEBUG,gap:500});
 function unlockAudio(){AudioManager.unlock();}
@@ -2054,16 +2064,150 @@ function continueLetterMazeGame(gameId){
  if(view!=='course'||!entry||AppState.cursor.phase!==entry.phase||!letterMazeState(entry.scene).gameCompleted)return;
  AppState.cursor.phase=entry.nextPhase;AppState.game=null;AppState.question=null;finishBlock();go('course');
 }
+/* BALLOON POP G/H/I — pure game rules live in balloon-pop-game.js. */
+let balloonVisuals=[],balloonHintTimer=null,balloonTargetTimer=null,balloonFeedbackTimer=null,balloonAudioContext=null;
+function clearBalloonPopRuntime(){
+ clearTimeout(balloonHintTimer);clearTimeout(balloonTargetTimer);clearTimeout(balloonFeedbackTimer);
+ balloonHintTimer=balloonTargetTimer=balloonFeedbackTimer=null;
+}
+function balloonAudioItem(){
+ const state=balloonPopState(),letter=byLetter.get(BalloonPopGame.target(GHI_BALLOON_GAME,state));
+ return BalloonPopGame.currentPhase(GHI_BALLOON_GAME,state).id==='phonics'?enSound(letter):enName(letter);
+}
+function renderBalloonPopGame(){
+ const state=balloonPopState();
+ if(!state.gameCompleted)balloonVisuals=BalloonPopGame.createBalloons(GHI_BALLOON_GAME,state,6);
+ const character=state.gameCompleted?'':renderCharacter('gameplay',{includeBackground:false,className:'gameplay-marius balloon-pop-marius-stage',decorative:true});
+ return BalloonPopGame.render(GHI_BALLOON_GAME,state,{icons,balloons:balloonVisuals,characterHTML:character,successVisual:state.gameCompleted?renderCompletionSticker():''});
+}
+function hideBalloonTarget(){
+ const state=balloonPopState(),target=document.querySelector('[data-balloon-target]');
+ if(!target||AppState.cursor.phase!=='balloon_ghi'||state.gameCompleted||!AppState.soundEnabled||BalloonPopGame.currentPhase(GHI_BALLOON_GAME,state).id!=='phonics')return;
+ target.textContent='?';target.classList.add('is-hidden');
+}
+function scheduleBalloonTargetHide(){
+ clearTimeout(balloonTargetTimer);balloonTargetTimer=null;
+ const state=balloonPopState();
+ if(AppState.soundEnabled&&!state.gameCompleted&&BalloonPopGame.currentPhase(GHI_BALLOON_GAME,state).id==='phonics')balloonTargetTimer=setTimeout(hideBalloonTarget,900);
+}
+function showBalloonHint(){
+ if(AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return;
+ const target=BalloonPopGame.target(GHI_BALLOON_GAME,balloonPopState());
+ const balloons=[...document.querySelectorAll('.balloon-pop-balloon')];
+ balloons.forEach(balloon=>balloon.classList.remove('is-hint'));
+ balloons.find(balloon=>balloon.dataset.letter===target)?.classList.add('is-hint');
+}
+function scheduleBalloonHint(){
+ clearTimeout(balloonHintTimer);balloonHintTimer=null;
+ if(AppState.cursor.phase==='balloon_ghi'&&!balloonPopState().gameCompleted)balloonHintTimer=setTimeout(showBalloonHint,5000);
+}
+function wireBalloonPopGame(){
+ if(view!=='course'||AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return;
+ document.querySelectorAll('.balloon-pop-balloon').forEach(button=>button.addEventListener('animationiteration',()=>replaceBalloonButton(button)));
+ scheduleBalloonTargetHide();scheduleBalloonHint();
+}
+function replaceBalloonButton(button){
+ if(!button?.isConnected||AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return;
+ const buttons=[...document.querySelectorAll('.balloon-pop-balloon')],index=buttons.indexOf(button);
+ if(index<0)return;
+ const letters=buttons.map(item=>item.dataset.letter),target=BalloonPopGame.target(GHI_BALLOON_GAME,balloonPopState());
+ const letter=BalloonPopGame.replacementLetter(GHI_BALLOON_GAME,letters,index,target);
+ const color=Math.floor(Math.random()*6);
+ button.dataset.letter=letter;button.setAttribute('aria-label',`Буква ${letter}`);button.querySelector('.balloon-pop-letter').textContent=letter;
+ for(let value=0;value<6;value++)button.classList.toggle(`color-${value}`,value===color);
+ button.classList.remove('is-pop','is-wrong','is-hint');button.disabled=false;
+}
+function updateBalloonProgress(){
+ const progress=BalloonPopGame.progress(GHI_BALLOON_GAME,balloonPopState()),label=$('#balloon-pop-score'),track=document.querySelector('.balloon-pop-progress');
+ if(label)label.textContent=`${progress.value} / ${progress.max}`;
+ if(track){track.setAttribute('aria-valuenow',String(progress.value));track.querySelectorAll('span').forEach((dot,index)=>{dot.classList.toggle('done',index<progress.value);dot.classList.toggle('current',index===progress.value);});}
+}
+function setBalloonFeedback(message){
+ const feedback=$('#balloon-pop-feedback');if(!feedback)return;
+ feedback.textContent=message;clearTimeout(balloonFeedbackTimer);balloonFeedbackTimer=setTimeout(()=>{if(feedback.isConnected)feedback.textContent='';},1100);
+}
+function addBalloonBurst(button){
+ if(!button)return;
+ const rect=button.getBoundingClientRect(),field=button.closest('.balloon-pop-field'),burst=document.createElement('span');
+ burst.className='balloon-pop-burst';burst.setAttribute('aria-hidden','true');
+ burst.style.left=`${rect.left+rect.width/2}px`;burst.style.top=`${rect.top+rect.height*.4}px`;
+ burst.style.setProperty('--burst-size',`${Math.round(Math.max(rect.width,rect.height)*.86)}px`);
+ burst.style.setProperty('--burst-letter-size',`${Math.round(Math.max(38,rect.width*.55))}px`);
+ const flash=document.createElement('i');flash.className='balloon-pop-flash';burst.appendChild(flash);
+ const letter=document.createElement('b');letter.className='balloon-pop-burst-letter';letter.textContent=button.dataset.letter;burst.appendChild(letter);
+ const colors=['#ffcc54','#ffffff','#72d8a7','#8ec5ff','#ef7ba6','#ad8bea'];
+ for(let index=0;index<10;index++){
+  const angle=index*36+(Math.random()-.5)*14,distance=38+Math.random()*28,radians=angle*Math.PI/180;
+  const particle=document.createElement('i'),kind=index%3===0?'is-star':index%3===1?'is-dash':'is-dot';
+  particle.className=`balloon-pop-particle ${kind}`;if(kind==='is-star')particle.textContent='✦';
+  particle.style.setProperty('--particle-x',`${(Math.cos(radians)*distance).toFixed(1)}px`);
+  particle.style.setProperty('--particle-y',`${(Math.sin(radians)*distance).toFixed(1)}px`);
+  particle.style.setProperty('--particle-angle',`${angle.toFixed(1)}deg`);
+  particle.style.setProperty('--particle-spin',`${(angle+120+(Math.random()-.5)*100).toFixed(1)}deg`);
+  particle.style.setProperty('--particle-color',colors[index%colors.length]);
+  particle.style.setProperty('--particle-duration',`${Math.round(270+Math.random()*120)}ms`);
+  particle.style.setProperty('--particle-delay',`${Math.round(Math.random()*16)}ms`);burst.appendChild(particle);
+ }
+ document.body.appendChild(burst);
+ burst.addEventListener('animationend',event=>{if(event.target===burst)burst.remove();});
+ setTimeout(()=>burst.remove(),460);
+ field?.animate?.([{transform:'translateY(0)'},{transform:'translateY(2px)',offset:.45},{transform:'translateY(0)'}],{duration:105,easing:'ease-out'});
+}
+function playBalloonPopEffect(){
+ if(!AppState.soundEnabled)return;
+ const Context=window.AudioContext||window.webkitAudioContext;if(!Context)return;
+ try{
+  balloonAudioContext=balloonAudioContext||new Context();if(balloonAudioContext.state==='suspended')balloonAudioContext.resume();
+  const oscillator=balloonAudioContext.createOscillator(),gain=balloonAudioContext.createGain(),now=balloonAudioContext.currentTime;
+  oscillator.type='triangle';oscillator.frequency.setValueAtTime(430,now);oscillator.frequency.exponentialRampToValueAtTime(120,now+.085);
+  gain.gain.setValueAtTime(.075,now);gain.gain.exponentialRampToValueAtTime(.001,now+.09);oscillator.connect(gain).connect(balloonAudioContext.destination);oscillator.start(now);oscillator.stop(now+.095);
+ }catch(_){/* Voice audio remains available if Web Audio is unsupported. */}
+}
+function tapBalloonPop(letter,button=null){
+ if(view!=='course'||AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return 'ignored';
+ const result=BalloonPopGame.tap(GHI_BALLOON_GAME,balloonPopState(),letter);if(result==='ignored')return result;
+ clearTimeout(balloonHintTimer);
+ if(result==='wrong'){
+  saveProgress();button?.classList.add('is-wrong');setBalloonFeedback('Почти! Ищи другую букву');AudioManager.play(ru('almost'));
+  setTimeout(()=>button?.classList.remove('is-wrong'),190);
+  if(BalloonPopGame.hint(GHI_BALLOON_GAME,balloonPopState()))showBalloonHint();else scheduleBalloonHint();
+  return result;
+ }
+ playBalloonPopEffect();window.navigator?.vibrate?.(20);addBalloonBurst(button);button?.classList.add('is-pop');if(button)button.disabled=true;
+ saveProgress();updateBalloonProgress();setBalloonFeedback('Лоп! Правильно!');
+ const epoch=viewEpoch;
+ if(['target-complete','phase-complete','game-complete'].includes(result)){
+  transitionTimer=setTimeout(()=>{if(epoch===viewEpoch)showScreen();},200);
+ }else{
+  transitionTimer=setTimeout(()=>{if(epoch!==viewEpoch)return;replaceBalloonButton(button);scheduleBalloonHint();},155);
+ }
+ return result;
+}
+function repeatBalloonInstruction(){
+ if(AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return;
+ const target=document.querySelector('[data-balloon-target]'),letter=BalloonPopGame.target(GHI_BALLOON_GAME,balloonPopState());
+ if(target){target.textContent=letter;target.classList.remove('is-hidden','is-pulsing');void target.offsetWidth;target.classList.add('is-pulsing');}
+ setInstruction([balloonAudioItem()]);scheduleBalloonTargetHide();
+}
+function continueBalloonPopGame(){
+ if(view!=='course'||AppState.cursor.phase!=='balloon_ghi'||!balloonPopState().gameCompleted)return false;
+ AppState.cursor.phase='finalIntro';AppState.game=null;AppState.question=null;finishBlock();go('course');return true;
+}
+function advanceBalloonPopDemo(){
+ const state=balloonPopState();if(state.gameCompleted)return continueBalloonPopGame();
+ BalloonPopGame.tap(GHI_BALLOON_GAME,state,BalloonPopGame.target(GHI_BALLOON_GAME,state));saveProgress();showScreen();return true;
+}
 function renderResults(){return `<section class="interlude"><p class="eyebrow">Все задания пройдены</p><h1>У тебя получилось!</h1><p>Ты выучил буквы ${escapeHTML(letters[0].letter)}–${escapeHTML(letters.at(-1).letter)}!</p>${renderCharacter('results')}<div class="stars" aria-label="${letters.length} звёзд">${'★'.repeat(Math.min(letters.length,6))}</div><button class="primary" data-action="replay">Играть ещё ${icons.arrow}</button><button class="text-button" data-action="progress">👕 Жирафик</button></section>`;}
 function renderCourse(){const c=AppState.cursor;let content;if(c.phase==='lesson'){const step=currentLessonStep(c);if(step?.id==='letter')content=renderLearnLetter();else if(step?.id==='word')content=renderWordScreen();else if(step?.id==='wordMeaning')content=renderWordMeaningCard();else{const q=ensureQuestion();content=lessonTop()+(q.type===TRANSLATION_TYPE?renderTranslationQuiz(q):({find:renderFindLetter,letterPicture:renderLetterToPicture,pictureLetter:renderPictureToLetter}[q.type])(q));}}
- else if(FIND_OBJECT_COURSE[c.phase])content=renderFindObjectGame();else if(LETTER_MAZE_COURSE[c.phase])content=renderLetterMazeGame();else if(c.phase==='mini')content=renderMiniGame();else if(c.phase==='final')content=renderFinalChallenge();else if(c.phase==='results')content=renderResults();else content=renderInterlude(c.phase);
+ else if(FIND_OBJECT_COURSE[c.phase])content=renderFindObjectGame();else if(LETTER_MAZE_COURSE[c.phase])content=renderLetterMazeGame();else if(c.phase==='balloon_ghi')content=renderBalloonPopGame();else if(c.phase==='mini')content=renderMiniGame();else if(c.phase==='final')content=renderFinalChallenge();else if(c.phase==='results')content=renderResults();else content=renderInterlude(c.phase);
  return `<div class="screen learning">${content}${c.phase==='lesson'?journeyStrip():''}</div>`;}
 function showScreen(){
- viewEpoch++;const epoch=viewEpoch;clearTimeout(transitionTimer);transitionTimer=null;answerLocked=false;letterMazeAnimating=false;stopAudio();$('#confetti').replaceChildren();
+ viewEpoch++;const epoch=viewEpoch;clearTimeout(transitionTimer);transitionTimer=null;clearBalloonPopRuntime();answerLocked=false;letterMazeAnimating=false;stopAudio();$('#confetti').replaceChildren();
  document.body.classList.toggle('maze-active',view==='course'&&Boolean(activeLetterMazeEntry()));
+ document.body.classList.toggle('balloon-active',view==='course'&&AppState.cursor.phase==='balloon_ghi');
  $('#main').innerHTML=view==='home'?renderHome():view==='progress'?renderWardrobe():view==='reward'?renderReward():renderCourse();
  if(DEMO)$('#main').insertAdjacentHTML('beforeend',`<div class="demo-bar" lang="ru"><span>DEMO · отдельный прогресс · BUILD ${escapeHTML(BUILD_ID)}</span><button data-action="demo-next">Следующий этап →</button></div>`);
- $('#home-button').classList.toggle('hide',view==='home');updateSoundButton();wireMedia();wireFindObjectScene();wireLetterMazeScene();
+ $('#home-button').classList.toggle('hide',view==='home');updateSoundButton();wireMedia();wireFindObjectScene();wireLetterMazeScene();wireBalloonPopGame();
  announceScreen();
  if(view!=='home'){const heading=$('#main h1');heading?.setAttribute('tabindex','-1');heading?.focus({preventScroll:true});}
  window.scrollTo({top:0,behavior:'auto'});log(view,AppState.cursor);
@@ -2073,6 +2217,7 @@ function announceScreen(){const c=AppState.cursor,d=letters[c.index];
  if(view==='home'){setInstruction([ru('welcome')]);return;}
  if(view==='progress'){setInstruction([ru('dress_giraffe')]);return;}
  if(view==='reward'){const flow=visibleRewardFlow();setInstruction(flow?.selected?[ru(flow.id==='reward_def'?'new_item':'new_clothes'),ru('giraffe_happy')]:[ru('level_complete'),ru('reward'),ru('choose_reward')]);return;}
+ if(c.phase==='balloon_ghi'){setInstruction(balloonPopState().gameCompleted?[ru('well_done')]:[balloonAudioItem()]);return;}
  if(LETTER_MAZE_COURSE[c.phase]){const config=activeLetterMazeEntry().scene,state=letterMazeState(config),round=LetterMazeGame.currentRound(config,state),letter=byLetter.get(round.targetLetter);setInstruction(state.gameCompleted?[ru('well_done')]:[ru('challenge'),ru('find_letter'),enName(letter)]);return;}
  if(FIND_OBJECT_COURSE[c.phase]){const config=activeFindObjectEntry().scene;const state=findObjectState(config),round=HiddenObjectGame.currentRound(config,state),letter=byLetter.get(round.letter);setInstruction(state.gameCompleted?[ru('well_done')]:[ru('find_letter'),enName(letter),ru('find_picture'),enWord(letter)]);return;}
  if(c.phase==='lesson'){
@@ -2094,12 +2239,12 @@ function begin(){unlockAudio();AppState.started=true;go('course');preloadFeedbac
 function nextLessonStep(){if(answerLocked)return;AppState.cursor.step++;AppState.question=null;go('course');}
 function completeTranslationQuestion(){const c=AppState.cursor;if(c.phase!=='lesson'||currentLessonStep(c)?.type!==TRANSLATION_TYPE)return false;c.step++;AppState.question=null;saveProgress();return true;}
 function advanceAfterLetter(){const c=AppState.cursor;if((c.index+1)%GROUP_SIZE===0||c.index===letters.length-1)c.phase=c.index===2&&!findObjectComplete(ABC_FIND_OBJECT_GAME)?'room':c.index===5?'maze':'miniIntro';else{c.index++;c.phase='lesson';c.step=0;}AppState.question=null;go('course');}
-function advanceAfterMini(){const c=AppState.cursor;if(c.index===letters.length-1)c.phase='finalIntro';else{c.index++;c.phase='lesson';c.step=0;}AppState.game=null;AppState.question=null;go('course');}
+function advanceAfterMini(){const c=AppState.cursor;if(c.index===letters.length-1)c.phase=AppState.completedBlocks.includes('reward_ghi')?'finalIntro':'balloon_ghi';else{c.index++;c.phase='lesson';c.step=0;}AppState.game=null;AppState.question=null;go('course');}
 function completeQuestion(){const c=AppState.cursor,q=AppState.question;
  if(c.phase==='lesson'&&q?.type===TRANSLATION_TYPE)return completeTranslationQuestion();
  registerCorrectAnswer(q);
  if(c.phase==='lesson'){if(c.step<lessonSteps(letters[c.index]).length-1)c.step++;else c.phase='letterReward';}
- else{AppState.game.recent.push(q.letter);AppState.game.recent=AppState.game.recent.slice(-3);AppState.game.index++;const length=c.phase==='final'?FINAL_LENGTH:MINI_LENGTH;if(AppState.game.index>=length){if(c.phase==='final'){c.phase='results';AppState.completed=true;}else {c.phase='miniResult';finishBlock();}AppState.game=null;}}
+ else{AppState.game.recent.push(q.letter);AppState.game.recent=AppState.game.recent.slice(-3);AppState.game.index++;const length=c.phase==='final'?FINAL_LENGTH:MINI_LENGTH;if(AppState.game.index>=length){if(c.phase==='final'){c.phase='results';AppState.completed=true;}else {c.phase='miniResult';if(c.index!==letters.length-1)finishBlock();}AppState.game=null;}}
  AppState.question=null;saveProgress();
 }
 function celebrate(){const box=$('#confetti');box.innerHTML=Array.from({length:15},(_,i)=>`<i style="--x:${Math.round((Math.random()-.5)*430)}px;--y:${Math.round((Math.random()-.55)*400)}px;--r:${Math.round(Math.random()*300)}deg;color:${['#e4ad25','#4d9873','#a98acc','#ed9058'][i%4]}">${i%3?'✦':'★'}</i>`).join('');}
@@ -2160,7 +2305,14 @@ function checkAnswer(button){
  const epoch=viewEpoch;transitionTimer=setTimeout(()=>{finishFeedback.then(()=>{if(epoch!==viewEpoch)return;if(AppState.rewardFlow){view='reward';rewardReady=Boolean(AppState.rewardFlow.selected);}showScreen();});},DEMO?100:1100);
 }
 function updateSoundButton(){const b=$('#sound-button');b.textContent=AppState.soundEnabled?'🔊':'🔇';b.setAttribute('aria-label',AppState.soundEnabled?'Turn sound off':'Turn sound on');b.setAttribute('aria-pressed',String(!AppState.soundEnabled));}
-function toggleSound(){unlockAudio();AppState.soundEnabled=!AppState.soundEnabled;AudioManager.setEnabled(AppState.soundEnabled);saveProgress();updateSoundButton();if(AppState.soundEnabled&&!answerLocked)repeatInstruction();}
+function toggleSound(){
+ unlockAudio();AppState.soundEnabled=!AppState.soundEnabled;AudioManager.setEnabled(AppState.soundEnabled);saveProgress();updateSoundButton();
+ if(AppState.cursor.phase==='balloon_ghi'&&!balloonPopState().gameCompleted){
+  const target=document.querySelector('[data-balloon-target]');clearTimeout(balloonTargetTimer);
+  if(target&&!AppState.soundEnabled){const letter=BalloonPopGame.target(GHI_BALLOON_GAME,balloonPopState());target.textContent=letter;target.classList.remove('is-hidden');}
+  if(AppState.soundEnabled&&!answerLocked)repeatBalloonInstruction();
+ }else if(AppState.soundEnabled&&!answerLocked)repeatInstruction();
+}
 function openProgress(){if(view==='progress'){go(lastView);return;}lastView=view;go('progress');}
 /* Dialogs trap focus, support Escape, and always confirm an explicit reset. */
 function openModal(html){if(answerLocked)go('course');stopAudio();const layer=$('#modal-layer');if(layer.hidden)restoreFocus=document.activeElement;layer.innerHTML=`<section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" lang="ru">${html}</section>`;layer.hidden=false;$('#app').inert=true;layer.querySelector('button')?.focus();wireMedia();}
@@ -2181,6 +2333,9 @@ $('#sound-button').addEventListener('click',toggleSound);$('#home-button').inner
 document.addEventListener('click',event=>{if(event.target.closest('.find-object-scene')&&!event.target.closest('button')){const entry=activeFindObjectEntry();if(entry)findObjectPick(null,entry.scene.id);}});
 /* EVENTS */
 const actions={
+ 'balloon-pop':button=>tapBalloonPop(button.dataset.letter,button),
+ 'balloon-repeat':repeatBalloonInstruction,
+ 'balloon-continue':continueBalloonPopGame,
  'letter-maze-move':button=>letterMazeMove(button.dataset.cell,button.dataset.game),
  'letter-maze-next':button=>nextLetterMazeRound(button.dataset.game),
  'letter-maze-continue':button=>continueLetterMazeGame(button.dataset.game),
@@ -2218,6 +2373,7 @@ const actions={
    if(c.phase==='lesson'){if(currentLessonStep(c)?.kind==='card')nextLessonStep();else checkAnswer(document.querySelector(`[data-answer="${AppState.question.letter}"]`));}
    else if(['mini','final'].includes(c.phase))checkAnswer(document.querySelector(`[data-answer="${AppState.question.letter}"]`));
    else if(c.phase==='letterReward')advanceAfterLetter();
+   else if(c.phase==='balloon_ghi')advanceBalloonPopDemo();
    else if(entry){const config=entry.scene;const state=findObjectState(config);if(state.gameCompleted)continueFindObjectGame(config.id);else if(HiddenObjectGame.roundComplete(config,state))nextFindObjectRound(config.id);else findObjectPick(HiddenObjectGame.currentRound(config,state).targets.find(id=>!state.foundObjects.includes(id)),config.id);}
    else if(mazeEntry){const config=mazeEntry.scene,state=letterMazeState(config);if(state.gameCompleted)continueLetterMazeGame(config.id);else if(LetterMazeGame.roundComplete(config,state))nextLetterMazeRound(config.id);else selectLetterMazeCell(LetterMazeGame.nextLetterCell(config,state),config.id);}
    else if(c.phase==='miniIntro')startGame();

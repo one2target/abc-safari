@@ -15,6 +15,8 @@
 | `play/letter-maze-scenes.js` | Данные вертикального лабиринта D/E/F: background, процентные клетки, соседства, буквы и маршруты. |
 | `play/letter-maze-game.js` | Переиспользуемые правила, state API, выбор следующей буквы, сегменты автопрохода, валидация и HTML-шаблон letter maze. |
 | `play/letter-maze-game.css` | Mobile-first вертикальный layout, буквы на камнях, перемещение общего character stack. |
+| `play/balloon-pop-game.js` | Чистые правила трёх этапов G/H/I, генерация безопасного поля и HTML Balloon Pop. |
+| `play/balloon-pop-game.css` | Mobile-first игровое поле, движение, pop/shake/hint, частицы и short-height layout. |
 | `play/audio-manager.js` | `createAudioManager()`: воспроизведение записей и речевой fallback. Загружается после каталога ресурсов. |
 | `play/manifest.webmanifest` | Название приложения, запуск, область действия, цвета и иконки для установки на домашний экран. |
 | `README.md` | Запуск, пользовательские сценарии и описание сохранений. |
@@ -34,6 +36,8 @@
 │   ├── letter-maze-scenes.js
 │   ├── letter-maze-game.js
 │   ├── letter-maze-game.css
+│   ├── balloon-pop-game.js
+│   ├── balloon-pop-game.css
 │   ├── manifest.webmanifest
 │   ├── icon-180.png
 │   ├── icon-192.png
@@ -83,7 +87,7 @@
 
 - `cursor` хранит `phase`, индекс буквы и шаг. Фазы: `lesson`, `letterReward`, `miniIntro`, `mini`, `miniResult`, `finalIntro`, `final`, `results`.
 - `stats` по каждой букве: `attempts`, `correct`, `mistakes`, `mastery`, `skills`, `practiceDebt`. Итоги для родителей вычисляет `renderParentView()`.
-- `game`, `question`, `reviews`, `questionSerial` сохраняют позицию игры, вопрос и повторения; `started`, `completed`, `soundEnabled` — общие флаги.
+- `game`, `question`, `reviews`, `questionSerial` сохраняют позицию обычных заданий; `balloonPop` хранит phase/target/score/quickOrder/completion новой игры; `started`, `completed`, `soundEnabled` — общие флаги.
 - Награды: `characterState.ownedItems`, стандартные слоты `characterState.equipped`, `completedBlocks`, `claimedRewards`, `rewardFlow`.
 - `localStorage`: `alfie-abc-v1`; при `?demo=1` — отдельный `alfie-abc-demo-v1`. Общая версия состояния — 3; загрузчик принимает версии 1–3. Для сохранений v1/v2 прежние lesson steps 2–4 сдвигаются на два места, сохраняя точное упражнение. Завершённое либо находившееся в прежнем финале сохранение A–F продолжает с G; статистика, награды и экипировка A–F сохраняются. Инвентарь отдельно мигрирует `migrateRewards()` с `REWARD_STATE_VERSION = 3`.
 - При невозможности записи состояние остаётся в памяти вкладки, показывается `#storage-notice`. Сохранение также вызывается при скрытии страницы и `pagehide`. Сброс сохраняет настройку звука.
@@ -93,7 +97,7 @@
 
 `play/index.html`: `ITEM_SLOTS`, `ITEMS`, `itemCatalog`, `rewardConfig`, `finishBlock()`, `ensureRewardFlow()`, `chooseReward()`, `continueReward()`.
 
-`ITEMS` — независимый каталог предметов с `id`, `name`, `slot`, `asset`, `collection` и необязательной иконкой. `rewardConfig` содержит только условия награды и `itemIds`. После A–C и мини-игры выбирается одна куртка; после D–F/лабиринта — один аксессуар; после G–H–I и пяти вопросов review — одна шляпа. Завершение блока открывает выбор, а `chooseReward()` вызывает общие `unlockItem()` / `equipItem()` и сохраняет выбранную вещь до анимации. Альтернативный предмет остаётся закрытым.
+`ITEMS` — независимый каталог предметов с `id`, `name`, `slot`, `asset`, `collection` и необязательной иконкой. `rewardConfig` содержит только условия награды и `itemIds`. После A–C и мини-игры выбирается одна куртка; после D–F/лабиринта — один аксессуар; после G–H–I, пяти вопросов review и Balloon Pop — одна шляпа. Завершение Balloon Pop сохраняется раньше награды; только success-кнопка открывает прежний reward flow. `chooseReward()` вызывает общие `unlockItem()` / `equipItem()`. Альтернативный предмет остаётся закрытым.
 
 Общие операции: `getItemById()`, `isItemOwned()`, `unlockItem()`, `equipItem()`, `unequipItem()`, `getEquippedItem()`, `loadProgress()`, `saveProgress()`. Поддерживаемые слоты: `outfit`, `head`, `face`, `hand_left`, `hand_right`, `back`, `extra`, `background`.
 
@@ -257,7 +261,8 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 
 - `tests/find-object-engine.test.cjs`: две разные конфигурации, валидация, изоляция state, относительные координаты, counter/remaining и completion signal.
 - `tests/room.test.cjs`: текущая механика, сохранения и миграция `roomABC`, повтор, старые данные, загрузка изображения и расчёт размеров зон.
-- `tests/course-regression.test.cjs`: два полных прохода A–I с комнатой, лабиринтом, G/H/I review, тремя наградами и миграцией завершённого A–F; адаптер DOM/audio — `tests/support/trainer-harness.cjs`.
+- `tests/course-regression.test.cjs`: два полных прохода A–I с комнатой, лабиринтом, G/H/I review, Balloon Pop, тремя наградами и миграцией завершённого A–F; адаптер DOM/audio — `tests/support/trainer-harness.cjs`.
+- `tests/balloon-pop-engine.test.cjs`: цели/дистракторы, обязательный target, score и переходы, persistence, reward gate, demo isolation и responsive CSS.
 - `tests/inventory.test.cjs`: шесть предметов, восемь слотов, ownership/lock новой награды, head equip/unequip, перезагрузка и миграция rewardStateVersion 2 → 3.
 - `tests/character-assets.test.cjs`: manifest, наличие, Git tracking и SHA-256 семи ключевых character PNG; также автоматически запускается из `tests/character-renderer.test.cjs`.
 - `tests/character-renderer.test.cjs`: Canvas compositor на игровых экранах, порядок draw calls, замена outfit/head/hand_right, снятие, reload и изоляция сюжетных иллюстраций.
@@ -288,10 +293,10 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 
 ## 19. Блок G/H/I и head-награда
 
-Порядок третьего блока: G/Goat → H/Hat → I/Iguana → `miniIntro` → review из пяти вопросов по G/H/I → `reward_ghi` → общий финал A–I. Переход после `reward_def` использует прежний `advanceAfterMini()`; отдельного маршрутизатора или mini-game для блока нет.
+Порядок третьего блока: G/Goat → H/Hat → I/Iguana → `miniIntro` → review из пяти вопросов по G/H/I → `balloon_ghi` → `reward_ghi` → общий финал A–I. `advanceAfterMini()` отправляет новый normal flow в Balloon Pop; уже полученные старые head-награды не отзываются.
 
 - `reward_ghi.itemIds`: `hat_straw_bow`, `hat_adventure`. Оба предмета имеют `slot:'head'`; `chooseReward()` разблокирует и экипирует только выбранный ID.
 - `marius_hat_straw_bow.png` и `marius_hat_adventure.png` зарегистрированы как 1024×1536. Выбранный head asset передаётся compositor после BODY и рисуется тем же `drawImage(...,0,0,1024,1536)`, без индивидуальных координат, crop или transform.
 - Reward/wardrobe preview-карточки изолированы от большого renderer: head использует отдельный `renderItemPreview()`, а hand_right сохраняет authored crop `.accessory-art`. Изменения `.marius-composite` не должны влиять на их геометрию.
 - Нажатие на выбранную head-вещь в гардеробе вызывает общий `unequipItem()`; повторный выбор owned-вещи снова вызывает `equipItem()`. Одновременно в `equipped.head` хранится один ID.
-- `tests/course-regression.test.cjs`, `tests/inventory.test.cjs`, `tests/translation-lessons.test.cjs`, `tests/character-renderer.test.cjs` и `tests/character-assets.test.cjs` покрывают flow, звуки/переводы, ownership/lock, equip/unequip, миграцию A–F, Canvas compositor и целостность character assets.
+- `tests/balloon-pop-engine.test.cjs`, `tests/course-regression.test.cjs`, `tests/inventory.test.cjs`, `tests/translation-lessons.test.cjs`, `tests/character-renderer.test.cjs` и `tests/character-assets.test.cjs` покрывают Balloon Pop, flow, звуки/переводы, ownership/lock, equip/unequip, миграцию A–F, Canvas compositor и целостность character assets.
