@@ -10,8 +10,12 @@ const words=[
  ['C','Cat','Кошка','cat'],
  ['D','Dog','Собака','dog'],
  ['E','Egg','Яйцо','egg'],
- ['F','Fish','Рыба','fish']
+ ['F','Fish','Рыба','fish'],
+ ['G','Goat','Коза','goat'],
+ ['H','Hat','Шляпа','hat'],
+ ['I','Iguana','Игуана','iguana']
 ];
+const newAudio={G:['g_name','g_sound','g_goat','goat','goat_ru'],H:['h_name','h_sound','h_hat','hat','hat_ru'],I:['i_name','i_sound','i_iguana','iguana','iguana_ru']};
 const fakeButton=answer=>`({dataset:{answer:'${answer}'},classList:{add(){},remove(){}},focus(){}})`;
 
 (async()=>{
@@ -19,6 +23,11 @@ const fakeButton=answer=>`({dataset:{answer:'${answer}'},classList:{add(){},remo
   const file=path.join(root,'play/audio',`${key}_ru.mp3`);
   assert.ok(fs.existsSync(file),`${word}: missing ${key}_ru.mp3`);
   assert.ok(fs.statSync(file).size>1000,`${word}: empty Russian audio`);
+ }
+ for(const keys of Object.values(newAudio))for(const key of keys){
+  const file=path.join(root,'play/audio',`${key}.mp3`);
+  assert.ok(fs.existsSync(file),`missing ${key}.mp3`);
+  assert.ok(fs.statSync(file).size>1000,`empty ${key}.mp3`);
  }
 
  const data=createContext();
@@ -33,6 +42,27 @@ const fakeButton=answer=>`({dataset:{answer:'${answer}'},classList:{add(){},remo
    ['letter','word','wordMeaning','translationPicture','find','letterPicture','pictureLetter']
   );
  }
+ for(const [letter,keys] of Object.entries(newAudio))for(const key of keys)assert.equal(data.run(`MEDIA_ASSETS.audio.${key}.src`),`./audio/${key}.mp3`,`${letter}: ${key}`);
+ assert.equal(data.run("byLetter.get('G').letterWordAudio"),'./audio/g_goat.mp3');
+ assert.equal(data.run("byLetter.get('H').letterWordAudio"),'./audio/h_hat.mp3');
+ assert.equal(data.run("byLetter.get('I').letterWordAudio"),'./audio/i_iguana.mp3');
+ assert.equal(data.run("byLetter.get('I').sound"),'ɪ');
+ assert.equal(data.run("enName(byLetter.get('I')).key"),'i_name');
+ assert.equal(data.run("enSound(byLetter.get('I')).key"),'i_sound');
+ assert.deepEqual(JSON.parse(data.run("JSON.stringify(['G','H','I'].map(letter=>({image:byLetter.get(letter).image,emoji:byLetter.get(letter).emoji})))")),[
+  {image:null,emoji:'🐐'},{image:null,emoji:'🎩'},{image:null,emoji:'🦎'}
+ ]);
+
+ for(const [index,key] of [[6,'g_goat'],[7,'h_hat'],[8,'i_iguana']]){
+  const wordCue=createContext();
+  wordCue.run(`begin();stopAudio();AppState.cursor={phase:'lesson',index:${index},step:1};showScreen()`);
+  await wordCue.tick(1200);
+  assert.deepEqual(wordCue.played.slice(-2).map(item=>item.src),['./audio/13_listen_word.mp3',`./audio/${key}.mp3`]);
+ }
+ const iCue=createContext();
+ iCue.run("AppState.cursor={phase:'lesson',index:8,step:0};begin()");
+ await iCue.tick(2600);
+ assert.deepEqual(iCue.played.map(item=>item.src),['./audio/03_new_letter.mp3','./audio/i_name.mp3','./audio/i_sound.mp3','./audio/iguana.mp3']);
  assert.deepEqual(
   JSON.parse(data.run(`JSON.stringify(lessonSteps({emoji:'🦒',wordAudio:'./audio/game.mp3',translationAudio:'./audio/game_ru.mp3'}).map(step=>step.id))`)),
   ['letter','word','wordMeaning','translationPicture','find','letterPicture','pictureLetter']
@@ -114,6 +144,9 @@ const fakeButton=answer=>`({dataset:{answer:'${answer}'},classList:{add(){},remo
  console.log(JSON.stringify({
   passed:true,
   translations:words.length,
+  newAudioFiles:Object.values(newAudio).flat().length,
+  combinedWordCues:['g_goat','h_hat','i_iguana'],
+  iPhonicsSound:'i_sound.mp3 /ɪ/',
   lessonStepsPerLetter:7,
   meaningSequence:['english','pause','russian'],
   quizChoices:3,

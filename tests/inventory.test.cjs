@@ -6,11 +6,18 @@ const fresh=createContext();
 
 assert.equal(fresh.run('AppState.rewardStateVersion'),3);
 assert.deepEqual(JSON.parse(fresh.run('JSON.stringify(ITEM_SLOTS)')),slots);
-assert.equal(fresh.run('ITEMS.length'),4);
+assert.equal(fresh.run('ITEMS.length'),6);
 assert.equal(fresh.run("ITEMS.every(item=>['id','name','slot','asset','collection'].every(key=>Boolean(item[key])))"),true);
 assert.equal(fresh.run('rewardConfig.every(reward=>Array.isArray(reward.itemIds)&&!reward.options)'),true);
 assert.equal(fresh.run("getItemById('jacket_stars').slot"),'outfit');
 assert.equal(fresh.run("getItemById('accessory_balloon').slot"),'hand_right');
+assert.equal(fresh.run("getItemById('hat_straw_bow').slot"),'head');
+assert.equal(fresh.run("getItemById('hat_adventure').slot"),'head');
+assert.deepEqual(JSON.parse(fresh.run("JSON.stringify(rewardConfig.find(reward=>reward.id==='reward_ghi').itemIds)")),['hat_straw_bow','hat_adventure']);
+assert.equal(fresh.run("MEDIA_ASSETS.images.marius_hat_straw_bow.width"),1024);
+assert.equal(fresh.run("MEDIA_ASSETS.images.marius_hat_straw_bow.height"),1536);
+assert.equal(fresh.run("MEDIA_ASSETS.images.marius_hat_adventure.width"),1024);
+assert.equal(fresh.run("MEDIA_ASSETS.images.marius_hat_adventure.height"),1536);
 assert.equal(fresh.run("getItemById('missing')"),null);
 assert.equal(fresh.run("ITEM_SLOTS.every(slot=>AppState.characterState.equipped[slot]===null)"),true);
 
@@ -22,6 +29,36 @@ assert.equal(fresh.run("unlockItem('jacket_stars')"),true);
 assert.equal(fresh.run("AppState.characterState.ownedItems.filter(id=>id==='jacket_stars').length"),1);
 assert.equal(fresh.run("equipItem('jacket_stars')"),true);
 assert.equal(fresh.run("getEquippedItem('outfit').id"),'jacket_stars');
+
+const head=createContext();
+head.run("unlockItem('hat_straw_bow');unlockItem('hat_adventure');equipItem('hat_straw_bow')");
+assert.equal(head.run("getEquippedItem('head').id"),'hat_straw_bow');
+head.run("equipItem('hat_adventure')");
+assert.equal(head.run("getEquippedItem('head').id"),'hat_adventure');
+assert.equal(head.run("isItemOwned('hat_straw_bow')"),true);
+assert.equal(head.run("unequipItem('hat_adventure')"),true);
+assert.equal(head.run("getEquippedItem('head')"),null);
+const headReload=createContext({saved:saved(head)});
+assert.equal(headReload.run("getEquippedItem('head')"),null);
+assert.equal(headReload.run("isItemOwned('hat_adventure')"),true);
+
+const hatReward=createContext();
+hatReward.run("AppState.completedBlocks=['reward_ghi'];AppState.rewardFlow={id:'reward_ghi',resume:'after-mini',selected:null};chooseReward('hat_straw_bow')");
+assert.equal(hatReward.run("isItemOwned('hat_straw_bow')"),true);
+assert.equal(hatReward.run("isItemOwned('hat_adventure')"),false);
+assert.equal(hatReward.run("getEquippedItem('head').id"),'hat_straw_bow');
+assert.equal(hatReward.run("chooseReward('hat_adventure')"),false);
+const hatWardrobe=hatReward.run("AppState.rewardFlow=null;renderWardrobe()");
+assert.ok(hatWardrobe.includes('data-action="unequip"'));
+assert.ok(hatWardrobe.includes('character-art'));
+assert.equal((hatWardrobe.match(/data-character-context="item-preview"/g)||[]).length,2);
+assert.ok(!hatWardrobe.includes('full-canvas-art'));
+hatReward.run("AppState.rewardFlow=null;unequipItem('hat_straw_bow')");
+const unequippedHatReload=createContext({saved:saved(hatReward)});
+assert.equal(unequippedHatReload.run("getEquippedItem('head')"),null);
+assert.equal(unequippedHatReload.run("isItemOwned('hat_straw_bow')"),true);
+assert.equal(unequippedHatReload.run("isItemOwned('hat_adventure')"),false);
+assert.equal(unequippedHatReload.run('AppState.rewardFlow'),null);
 
 const unlockOnly=createContext();
 assert.equal(unlockOnly.run("unlockItem('accessory_balloon')"),true);
@@ -71,9 +108,11 @@ assert.equal(migrated.run('AppState.stats.E.correct'),7);
 
 console.log(JSON.stringify({
  passed:true,
- catalogItems:4,
+ catalogItems:6,
  slots,
  genericUnlockEquipUnequip:true,
+ headSlotEquipSwitchUnequip:true,
+ oneOfTwoHatOwnership:true,
  persistence:true,
  rewardStateV2Migration:true,
  lessonProgressPreserved:true,

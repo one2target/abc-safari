@@ -198,6 +198,51 @@ const MEDIA_ASSETS = {
     },
     "fish_ru": {
       "src": "./audio/fish_ru.mp3"
+    },
+    "g_goat": {
+      "src": "./audio/g_goat.mp3"
+    },
+    "g_name": {
+      "src": "./audio/g_name.mp3"
+    },
+    "g_sound": {
+      "src": "./audio/g_sound.mp3"
+    },
+    "goat": {
+      "src": "./audio/goat.mp3"
+    },
+    "goat_ru": {
+      "src": "./audio/goat_ru.mp3"
+    },
+    "h_hat": {
+      "src": "./audio/h_hat.mp3"
+    },
+    "h_name": {
+      "src": "./audio/h_name.mp3"
+    },
+    "h_sound": {
+      "src": "./audio/h_sound.mp3"
+    },
+    "hat": {
+      "src": "./audio/hat.mp3"
+    },
+    "hat_ru": {
+      "src": "./audio/hat_ru.mp3"
+    },
+    "i_iguana": {
+      "src": "./audio/i_iguana.mp3"
+    },
+    "i_name": {
+      "src": "./audio/i_name.mp3"
+    },
+    "i_sound": {
+      "src": "./audio/i_sound.mp3"
+    },
+    "iguana": {
+      "src": "./audio/iguana.mp3"
+    },
+    "iguana_ru": {
+      "src": "./audio/iguana_ru.mp3"
     }
   },
   "images": {
@@ -253,6 +298,16 @@ const MEDIA_ASSETS = {
     },
     "reward_icon_jacket_stars": {
       "src": "./images/reward_icon_jacket_stars.png?v=reward2",
+      "width": 1024,
+      "height": 1536
+    },
+    "marius_hat_straw_bow": {
+      "src": "./images/marius_hat_straw_bow.png?v=reward3",
+      "width": 1024,
+      "height": 1536
+    },
+    "marius_hat_adventure": {
+      "src": "./images/marius_hat_adventure.png?v=reward3",
       "width": 1024,
       "height": 1536
     }

@@ -1,6 +1,6 @@
 # ABC Safari — Project map
 
-Карта объединённого проекта: корневой лендинг и прежний тренажёр A–F в play/. Оба используют обычные HTML, CSS и JavaScript. Все пути ниже — относительно корня этого Git-репозитория. Основная логика и стили находятся в `play/index.html`; ищите по именам функций и CSS-селекторам. Отдельных каталогов компонентов, сборщика и серверной части нет.
+Карта объединённого проекта: корневой лендинг и тренажёр A–I в play/. Оба используют обычные HTML, CSS и JavaScript. Все пути ниже — относительно корня этого Git-репозитория. Основная логика и стили находятся в `play/index.html`; ищите по именам функций и CSS-селекторам. Отдельных каталогов компонентов, сборщика и серверной части нет.
 
 ## 1. Project entry points
 
@@ -67,7 +67,7 @@
 
 Всё в `play/index.html`:
 
-- `letters` — A–F, слова, русские значения, звуки, emoji, цвета, отвлекающие буквы и привязки английского/русского аудио. Отдельного хранилища готовых заданий нет.
+- `letters` — A–I, слова, русские значения, звуки, emoji, цвета, отвлекающие буквы и привязки английского/русского аудио. Отдельного хранилища готовых заданий нет.
 - `lessonSteps()` строит урок из данных буквы: знакомство, английское слово, карточка значения, `translationPicture`, затем прежние три упражнения. Если visual, английская или русская запись отсутствует, два шага значения не добавляются.
 - `CORE_TYPES` — `find`, `letterPicture`, `pictureLetter`; `TRANSLATION_TYPE` — отдельная проверка значения без влияния на mastery; `MINI_TYPES` добавляет `wordPicture`, `FINAL_TYPES` — `lowercase`.
 - `GROUP_SIZE`, `MINI_LENGTH`, `FINAL_LENGTH`, `groups` — группы по три буквы, мини-игры по пять вопросов, финал из десяти.
@@ -85,7 +85,7 @@
 - `stats` по каждой букве: `attempts`, `correct`, `mistakes`, `mastery`, `skills`, `practiceDebt`. Итоги для родителей вычисляет `renderParentView()`.
 - `game`, `question`, `reviews`, `questionSerial` сохраняют позицию игры, вопрос и повторения; `started`, `completed`, `soundEnabled` — общие флаги.
 - Награды: `characterState.ownedItems`, стандартные слоты `characterState.equipped`, `completedBlocks`, `claimedRewards`, `rewardFlow`.
-- `localStorage`: `alfie-abc-v1`; при `?demo=1` — отдельный `alfie-abc-demo-v1`. Общая версия состояния — 3; загрузчик принимает версии 1–3. Для сохранений v1/v2 прежние lesson steps 2–4 сдвигаются на два места, сохраняя точное упражнение. Инвентарь отдельно мигрирует `migrateRewards()` с `REWARD_STATE_VERSION = 3`.
+- `localStorage`: `alfie-abc-v1`; при `?demo=1` — отдельный `alfie-abc-demo-v1`. Общая версия состояния — 3; загрузчик принимает версии 1–3. Для сохранений v1/v2 прежние lesson steps 2–4 сдвигаются на два места, сохраняя точное упражнение. Завершённое либо находившееся в прежнем финале сохранение A–F продолжает с G; статистика, награды и экипировка A–F сохраняются. Инвентарь отдельно мигрирует `migrateRewards()` с `REWARD_STATE_VERSION = 3`.
 - При невозможности записи состояние остаётся в памяти вкладки, показывается `#storage-notice`. Сохранение также вызывается при скрытии страницы и `pagehide`. Сброс сохраняет настройку звука.
 - `view`, блокировки, таймеры и история выбора стикеров — временные переменные вне сохранения.
 
@@ -93,7 +93,7 @@
 
 `play/index.html`: `ITEM_SLOTS`, `ITEMS`, `itemCatalog`, `rewardConfig`, `finishBlock()`, `ensureRewardFlow()`, `chooseReward()`, `continueReward()`.
 
-`ITEMS` — независимый каталог предметов с `id`, `name`, `slot`, `asset`, `collection` и необязательной иконкой. `rewardConfig` содержит только условия награды и `itemIds`. После A–C и мини-игры выбирается одна куртка; после D–F и мини-игры — один аксессуар. Завершение блока открывает выбор, а `chooseReward()` вызывает общие `unlockItem()` / `equipItem()` и сохраняет выбранную вещь до анимации. Альтернативный предмет остаётся закрытым.
+`ITEMS` — независимый каталог предметов с `id`, `name`, `slot`, `asset`, `collection` и необязательной иконкой. `rewardConfig` содержит только условия награды и `itemIds`. После A–C и мини-игры выбирается одна куртка; после D–F/лабиринта — один аксессуар; после G–H–I и пяти вопросов review — одна шляпа. Завершение блока открывает выбор, а `chooseReward()` вызывает общие `unlockItem()` / `equipItem()` и сохраняет выбранную вещь до анимации. Альтернативный предмет остаётся закрытым.
 
 Общие операции: `getItemById()`, `isItemOwned()`, `unlockItem()`, `equipItem()`, `unequipItem()`, `getEquippedItem()`, `loadProgress()`, `saveProgress()`. Поддерживаемые слоты: `outfit`, `head`, `face`, `hand_left`, `hand_right`, `back`, `extra`, `background`.
 
@@ -113,11 +113,11 @@
 Система реализована в `play/index.html` и использует ресурсы `play/images/`, зарегистрированные в `play/assets.js`.
 
 - База — `play/images/giraffe_base.png`. Куртки — полные изображения `giraffe_jacket_stars.png` / `giraffe_jacket_racer.png`, заменяющие базу.
-- Прозрачные аксессуары — `play/images/accessory_bouquet.png`, `play/images/accessory_balloon.png`; иконки карточек курток — `play/images/reward_icon_jacket_*.png`.
+- Прозрачные аксессуары — `play/images/accessory_bouquet.png`, `play/images/accessory_balloon.png`; head overlays — `play/images/marius_hat_straw_bow.png`, `play/images/marius_hat_adventure.png`; иконки карточек курток — `play/images/reward_icon_jacket_*.png`.
 - `renderCharacter(scene, options)` получает предметы стандартных слотов из каталога. `outfit` заменяет полный вариант жирафика, потому что обе активные куртки являются готовыми full-body PNG, а остальные wearable-слоты выводятся прозрачными слоями на том же холсте. `includeBackground:false` создаёт компактный игровой stack и намеренно не применяет inventory-слот `background` к упражнениям.
 - Системный порядок `CHARACTER_LAYER_ORDER`: background (0) → back (1) → body/outfit (2) → face (3) → head (4) → hand_left (5) → hand_right (6) → extra (7). Порядок записывается в `data-layer-order` / `--character-layer`, а не задаётся отдельными правилами экрана.
-- CSS `.character-stage`, `.character-actor`, `.character-layer` задаёт единую сцену 2:3. Base/outfit и все overlays находятся внутри одного `.character-actor`, поэтому `translate(-3%, 0)` и адаптивный scale применяются ко всем слоям вместе.
-- `characterState.ownedItems` хранит владение; `characterState.equipped` всегда содержит все восемь слотов. Обе куртки занимают `outfit`, букет и шарик — `hand_right`. Менять через общие inventory-функции; отображение выбора — `outfitOptions()` / `renderWardrobe()`.
+- CSS `.character-stage`, `.character-actor`, `.character-layer` задаёт единую несжимаемую сцену 2:3. Base/outfit и все overlays находятся внутри одного `.character-actor`, поэтому `translate(-3%, 0)` и адаптивный scale применяются ко всем слоям вместе. Full-canvas изображения заполняют точные границы слоя; это не позволяет intrinsic-размеру отдельного PNG создать собственный fit внутри final flex-card.
+- `characterState.ownedItems` хранит владение; `characterState.equipped` всегда содержит все восемь слотов. Обе куртки занимают `outfit`, букет и шарик — `hand_right`, обе новые шляпы — `head`. Выбранную шляпу можно снять и снова надеть через `outfitOptions()` / `renderWardrobe()`; альтернативная награда остаётся locked.
 - Старые `play/images/jacket_*.png` и `play/images/headwear_*.png` остаются в каталоге, но не подключены через `MEDIA_ASSETS`; старые идентификаторы учитывает `migrateRewards()`.
 
 Новый экран с совместимой основной позой должен вызывать `renderCharacter()`; для декоративного компактного Мариуса внутри упражнения — `buddy('inline')` или `buddy('interlude')`. Не копировать разметку `.character-layer` в экран и не читать `characterState.equipped` напрямую. Новый overlay должен быть зарегистрирован в `MEDIA_ASSETS`, добавлен в `ITEMS` и подготовлен на совместимом холсте 1024×1536. Сюжетные позы подключаются отдельной иллюстрацией и не проходят через renderer.
@@ -125,16 +125,16 @@
 ## 9. Assets
 
 - `play/images/` — сцены, персонаж, одежда, аксессуары и изображения карточек; `play/images/stickers/` — реакции.
-- `play/audio/` — 66 MP3: прежние реплики плюс русские записи значений `apple_ru.mp3` … `fish_ru.mp3`.
+- `play/audio/` — 81 MP3: прежние 66 записей плюс по пять файлов для Goat, Hat и Iguana.
 - `play/assets.js` — каталог активных изображений и аудио. Стикеры перечисляются отдельно в `play/index.html`.
-- Учебные буквы выводятся текстом, картинки слов сейчас — emoji (`letters[].image === null`, `media()`). Иконки управления — встроенные SVG в `icons` и emoji; иконки установки — корневые `play/icon-*.png`.
+- Учебные буквы выводятся текстом, картинки слов сейчас — семантические emoji (`letters[].image === null`, `media()`), включая Goat/Hat/Iguana. Отдельных raster-файлов слов в `play/images/` нет. Иконки управления — встроенные SVG в `icons` и emoji; иконки установки — корневые `play/icon-*.png`.
 - Отдельной фоновой музыки и отдельного каталога изображений букв нет.
 
 ## 10. Audio
 
 `play/audio-manager.js`: `createAudioManager()` создаёт один переиспользуемый `Audio`; `unlock()` подготавливает его по жесту пользователя, `play()` / `playSequence()` воспроизводят очередь, `stop()` отменяет её, `setEnabled()` управляет звуком. `setInstruction()` / `repeatLastInstruction()` запоминают и повторяют инструкцию. При отсутствии/ошибке файла используется `speechSynthesis`, если у реплики есть текст.
 
-`play/index.html`: `announceScreen()` озвучивает экран/задание, `checkAnswer()` — ошибку или похвалу, `toggleSound()` — настройку звука, действие `repeat` — повтор. `AUDIO_TEXT`, `ru()`, `enName()`, `enSound()`, `enWord()`, `translatedWord()` задают ключи файлов из `MEDIA_ASSETS.audio`. Карточка значения проигрывает English → пауза 500 мс → Russian; meaning quiz при входе произносит английское слово, а при правильном выборе — только готовую русскую запись. У translation item намеренно нет TTS-текста: отсутствующий русский файл не подменяется синтезом. Смена экрана останавливает старую очередь.
+`play/index.html`: `announceScreen()` озвучивает экран/задание, `checkAnswer()` — ошибку или похвалу, `toggleSound()` — настройку звука, действие `repeat` — повтор. `AUDIO_TEXT`, `ru()`, `enName()`, `enSound()`, `enLetterWord()`, `enWord()`, `translatedWord()` задают ключи файлов из `MEDIA_ASSETS.audio`. Новые word-intro используют `g_goat.mp3`, `h_hat.mp3`, `i_iguana.mp3`; фонетика I отдельно использует `i_sound.mp3` для /ɪ/, тогда как `i_name.mp3` остаётся названием /aɪ/. Карточка значения проигрывает English → пауза 500 мс → Russian; meaning quiz при входе произносит английское слово, а при правильном выборе — только готовую русскую запись. У translation item намеренно нет TTS-текста: отсутствующий русский файл не подменяется синтезом. Смена экрана останавливает старую очередь.
 
 ## 11. Important functions and modules
 
@@ -256,13 +256,13 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 
 - `tests/find-object-engine.test.cjs`: две разные конфигурации, валидация, изоляция state, относительные координаты, counter/remaining и completion signal.
 - `tests/room.test.cjs`: текущая механика, сохранения и миграция `roomABC`, повтор, старые данные, загрузка изображения и расчёт размеров зон.
-- `tests/course-regression.test.cjs`: прежние полные проверки курса с проходом комнаты; адаптер DOM/audio — `tests/support/trainer-harness.cjs`.
-- `tests/inventory.test.cjs`: обязательные поля каталога, восемь слотов, общие операции, перезагрузка и миграция rewardStateVersion 2 → 3.
-- `tests/character-renderer.test.cjs`: общий stack на игровых экранах, порядок слоёв, замена outfit/hand_right, совместное отображение, снятие, reload и изоляция сюжетных иллюстраций.
+- `tests/course-regression.test.cjs`: два полных прохода A–I с комнатой, лабиринтом, G/H/I review, тремя наградами и миграцией завершённого A–F; адаптер DOM/audio — `tests/support/trainer-harness.cjs`.
+- `tests/inventory.test.cjs`: шесть предметов, восемь слотов, ownership/lock новой награды, head equip/unequip, перезагрузка и миграция rewardStateVersion 2 → 3.
+- `tests/character-renderer.test.cjs`: общий stack на игровых экранах, порядок слоёв, замена outfit/head/hand_right, full-canvas hat overlays, снятие, reload и изоляция сюжетных иллюстраций.
 
 ## 17. Лабиринт D/E/F
 
-Порядок второго блока: D → E → F → `maze` → существующая награда `reward_def` → `finalIntro`. Прежняя D/E/F mini-проверка заменена новым лабиринтом; A/B/C mini из пяти вопросов и финальная игра из десяти вопросов остаются прежними.
+Порядок второго блока: D → E → F → `maze` → существующая награда `reward_def` → G. Прежняя D/E/F mini-проверка заменена лабиринтом; A/B/C mini из пяти вопросов и финальная игра из десяти вопросов остаются прежними, но финал теперь начинается после G/H/I.
 
 - `play/images/marius-letter-maze-def.png` — предоставленный пользователем неизменённый portrait PNG 941 × 1672. Он зарегистрирован как `MEDIA_ASSETS.images.marius_letter_maze_def` и служит основным фоном, а не референсом.
 - `play/letter-maze-scenes.js` — `LETTER_MAZE_SCENES.campDEF`. Каждая клетка имеет стабильный `id`, `x/y` в процентах и симметричный список `neighbors`; при необходимости `labelOffsetX/labelOffsetY` в процентных пунктах калибруют только видимую букву относительно нарисованного камня. Раунд задаёт `targetLetter`, `instruction`, разреженный словарь из 12 букв и проверенный `path` от `start` к `finish`; пустая строка означает обычную проходную плитку. `hitArea` задаёт единую расширенную область tap без offsets клеток.
@@ -273,13 +273,23 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 - `continueLetterMazeGame()` переводит курс в `miniResult`, вызывает прежний `finishBlock()` и тем самым открывает неизменённую награду второго блока.
 - `tests/letter-maze-engine.test.cjs` проверяет asset, targets только на буквах, автопроход нескольких пустых клеток одним ответом, последовательную анимацию, запрет пропуска следующей буквы, nearest-target hit-test, неверную букву, аудио D/E/F, mute, D → E → F, restore и completion; course regression подтверждает переход к `reward_def` и сохранение общего прогресса.
 
-## 18. Значение слов A–F
+## 18. Значение слов A–I
 
 В каждом доступном уроке после прежнего English word intro добавляются два шага: карточка значения и meaning quiz. На карточке остаются существующая картинка/emoji и английское слово без видимого русского перевода; звук идёт `word.mp3` → 500 мс → `word_ru.mp3`. В quiz английское слово сопровождается тремя перемешанными visuals: правильным и двумя словами курса.
 
 - Данные находятся в `letters[]`: `translation` и `translationAudio` дополняют прежние `word`, `image`/`emoji` и `wordAudio`. `translation` не выводится в интерфейсе, а хранит смысловую связь и используется тестами/будущим контентом.
-- `lessonSteps()` условно добавляет `wordMeaning` и `translationPicture`; renderer и переходы не ветвятся вручную по A–F.
+- `lessonSteps()` условно добавляет `wordMeaning` и `translationPicture`; renderer и переходы не ветвятся вручную по A–I.
 - Пустой/ошибочный русский audio asset не вызывает speech synthesis, чтобы ребёнок не слышал системный голос вместо подготовленной записи.
 - Неверная картинка не меняет прогресс, статистику, lives или mastery; правильная проигрывает соответствующий `*_ru.mp3` и возвращает урок к прежним трём упражнениям. Mute обрабатывается общим AudioManager.
-- Для G/H/I нужно добавить визуал, English word audio, русский файл `<word>_ru.mp3`, зарегистрировать его в `MEDIA_ASSETS.audio` и заполнить `translation`/`translationAudio`. Остальной UI, shuffle и переходы переиспользуются автоматически.
-- `tests/translation-lessons.test.cjs` проверяет все шесть файлов и привязок, English → Russian, repeat, отсутствие русского текста, три shuffled visuals, retry без прогресса, correct Russian audio, mute, отсутствие TTS и миграцию v2.
+- G/H/I используют Goat/Коза, Hat/Шляпа, Iguana/Игуана и те же карточку значения, shuffled meaning quiz и мягкий retry, что A–F.
+- `tests/translation-lessons.test.cjs` проверяет девять переводов, все 15 новых файлов и привязок, отдельный `i_sound.mp3` для /ɪ/, English → Russian, repeat, отсутствие русского текста, три shuffled visuals, retry без прогресса, correct Russian audio, mute, отсутствие TTS и миграцию v2.
+
+## 19. Блок G/H/I и head-награда
+
+Порядок третьего блока: G/Goat → H/Hat → I/Iguana → `miniIntro` → review из пяти вопросов по G/H/I → `reward_ghi` → общий финал A–I. Переход после `reward_def` использует прежний `advanceAfterMini()`; отдельного маршрутизатора или mini-game для блока нет.
+
+- `reward_ghi.itemIds`: `hat_straw_bow`, `hat_adventure`. Оба предмета имеют `slot:'head'`; `chooseReward()` разблокирует и экипирует только выбранный ID.
+- `marius_hat_straw_bow.png` и `marius_hat_adventure.png` зарегистрированы как 1024×1536. `renderCharacter()` выводит выбранный asset обычным `character-layer` с `data-slot="head"`, `inset:0`, `width/height:100%` и без индивидуальных координат, crop или transform.
+- В reward/wardrobe карточках head и hand_right предметы также показываются через `renderCharacter('item-preview')`: `itemOverrides` подставляет только preview-предмет без изменения inventory. Поэтому карточки и основной персонаж используют один actor coordinate space 2:3; сырые full-canvas overlay PNG отдельно в коротком `.outfit-art` не масштабируются.
+- Нажатие на выбранную head-вещь в гардеробе вызывает общий `unequipItem()`; повторный выбор owned-вещи снова вызывает `equipItem()`. Одновременно в `equipped.head` хранится один ID.
+- `tests/course-regression.test.cjs`, `tests/inventory.test.cjs`, `tests/translation-lessons.test.cjs`, `tests/character-renderer.test.cjs` покрывают flow, звуки/переводы, ownership/lock, equip/unequip, миграцию A–F и full-canvas overlay.
