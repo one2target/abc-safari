@@ -1,3 +1,30 @@
+# Полный алфавит A–Z и система review — 28 сентября 2026
+
+Команды из корня репозитория:
+
+- `node tests/course-regression.test.cjs`
+- `node tests/inventory.test.cjs`
+- `node tests/translation-lessons.test.cjs`
+- `node tests/character-renderer.test.cjs`
+- `node tests/room.test.cjs`
+- `node tests/find-object-engine.test.cjs`
+- `node tests/letter-maze-engine.test.cjs`
+- `node tests/balloon-pop-engine.test.cjs`
+- `node tests/character-assets.test.cjs`
+- `node tests/alphabet-reviews.test.cjs`
+
+`translation-lessons.test.cjs` проверяет данные и семь шагов всех 26 букв, 85 новых непустых MP3 и их registry paths, X → Fox с X в конце слова, а также интерфейсное Yo-yo с ключами `y_yoyo` / `yoyo` / `yoyo_ru`.
+
+`alphabet-reviews.test.cjs` проверяет шесть local blocks (`JKL`, `MNO`, `PQR`, `STU`, `VWX`, `YZ`), три cumulative blocks (`A–O`, `A–U`, `A–Z`), ровно шесть разных типов вопросов в каждом блоке, уникальные cumulative targets, включение двух недавно изученных и четырёх старых букв, случайность повторных запусков, переходы, reload в середине review и миграцию завершённого A–I на J без потери inventory.
+
+`course-regression.test.cjs` выполняет два полных прохода A–Z: 142 обычных ответа, 26 meaning quiz, прежние room/maze/GHI review/Balloon Pop, три прежние награды и все девять новых review. Финал открывается только после `cumulative_review_AZ`; прежний финал A–I больше не является terminal state.
+
+Состояние остаётся version 3 и использует прежние ключи localStorage. В дополнение к старым проверкам A–F → G тестируется A–I → J с сохранением `completedBlocks`, owned/equipped items и reward state.
+
+Все десять команд выше проходят на текущем рабочем дереве.
+
+---
+
 # Balloon Pop G/H/I, инвентарь, значения слов, комната и лабиринт Мариуса — 23 сентября 2026
 
 Команды из корня репозитория:

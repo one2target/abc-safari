@@ -243,6 +243,261 @@ const MEDIA_ASSETS = {
     },
     "iguana_ru": {
       "src": "./audio/iguana_ru.mp3"
+    },
+    "j_juice": {
+      "src": "./audio/j_juice.mp3"
+    },
+    "j_name": {
+      "src": "./audio/j_name.mp3"
+    },
+    "j_sound": {
+      "src": "./audio/j_sound.mp3"
+    },
+    "juice": {
+      "src": "./audio/juice.mp3"
+    },
+    "juice_ru": {
+      "src": "./audio/juice_ru.mp3"
+    },
+    "k_kite": {
+      "src": "./audio/k_kite.mp3"
+    },
+    "k_name": {
+      "src": "./audio/k_name.mp3"
+    },
+    "k_sound": {
+      "src": "./audio/k_sound.mp3"
+    },
+    "kite": {
+      "src": "./audio/kite.mp3"
+    },
+    "kite_ru": {
+      "src": "./audio/kite_ru.mp3"
+    },
+    "l_lion": {
+      "src": "./audio/l_lion.mp3"
+    },
+    "l_name": {
+      "src": "./audio/l_name.mp3"
+    },
+    "l_sound": {
+      "src": "./audio/l_sound.mp3"
+    },
+    "lion": {
+      "src": "./audio/lion.mp3"
+    },
+    "lion_ru": {
+      "src": "./audio/lion_ru.mp3"
+    },
+    "m_monkey": {
+      "src": "./audio/m_monkey.mp3"
+    },
+    "m_name": {
+      "src": "./audio/m_name.mp3"
+    },
+    "m_sound": {
+      "src": "./audio/m_sound.mp3"
+    },
+    "monkey": {
+      "src": "./audio/monkey.mp3"
+    },
+    "monkey_ru": {
+      "src": "./audio/monkey_ru.mp3"
+    },
+    "n_name": {
+      "src": "./audio/n_name.mp3"
+    },
+    "n_nest": {
+      "src": "./audio/n_nest.mp3"
+    },
+    "n_sound": {
+      "src": "./audio/n_sound.mp3"
+    },
+    "nest": {
+      "src": "./audio/nest.mp3"
+    },
+    "nest_ru": {
+      "src": "./audio/nest_ru.mp3"
+    },
+    "o_name": {
+      "src": "./audio/o_name.mp3"
+    },
+    "o_octopus": {
+      "src": "./audio/o_octopus.mp3"
+    },
+    "o_sound": {
+      "src": "./audio/o_sound.mp3"
+    },
+    "octopus": {
+      "src": "./audio/octopus.mp3"
+    },
+    "octopus_ru": {
+      "src": "./audio/octopus_ru.mp3"
+    },
+    "p_name": {
+      "src": "./audio/p_name.mp3"
+    },
+    "p_panda": {
+      "src": "./audio/p_panda.mp3"
+    },
+    "p_sound": {
+      "src": "./audio/p_sound.mp3"
+    },
+    "panda": {
+      "src": "./audio/panda.mp3"
+    },
+    "panda_ru": {
+      "src": "./audio/panda_ru.mp3"
+    },
+    "q_name": {
+      "src": "./audio/q_name.mp3"
+    },
+    "q_queen": {
+      "src": "./audio/q_queen.mp3"
+    },
+    "q_sound": {
+      "src": "./audio/q_sound.mp3"
+    },
+    "queen": {
+      "src": "./audio/queen.mp3"
+    },
+    "queen_ru": {
+      "src": "./audio/queen_ru.mp3"
+    },
+    "r_name": {
+      "src": "./audio/r_name.mp3"
+    },
+    "r_rabbit": {
+      "src": "./audio/r_rabbit.mp3"
+    },
+    "r_sound": {
+      "src": "./audio/r_sound.mp3"
+    },
+    "rabbit": {
+      "src": "./audio/rabbit.mp3"
+    },
+    "rabbit_ru": {
+      "src": "./audio/rabbit_ru.mp3"
+    },
+    "s_name": {
+      "src": "./audio/s_name.mp3"
+    },
+    "s_sound": {
+      "src": "./audio/s_sound.mp3"
+    },
+    "s_sun": {
+      "src": "./audio/s_sun.mp3"
+    },
+    "sun": {
+      "src": "./audio/sun.mp3"
+    },
+    "sun_ru": {
+      "src": "./audio/sun_ru.mp3"
+    },
+    "t_name": {
+      "src": "./audio/t_name.mp3"
+    },
+    "t_sound": {
+      "src": "./audio/t_sound.mp3"
+    },
+    "t_tiger": {
+      "src": "./audio/t_tiger.mp3"
+    },
+    "tiger": {
+      "src": "./audio/tiger.mp3"
+    },
+    "tiger_ru": {
+      "src": "./audio/tiger_ru.mp3"
+    },
+    "u_name": {
+      "src": "./audio/u_name.mp3"
+    },
+    "u_sound": {
+      "src": "./audio/u_sound.mp3"
+    },
+    "u_umbrella": {
+      "src": "./audio/u_umbrella.mp3"
+    },
+    "umbrella": {
+      "src": "./audio/umbrella.mp3"
+    },
+    "umbrella_ru": {
+      "src": "./audio/umbrella_ru.mp3"
+    },
+    "v_name": {
+      "src": "./audio/v_name.mp3"
+    },
+    "v_sound": {
+      "src": "./audio/v_sound.mp3"
+    },
+    "v_van": {
+      "src": "./audio/v_van.mp3"
+    },
+    "van": {
+      "src": "./audio/van.mp3"
+    },
+    "van_ru": {
+      "src": "./audio/van_ru.mp3"
+    },
+    "w_name": {
+      "src": "./audio/w_name.mp3"
+    },
+    "w_sound": {
+      "src": "./audio/w_sound.mp3"
+    },
+    "w_whale": {
+      "src": "./audio/w_whale.mp3"
+    },
+    "whale": {
+      "src": "./audio/whale.mp3"
+    },
+    "whale_ru": {
+      "src": "./audio/whale_ru.mp3"
+    },
+    "x_name": {
+      "src": "./audio/x_name.mp3"
+    },
+    "x_sound": {
+      "src": "./audio/x_sound.mp3"
+    },
+    "x_fox": {
+      "src": "./audio/x_fox.mp3"
+    },
+    "fox": {
+      "src": "./audio/fox.mp3"
+    },
+    "fox_ru": {
+      "src": "./audio/fox_ru.mp3"
+    },
+    "y_name": {
+      "src": "./audio/y_name.mp3"
+    },
+    "y_sound": {
+      "src": "./audio/y_sound.mp3"
+    },
+    "y_yoyo": {
+      "src": "./audio/y_yoyo.mp3"
+    },
+    "yoyo": {
+      "src": "./audio/yoyo.mp3"
+    },
+    "yoyo_ru": {
+      "src": "./audio/yoyo_ru.mp3"
+    },
+    "z_name": {
+      "src": "./audio/z_name.mp3"
+    },
+    "z_sound": {
+      "src": "./audio/z_sound.mp3"
+    },
+    "z_zebra": {
+      "src": "./audio/z_zebra.mp3"
+    },
+    "zebra": {
+      "src": "./audio/zebra.mp3"
+    },
+    "zebra_ru": {
+      "src": "./audio/zebra_ru.mp3"
     }
   },
   "images": {

@@ -4,6 +4,7 @@ const path=require('node:path');
 const {createContext}=require('./support/trainer-harness.cjs');
 
 const root=path.resolve(__dirname,'..');
+const assetSource=fs.readFileSync(path.join(root,'play/assets.js'),'utf8');
 const words=[
  ['A','Apple','Яблоко','apple'],
  ['B','Ball','Мяч','ball'],
@@ -13,12 +14,42 @@ const words=[
  ['F','Fish','Рыба','fish'],
  ['G','Goat','Коза','goat'],
  ['H','Hat','Шляпа','hat'],
- ['I','Iguana','Игуана','iguana']
+ ['I','Iguana','Игуана','iguana'],
+ ['J','Juice','Сок','juice'],
+ ['K','Kite','Воздушный змей','kite'],
+ ['L','Lion','Лев','lion'],
+ ['M','Monkey','Обезьяна','monkey'],
+ ['N','Nest','Гнездо','nest'],
+ ['O','Octopus','Осьминог','octopus'],
+ ['P','Panda','Панда','panda'],
+ ['Q','Queen','Королева','queen'],
+ ['R','Rabbit','Кролик','rabbit'],
+ ['S','Sun','Солнце','sun'],
+ ['T','Tiger','Тигр','tiger'],
+ ['U','Umbrella','Зонт','umbrella'],
+ ['V','Van','Фургон','van'],
+ ['W','Whale','Кит','whale'],
+ ['X','Fox','Лиса','fox'],
+ ['Y','Yo-yo','Йо-йо','yoyo'],
+ ['Z','Zebra','Зебра','zebra']
 ];
-const newAudio={G:['g_name','g_sound','g_goat','goat','goat_ru'],H:['h_name','h_sound','h_hat','hat','hat_ru'],I:['i_name','i_sound','i_iguana','iguana','iguana_ru']};
+const ghiAudio={G:['g_name','g_sound','g_goat','goat','goat_ru'],H:['h_name','h_sound','h_hat','hat','hat_ru'],I:['i_name','i_sound','i_iguana','iguana','iguana_ru']};
+const newAudio={
+ J:['j_name','j_sound','j_juice','juice','juice_ru'],K:['k_name','k_sound','k_kite','kite','kite_ru'],L:['l_name','l_sound','l_lion','lion','lion_ru'],
+ M:['m_name','m_sound','m_monkey','monkey','monkey_ru'],N:['n_name','n_sound','n_nest','nest','nest_ru'],O:['o_name','o_sound','o_octopus','octopus','octopus_ru'],
+ P:['p_name','p_sound','p_panda','panda','panda_ru'],Q:['q_name','q_sound','q_queen','queen','queen_ru'],R:['r_name','r_sound','r_rabbit','rabbit','rabbit_ru'],
+ S:['s_name','s_sound','s_sun','sun','sun_ru'],T:['t_name','t_sound','t_tiger','tiger','tiger_ru'],U:['u_name','u_sound','u_umbrella','umbrella','umbrella_ru'],
+ V:['v_name','v_sound','v_van','van','van_ru'],W:['w_name','w_sound','w_whale','whale','whale_ru'],X:['x_name','x_sound','x_fox','fox','fox_ru'],
+ Y:['y_name','y_sound','y_yoyo','yoyo','yoyo_ru'],Z:['z_name','z_sound','z_zebra','zebra','zebra_ru']
+};
+const newSounds={J:'dʒ',K:'k',L:'l',M:'m',N:'n',O:'ɒ',P:'p',Q:'kw',R:'r',S:'s',T:'t',U:'ʌ',V:'v',W:'w',X:'ks',Y:'j',Z:'z'};
 const fakeButton=answer=>`({dataset:{answer:'${answer}'},classList:{add(){},remove(){}},focus(){}})`;
 
 (async()=>{
+ const audioRegistrySource=assetSource.split('"audio": {')[1].split('\n  },\n  "images"')[0];
+ const audioRegistryKeys=[...audioRegistrySource.matchAll(/^    "([^"]+)": \{$/gm)].map(match=>match[1]);
+ assert.equal(audioRegistryKeys.length,new Set(audioRegistryKeys).size,'duplicate audio registry key');
+ assert.equal(new Set(Object.values(newAudio).flat()).size,85);
  for(const [,word,,key] of words){
   const file=path.join(root,'play/audio',`${key}_ru.mp3`);
   assert.ok(fs.existsSync(file),`${word}: missing ${key}_ru.mp3`);
@@ -42,13 +73,23 @@ const fakeButton=answer=>`({dataset:{answer:'${answer}'},classList:{add(){},remo
    ['letter','word','wordMeaning','translationPicture','find','letterPicture','pictureLetter']
   );
  }
- for(const [letter,keys] of Object.entries(newAudio))for(const key of keys)assert.equal(data.run(`MEDIA_ASSETS.audio.${key}.src`),`./audio/${key}.mp3`,`${letter}: ${key}`);
+ for(const [letter,keys] of Object.entries({...ghiAudio,...newAudio}))for(const key of keys)assert.equal(data.run(`MEDIA_ASSETS.audio.${key}.src`),`./audio/${key}.mp3`,`${letter}: ${key}`);
+ for(const [letter,sound] of Object.entries(newSounds))assert.equal(data.run(`byLetter.get('${letter}').sound`),sound,`${letter}: sound`);
  assert.equal(data.run("byLetter.get('G').letterWordAudio"),'./audio/g_goat.mp3');
  assert.equal(data.run("byLetter.get('H').letterWordAudio"),'./audio/h_hat.mp3');
  assert.equal(data.run("byLetter.get('I').letterWordAudio"),'./audio/i_iguana.mp3');
  assert.equal(data.run("byLetter.get('I').sound"),'ɪ');
  assert.equal(data.run("enName(byLetter.get('I')).key"),'i_name');
  assert.equal(data.run("enSound(byLetter.get('I')).key"),'i_sound');
+ assert.equal(data.run("byLetter.get('X').word"),'Fox');
+ assert.equal(data.run("byLetter.get('X').wordLetterPosition"),'end');
+ assert.equal(data.run("renderWordLabel(byLetter.get('X'))"),'Fo<strong>x</strong>');
+ assert.ok(data.run("questionPrompt({type:'pictureLetter',letter:'X'})").includes('Fox'));
+ assert.ok(!data.run("questionPrompt({type:'pictureLetter',letter:'X'})").includes('начинается'));
+ assert.equal(data.run("byLetter.get('Y').word"),'Yo-yo');
+ assert.equal(data.run("enLetterWord(byLetter.get('Y')).key"),'y_yoyo');
+ assert.equal(data.run("enWord(byLetter.get('Y')).key"),'yoyo');
+ assert.equal(data.run("translatedWord(byLetter.get('Y')).key"),'yoyo_ru');
  assert.deepEqual(JSON.parse(data.run("JSON.stringify(['G','H','I'].map(letter=>({image:byLetter.get(letter).image,emoji:byLetter.get(letter).emoji})))")),[
   {image:null,emoji:'🐐'},{image:null,emoji:'🎩'},{image:null,emoji:'🦎'}
  ]);

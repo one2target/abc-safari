@@ -87,7 +87,7 @@ assert.ok(reload.run('renderCourse()').includes('Получить награду
 reload.run("view='course';continueBalloonPopGame()");
 assert.equal(reload.run('AppState.rewardFlow.id'),'reward_ghi');
 assert.equal(reload.run('view'),'reward');
-assert.equal(reload.run('AppState.cursor.phase'),'finalIntro');
+assert.deepEqual(JSON.parse(reload.run('JSON.stringify(AppState.cursor)')),{phase:'lesson',index:9,step:0});
 assert.equal(reload.run('AppState.characterState.ownedItems.length'),2);
 
 // Direct demo routing uses in-memory shortcut state and never writes either

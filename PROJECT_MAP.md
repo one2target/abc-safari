@@ -1,6 +1,6 @@
 # ABC Safari — Project map
 
-Карта объединённого проекта: корневой лендинг и тренажёр A–I в play/. Оба используют обычные HTML, CSS и JavaScript. Все пути ниже — относительно корня этого Git-репозитория. Основная логика и стили находятся в `play/index.html`; ищите по именам функций и CSS-селекторам. Отдельных каталогов компонентов, сборщика и серверной части нет.
+Карта объединённого проекта: корневой лендинг и тренажёр A–Z в play/. Оба используют обычные HTML, CSS и JavaScript. Все пути ниже — относительно корня этого Git-репозитория. Основная логика и стили находятся в `play/index.html`; ищите по именам функций и CSS-селекторам. Отдельных каталогов компонентов, сборщика и серверной части нет.
 
 ## 1. Project entry points
 
@@ -71,25 +71,25 @@
 
 Всё в `play/index.html`:
 
-- `letters` — A–I, слова, русские значения, звуки, emoji, цвета, отвлекающие буквы и привязки английского/русского аудио. Отдельного хранилища готовых заданий нет.
+- `letters` — A–Z, слова, русские значения, звуки, emoji, цвета, отвлекающие буквы и привязки английского/русского аудио. `audioWordKey:'yoyo'` отделяет интерфейсное Yo-yo от имён файлов без дефиса; `wordLetterPosition:'end'` у X/Fox запрещает формулировки про первую букву.
 - `lessonSteps()` строит урок из данных буквы: знакомство, английское слово, карточка значения, `translationPicture`, затем прежние три упражнения. Если visual, английская или русская запись отсутствует, два шага значения не добавляются.
-- `CORE_TYPES` — `find`, `letterPicture`, `pictureLetter`; `TRANSLATION_TYPE` — отдельная проверка значения без влияния на mastery; `MINI_TYPES` добавляет `wordPicture`, `FINAL_TYPES` — `lowercase`.
-- `GROUP_SIZE`, `MINI_LENGTH`, `FINAL_LENGTH`, `groups` — группы по три буквы, мини-игры по пять вопросов, финал из десяти.
-- `startGame()` задаёт последовательность типов; `gamePool()` выбирает набор букв; `getWeightedRandomLetter()` учитывает ошибки и очередь повторений.
+- `CORE_TYPES` — `find`, `letterPicture`, `pictureLetter`; `TRANSLATION_TYPE` — отдельная проверка значения без влияния на mastery; старые `MINI_TYPES` и A–I mini-flow сохранены. `REVIEW_TYPES` задаёт шесть типов новых review, включая `soundLetter`, внутри того же question UI.
+- `LOCAL_REVIEW_BLOCKS` описывает JKL, MNO, PQR, STU, VWX, YZ; `CUMULATIVE_REVIEW_BLOCKS` — A–O, A–U, A–Z. Каждый блок содержит шесть вопросов.
+- `startGame()` обслуживает прежние mini; `startReview()` создаёт новый local/cumulative review. В cumulative выбираются шесть уникальных целей: две случайные из последнего блока и четыре случайные из более раннего изученного диапазона. `gamePool()` оставляет весь диапазон доступным для вариантов ответа.
 - `ensureQuestion()` восстанавливает подходящий вопрос либо вызывает `createQuestion()`; `validQuestion()` проверяет структуру сохранённого вопроса.
 - `questionPrompt()` / `questionBody()` выводят вопрос и варианты.
 - `checkAnswer()` сравнивает `button.dataset.answer` с `q.letter`, запускает реакцию и блокирует повторное нажатие. В прежних упражнениях ошибка вызывает `registerMistake()`, а успех — `registerCorrectAnswer()`; meaning quiz даёт мягкий retry без статистического штрафа, а при успехе проигрывает русское слово и переходит к прежним упражнениям.
-- Переходы: `nextLessonStep()`, `advanceAfterLetter()`, `advanceAfterMini()`, `completeQuestion()`, затем `go()` / `showScreen()`.
+- Переходы: `nextLessonStep()`, `advanceAfterLetter()`, `advanceAfterMini()`, `advanceAfterReview()`, `completeQuestion()`, затем `go()` / `showScreen()`.
 
 ## 5. Progress and state
 
 `play/index.html`: `initialState()`, `AppState`, `loadProgress()`, `saveProgress()`, `resetProgress()`.
 
-- `cursor` хранит `phase`, индекс буквы и шаг. Фазы: `lesson`, `letterReward`, `miniIntro`, `mini`, `miniResult`, `finalIntro`, `final`, `results`.
+- `cursor` хранит `phase`, индекс буквы и шаг. К прежним фазам добавлены `reviewIntro`, `review`, `reviewResult`, `cumulativeIntro`, `cumulative`, `cumulativeResult`; `results` теперь открывается после `cumulative_review_AZ`.
 - `stats` по каждой букве: `attempts`, `correct`, `mistakes`, `mastery`, `skills`, `practiceDebt`. Итоги для родителей вычисляет `renderParentView()`.
 - `game`, `question`, `reviews`, `questionSerial` сохраняют позицию обычных заданий; `balloonPop` хранит phase/target/score/quickOrder/completion новой игры; `started`, `completed`, `soundEnabled` — общие флаги.
 - Награды: `characterState.ownedItems`, стандартные слоты `characterState.equipped`, `completedBlocks`, `claimedRewards`, `rewardFlow`.
-- `localStorage`: `alfie-abc-v1`; при `?demo=1` — отдельный `alfie-abc-demo-v1`. Общая версия состояния — 3; загрузчик принимает версии 1–3. Для сохранений v1/v2 прежние lesson steps 2–4 сдвигаются на два места, сохраняя точное упражнение. Завершённое либо находившееся в прежнем финале сохранение A–F продолжает с G; статистика, награды и экипировка A–F сохраняются. Инвентарь отдельно мигрирует `migrateRewards()` с `REWARD_STATE_VERSION = 3`.
+- `localStorage`: `alfie-abc-v1`; при `?demo=1` — отдельный `alfie-abc-demo-v1`. Общая версия состояния остаётся 3; загрузчик принимает версии 1–3. Для сохранений v1/v2 прежние lesson steps 2–4 сдвигаются на два места. Завершённое A–F продолжает с G, завершённое A–I или сохранение в прежнем финале — с J; статистика, `completedBlocks`, inventory и экипировка сохраняются. Новые `game.poolLetters` / `game.letterOrder` восстанавливают точную позицию review. Инвентарь отдельно мигрирует `migrateRewards()` с `REWARD_STATE_VERSION = 3`.
 - При невозможности записи состояние остаётся в памяти вкладки, показывается `#storage-notice`. Сохранение также вызывается при скрытии страницы и `pagehide`. Сброс сохраняет настройку звука.
 - `view`, блокировки, таймеры и история выбора стикеров — временные переменные вне сохранения.
 
@@ -130,9 +130,9 @@
 
 - `play/images/` — сцены, персонаж, одежда, аксессуары и изображения карточек; `play/images/stickers/` — реакции.
 - `play/images/character-assets.sha256.json` фиксирует SHA-256 ключевых body/head/hand PNG; `tests/character-assets.test.cjs` проверяет наличие, Git tracking и точное совпадение хэшей. Перед диагностикой renderer сначала проверить фактический asset path, SHA-256 и Git tracking. При намеренной замене PNG manifest обновляется вместе с файлом.
-- `play/audio/` — 81 MP3: прежние 66 записей плюс по пять файлов для Goat, Hat и Iguana.
+- `play/audio/` — 166 MP3: прежние 81 плюс 85 файлов J–Z (по пять на букву).
 - `play/assets.js` — каталог активных изображений и аудио. Стикеры перечисляются отдельно в `play/index.html`.
-- Учебные буквы выводятся текстом, картинки слов сейчас — семантические emoji (`letters[].image === null`, `media()`), включая Goat/Hat/Iguana. Отдельных raster-файлов слов в `play/images/` нет. Иконки управления — встроенные SVG в `icons` и emoji; иконки установки — корневые `play/icon-*.png`.
+- Учебные буквы выводятся текстом, картинки слов сейчас — семантические emoji (`letters[].image === null`, `media()`), включая все слова G–Z. Отдельных raster-файлов слов в `play/images/` нет. Иконки управления — встроенные SVG в `icons` и emoji; иконки установки — корневые `play/icon-*.png`.
 - Отдельной фоновой музыки и отдельного каталога изображений букв нет.
 
 ## 10. Audio
@@ -261,7 +261,8 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 
 - `tests/find-object-engine.test.cjs`: две разные конфигурации, валидация, изоляция state, относительные координаты, counter/remaining и completion signal.
 - `tests/room.test.cjs`: текущая механика, сохранения и миграция `roomABC`, повтор, старые данные, загрузка изображения и расчёт размеров зон.
-- `tests/course-regression.test.cjs`: два полных прохода A–I с комнатой, лабиринтом, G/H/I review, Balloon Pop, тремя наградами и миграцией завершённого A–F; адаптер DOM/audio — `tests/support/trainer-harness.cjs`.
+- `tests/course-regression.test.cjs`: два полных прохода A–Z с комнатой, лабиринтом, G/H/I review, Balloon Pop, тремя прежними наградами, девятью новыми review и миграцией завершённых A–F/A–I; адаптер DOM/audio — `tests/support/trainer-harness.cjs`.
+- `tests/alphabet-reviews.test.cjs`: порядок A–Z, конфигурации всех review, шесть разных типов, диапазоны, уникальный cumulative sampling, переходы, restore review и сохранение inventory при A–I → J.
 - `tests/balloon-pop-engine.test.cjs`: цели/дистракторы, обязательный target, score и переходы, persistence, reward gate, demo isolation и responsive CSS.
 - `tests/inventory.test.cjs`: шесть предметов, восемь слотов, ownership/lock новой награды, head equip/unequip, перезагрузка и миграция rewardStateVersion 2 → 3.
 - `tests/character-assets.test.cjs`: manifest, наличие, Git tracking и SHA-256 семи ключевых character PNG; также автоматически запускается из `tests/character-renderer.test.cjs`.
@@ -269,7 +270,7 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 
 ## 17. Лабиринт D/E/F
 
-Порядок второго блока: D → E → F → `maze` → существующая награда `reward_def` → G. Прежняя D/E/F mini-проверка заменена лабиринтом; A/B/C mini из пяти вопросов и финальная игра из десяти вопросов остаются прежними, но финал теперь начинается после G/H/I.
+Порядок второго блока: D → E → F → `maze` → существующая награда `reward_def` → G. Прежняя D/E/F mini-проверка заменена лабиринтом; A/B/C mini из пяти вопросов остаётся прежней. Старый финал A–I заменён продолжением курса с J.
 
 - `play/images/marius-letter-maze-def.png` — предоставленный пользователем неизменённый portrait PNG 941 × 1672. Он зарегистрирован как `MEDIA_ASSETS.images.marius_letter_maze_def` и служит основным фоном, а не референсом.
 - `play/letter-maze-scenes.js` — `LETTER_MAZE_SCENES.campDEF`. Каждая клетка имеет стабильный `id`, `x/y` в процентах и симметричный список `neighbors`; при необходимости `labelOffsetX/labelOffsetY` в процентных пунктах калибруют только видимую букву относительно нарисованного камня. Раунд задаёт `targetLetter`, `instruction`, разреженный словарь из 12 букв и проверенный `path` от `start` к `finish`; пустая строка означает обычную проходную плитку. `hitArea` задаёт единую расширенную область tap без offsets клеток.
@@ -280,23 +281,32 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 - `continueLetterMazeGame()` переводит курс в `miniResult`, вызывает прежний `finishBlock()` и тем самым открывает неизменённую награду второго блока.
 - `tests/letter-maze-engine.test.cjs` проверяет asset, targets только на буквах, автопроход нескольких пустых клеток одним ответом, последовательную анимацию, запрет пропуска следующей буквы, nearest-target hit-test, неверную букву, аудио D/E/F, mute, D → E → F, restore и completion; course regression подтверждает переход к `reward_def` и сохранение общего прогресса.
 
-## 18. Значение слов A–I
+## 18. Значение слов A–Z
 
 В каждом доступном уроке после прежнего English word intro добавляются два шага: карточка значения и meaning quiz. На карточке остаются существующая картинка/emoji и английское слово без видимого русского перевода; звук идёт `word.mp3` → 500 мс → `word_ru.mp3`. В quiz английское слово сопровождается тремя перемешанными visuals: правильным и двумя словами курса.
 
 - Данные находятся в `letters[]`: `translation` и `translationAudio` дополняют прежние `word`, `image`/`emoji` и `wordAudio`. `translation` не выводится в интерфейсе, а хранит смысловую связь и используется тестами/будущим контентом.
-- `lessonSteps()` условно добавляет `wordMeaning` и `translationPicture`; renderer и переходы не ветвятся вручную по A–I.
+- `lessonSteps()` условно добавляет `wordMeaning` и `translationPicture`; renderer и переходы не ветвятся вручную по буквам.
 - Пустой/ошибочный русский audio asset не вызывает speech synthesis, чтобы ребёнок не слышал системный голос вместо подготовленной записи.
 - Неверная картинка не меняет прогресс, статистику, lives или mastery; правильная проигрывает соответствующий `*_ru.mp3` и возвращает урок к прежним трём упражнениям. Mute обрабатывается общим AudioManager.
-- G/H/I используют Goat/Коза, Hat/Шляпа, Iguana/Игуана и те же карточку значения, shuffled meaning quiz и мягкий retry, что A–F.
-- `tests/translation-lessons.test.cjs` проверяет девять переводов, все 15 новых файлов и привязок, отдельный `i_sound.mp3` для /ɪ/, English → Russian, repeat, отсутствие русского текста, три shuffled visuals, retry без прогресса, correct Russian audio, mute, отсутствие TTS и миграцию v2.
+- J–Z используют те же карточку значения, shuffled meaning quiz и мягкий retry, что A–I. X связан с Fox и выделяет X в конце слова; Y показывает Yo-yo, но использует файловый ключ `yoyo`.
+- `tests/translation-lessons.test.cjs` проверяет 26 переводов, все 85 новых MP3 и привязок, особые случаи X/Y, English → Russian, repeat, отсутствие русского текста, три shuffled visuals, retry без прогресса, correct Russian audio, mute, отсутствие TTS и миграцию v2.
 
 ## 19. Блок G/H/I и head-награда
 
-Порядок третьего блока: G/Goat → H/Hat → I/Iguana → `miniIntro` → review из пяти вопросов по G/H/I → `balloon_ghi` → `reward_ghi` → общий финал A–I. `advanceAfterMini()` отправляет новый normal flow в Balloon Pop; уже полученные старые head-награды не отзываются.
+Порядок третьего блока: G/Goat → H/Hat → I/Iguana → `miniIntro` → review из пяти вопросов по G/H/I → `balloon_ghi` → `reward_ghi` → J. `advanceAfterMini()` отправляет normal flow в Balloon Pop; уже полученные старые head-награды не отзываются.
 
 - `reward_ghi.itemIds`: `hat_straw_bow`, `hat_adventure`. Оба предмета имеют `slot:'head'`; `chooseReward()` разблокирует и экипирует только выбранный ID.
 - `marius_hat_straw_bow.png` и `marius_hat_adventure.png` зарегистрированы как 1024×1536. Выбранный head asset передаётся compositor после BODY и рисуется тем же `drawImage(...,0,0,1024,1536)`, без индивидуальных координат, crop или transform.
 - Reward/wardrobe preview-карточки изолированы от большого renderer: head использует отдельный `renderItemPreview()`, а hand_right сохраняет authored crop `.accessory-art`. Изменения `.marius-composite` не должны влиять на их геометрию.
 - Нажатие на выбранную head-вещь в гардеробе вызывает общий `unequipItem()`; повторный выбор owned-вещи снова вызывает `equipItem()`. Одновременно в `equipped.head` хранится один ID.
 - `tests/balloon-pop-engine.test.cjs`, `tests/course-regression.test.cjs`, `tests/inventory.test.cjs`, `tests/translation-lessons.test.cjs`, `tests/character-renderer.test.cjs` и `tests/character-assets.test.cjs` покрывают Balloon Pop, flow, звуки/переводы, ownership/lock, equip/unequip, миграцию A–F, Canvas compositor и целостность character assets.
+
+## 20. Буквы J–Z и повторение
+
+Полный новый поток после награды GHI: J → K → L → `review_JKL` → M → N → O → `review_MNO` → `cumulative_review_AO` → P → Q → R → `review_PQR` → S → T → U → `review_STU` → `cumulative_review_AU` → V → W → X → `review_VWX` → Y → Z → `review_YZ` → `cumulative_review_AZ` → `results`.
+
+- Уроки J–Z создаёт прежний `lessonSteps()` из `letters[]`; новых game engines, reward screens и предметов нет.
+- Local review использует только буквы своего блока. Все шесть `REVIEW_TYPES` появляются ровно по одному разу; буквы перемешиваются и равномерно повторяются.
+- Cumulative review хранит полный доступный range в `game.poolLetters`, а шесть уникальных целей — в `game.letterOrder`. Две цели берутся из только что изученного блока, четыре — из более ранних букв; оба набора и общий порядок перемешиваются при новом прохождении.
+- `completeQuestion()` переводит review в result-фазу после шестого ответа; `advanceAfterReview()` открывает следующий урок, cumulative block либо итоговый A–Z экран.
