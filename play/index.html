@@ -2127,9 +2127,11 @@ function continueLetterMazeGame(gameId){
  AppState.cursor.phase=entry.nextPhase;AppState.game=null;AppState.question=null;finishBlock();go('course');
 }
 /* BALLOON POP G/H/I — pure game rules live in balloon-pop-game.js. */
-let balloonVisuals=[],balloonHintTimer=null,balloonTargetTimer=null,balloonFeedbackTimer=null,balloonAudioContext=null;
+const BALLOON_LETTER_CHANGE_INTERVAL_MULTIPLIER=1.25,BALLOON_POP_ANIMATION_MS=200;
+let balloonVisuals=[],balloonHintTimer=null,balloonTargetTimer=null,balloonFeedbackTimer=null,balloonAudioContext=null,balloonLetterTimers=new Map();
 function clearBalloonPopRuntime(){
  clearTimeout(balloonHintTimer);clearTimeout(balloonTargetTimer);clearTimeout(balloonFeedbackTimer);
+ balloonLetterTimers.forEach(timer=>clearTimeout(timer));balloonLetterTimers.clear();
  balloonHintTimer=balloonTargetTimer=balloonFeedbackTimer=null;
 }
 function balloonAudioItem(){
@@ -2165,15 +2167,34 @@ function scheduleBalloonHint(){
 }
 function wireBalloonPopGame(){
  if(view!=='course'||AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return;
- document.querySelectorAll('.balloon-pop-balloon').forEach(button=>button.addEventListener('animationiteration',()=>replaceBalloonButton(button)));
+ document.querySelectorAll('.balloon-pop-balloon').forEach(scheduleBalloonLetterChange);
  scheduleBalloonTargetHide();scheduleBalloonHint();
+}
+function balloonLetterChangeDelay(durationSeconds){
+ const duration=Number(durationSeconds);
+ return Number.isFinite(duration)&&duration>0?duration*1000*BALLOON_LETTER_CHANGE_INTERVAL_MULTIPLIER:0;
+}
+function clearBalloonLetterTimer(button){
+ const timer=balloonLetterTimers.get(button);if(timer!=null)clearTimeout(timer);balloonLetterTimers.delete(button);
+}
+function scheduleBalloonLetterChange(button){
+ clearBalloonLetterTimer(button);
+ const delay=balloonLetterChangeDelay(button?.dataset?.duration);
+ if(!button?.isConnected||!delay||AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return;
+ const timer=setTimeout(()=>{
+  balloonLetterTimers.delete(button);
+  if(!button.isConnected||button.disabled||AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return;
+  replaceBalloonButton(button);scheduleBalloonLetterChange(button);
+ },delay);
+ balloonLetterTimers.set(button,timer);
 }
 function replaceBalloonButton(button){
  if(!button?.isConnected||AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return;
- const buttons=[...document.querySelectorAll('.balloon-pop-balloon')],index=buttons.indexOf(button);
+ const buttons=[...document.querySelectorAll('.balloon-pop-balloon')].filter(item=>!item.disabled),index=buttons.indexOf(button);
  if(index<0)return;
- const letters=buttons.map(item=>item.dataset.letter),target=BalloonPopGame.target(GHI_BALLOON_GAME,balloonPopState());
- const letter=BalloonPopGame.replacementLetter(GHI_BALLOON_GAME,letters,index,target);
+ const state=balloonPopState(),phase=BalloonPopGame.currentPhase(GHI_BALLOON_GAME,state),target=BalloonPopGame.target(GHI_BALLOON_GAME,state);
+ const letters=buttons.map(item=>item.dataset.letter),remainingTargets=Math.max(1,phase.perTarget-state.score);
+ const letter=BalloonPopGame.replacementLetter(GHI_BALLOON_GAME,letters,index,target,Math.random,remainingTargets);
  const color=Math.floor(Math.random()*6);
  button.dataset.letter=letter;button.setAttribute('aria-label',`Буква ${letter}`);button.querySelector('.balloon-pop-letter').textContent=letter;
  for(let value=0;value<6;value++)button.classList.toggle(`color-${value}`,value===color);
@@ -2235,13 +2256,13 @@ function tapBalloonPop(letter,button=null){
   if(BalloonPopGame.hint(GHI_BALLOON_GAME,balloonPopState()))showBalloonHint();else scheduleBalloonHint();
   return result;
  }
- playBalloonPopEffect();window.navigator?.vibrate?.(20);addBalloonBurst(button);button?.classList.add('is-pop');if(button)button.disabled=true;
+ playBalloonPopEffect();window.navigator?.vibrate?.(20);addBalloonBurst(button);clearBalloonLetterTimer(button);button?.classList.add('is-pop');if(button)button.disabled=true;
  saveProgress();updateBalloonProgress();setBalloonFeedback('Лоп! Правильно!');
  const epoch=viewEpoch;
  if(['target-complete','phase-complete','game-complete'].includes(result)){
-  transitionTimer=setTimeout(()=>{if(epoch===viewEpoch)showScreen();},200);
+  transitionTimer=setTimeout(()=>{if(epoch===viewEpoch)showScreen();},BALLOON_POP_ANIMATION_MS);
  }else{
-  transitionTimer=setTimeout(()=>{if(epoch!==viewEpoch)return;replaceBalloonButton(button);scheduleBalloonHint();},155);
+  transitionTimer=setTimeout(()=>{if(epoch!==viewEpoch)return;button?.remove?.();scheduleBalloonHint();},BALLOON_POP_ANIMATION_MS);
  }
  return result;
 }

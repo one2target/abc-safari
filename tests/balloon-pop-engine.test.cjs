@@ -62,16 +62,74 @@ assert.equal(restored.totalCorrect,30);
 const balloons=engine.createBalloons(config,engine.initialState(config,()=>.1),6,()=>.5);
 assert.equal(balloons.length,6);
 assert.ok(balloons.every(balloon=>balloon.size>=72&&balloon.size<=95&&balloon.x>=15&&balloon.x<=85));
+assert.ok(balloons.filter(balloon=>balloon.letter===engine.target(config,engine.initialState(config,()=>.1))).length>=config.phases[0].perTarget);
 const html=engine.render(config,engine.initialState(config,()=>.1),{balloons});
 assert.equal((html.match(/class="balloon-pop-balloon/g)||[]).length,6);
 assert.ok(html.includes('Лопни букву'));
 assert.ok(html.includes('balloon-pop-repeat'));
+assert.ok(html.includes('data-duration="'));
+
+// A complete game remains possible while every correctly popped balloon is
+// permanently removed from the current round. Letter changes may randomize
+// the remaining balloons but cannot consume the targets still needed.
+const depletionState=engine.initialState(config,()=>.4);
+let depletionRounds=0,depletionPops=0;
+while(!depletionState.gameCompleted){
+  depletionRounds++;
+  const phaseIndex=depletionState.phaseIndex,targetIndex=depletionState.targetIndex;
+  const phase=engine.currentPhase(config,depletionState),target=engine.target(config,depletionState);
+  const field=engine.createBalloons(config,depletionState,6,()=>0);
+  const liveLetters=field.map(balloon=>balloon.letter);
+  while(!depletionState.gameCompleted&&depletionState.phaseIndex===phaseIndex&&depletionState.targetIndex===targetIndex){
+    const needed=phase.perTarget-depletionState.score;
+    for(let index=0;index<liveLetters.length;index++)liveLetters[index]=engine.replacementLetter(config,liveLetters,index,target,()=>0,needed);
+    assert.ok(liveLetters.filter(letter=>letter===target).length>=needed);
+    const poppedIndex=liveLetters.indexOf(target);
+    assert.notEqual(poppedIndex,-1);
+    const result=engine.tap(config,depletionState,target);
+    liveLetters.splice(poppedIndex,1);
+    depletionPops++;
+    if(result!=='correct')break;
+    assert.ok(liveLetters.filter(letter=>letter===target).length>=phase.perTarget-depletionState.score);
+  }
+}
+assert.equal(depletionRounds,config.phases.length*config.targets.length);
+assert.equal(depletionPops,30);
 
 // Course adapter: review G/H/I leads to Balloon Pop, not directly to reward.
 const course=createContext();
 course.run("view='course';AppState.started=true;AppState.cursor={phase:'miniResult',index:8,step:6};AppState.completedBlocks=['reward_abc','reward_def'];AppState.claimedRewards=['reward_abc','reward_def'];unlockItem('jacket_stars',AppState,false);equipItem('jacket_stars',AppState,false);unlockItem('accessory_balloon',AppState,false);equipItem('accessory_balloon',AppState,false);AppState.rewardFlow=null;advanceAfterMini()");
 assert.equal(course.run('AppState.cursor.phase'),'balloon_ghi');
 assert.equal(course.run('AppState.rewardFlow'),null);
+assert.equal(course.run('BALLOON_LETTER_CHANGE_INTERVAL_MULTIPLIER'),1.25);
+assert.equal(course.run('balloonLetterChangeDelay(16)'),20000);
+
+// Runtime timers use the slower interval, and a normal correct tap removes
+// the button after the existing pop animation instead of repopulating it.
+const runtime=createContext();
+runtime.run("view='course';AppState.started=true;AppState.cursor={phase:'balloon_ghi',index:8,step:0};AppState.game=BalloonPopGame.initialState(GHI_BALLOON_GAME,()=>.4);clearBalloonPopRuntime()");
+const runtimeClasses=new Set(),runtimeButton={
+  isConnected:true,disabled:false,removed:false,
+  dataset:{duration:'16',letter:runtime.run('BalloonPopGame.target(GHI_BALLOON_GAME,balloonPopState())')},
+  classList:{add(value){runtimeClasses.add(value)},remove(value){runtimeClasses.delete(value)},toggle(value,force){if(force)runtimeClasses.add(value);else runtimeClasses.delete(value)}},
+  setAttribute(){},querySelector(){return{textContent:''}},
+  remove(){this.removed=true;this.isConnected=false}
+};
+runtime.context.runtimeButton=runtimeButton;
+runtime.run('letterChangeCount=0;replaceBalloonButton=()=>{letterChangeCount++};scheduleBalloonLetterChange(runtimeButton)');
+let [runtimeTimerId,runtimeTimer]=[...runtime.timers][0];
+assert.equal(runtimeTimer.at,20000);
+runtime.timers.delete(runtimeTimerId);runtimeTimer.f();
+assert.equal(runtime.run('letterChangeCount'),1);
+runtime.run("clearBalloonPopRuntime();addBalloonBurst=()=>{};playBalloonPopEffect=()=>{};updateBalloonProgress=()=>{};setBalloonFeedback=()=>{};saveProgress=()=>{};scheduleBalloonHint=()=>{};AppState.game=BalloonPopGame.initialState(GHI_BALLOON_GAME,()=>.4)");
+assert.equal(runtime.run('tapBalloonPop(runtimeButton.dataset.letter,runtimeButton)'),'correct');
+assert.equal(runtimeButton.removed,false);
+assert.equal(runtimeClasses.has('is-pop'),true);
+[runtimeTimerId,runtimeTimer]=[...runtime.timers][0];
+assert.equal(runtimeTimer.at,200);
+runtime.timers.delete(runtimeTimerId);runtimeTimer.f();
+assert.equal(runtimeButton.removed,true);
+assert.equal(runtime.run('letterChangeCount'),1);
 
 // Completion is persisted before the success button is pressed.
 course.run("while(!balloonPopState().gameCompleted)BalloonPopGame.tap(GHI_BALLOON_GAME,balloonPopState(),BalloonPopGame.target(GHI_BALLOON_GAME,balloonPopState()));saveProgress()");
@@ -115,7 +173,12 @@ assert.match(css,/\.balloon-pop-flash[\s\S]*animation:balloon-flash \.075s/);
 assert.match(css,/\.balloon-pop-balloon\.is-wrong \.balloon-pop-shape \{animation:balloon-wrong \.18s/);
 assert.match(appSource,/for\(let index=0;index<10;index\+\+\)/);
 assert.match(appSource,/setTimeout\(\(\)=>burst\.remove\(\),460\)/);
-assert.match(appSource,/replaceBalloonButton\(button\);scheduleBalloonHint\(\);\},155\)/);
+assert.match(appSource,/const BALLOON_LETTER_CHANGE_INTERVAL_MULTIPLIER=1\.25,BALLOON_POP_ANIMATION_MS=200/);
+assert.match(appSource,/duration\*1000\*BALLOON_LETTER_CHANGE_INTERVAL_MULTIPLIER/);
+assert.match(appSource,/document\.querySelectorAll\('\.balloon-pop-balloon'\)\.forEach\(scheduleBalloonLetterChange\)/);
+assert.doesNotMatch(appSource,/addEventListener\('animationiteration'/);
+assert.match(appSource,/button\?\.remove\?\.\(\);scheduleBalloonHint\(\);\},BALLOON_POP_ANIMATION_MS\)/);
+assert.doesNotMatch(appSource,/replaceBalloonButton\(button\);scheduleBalloonHint\(\)/);
 assert.match(appSource,/window\.navigator\?\.vibrate\?\.\(20\)/);
 
 console.log(JSON.stringify({
@@ -129,6 +192,11 @@ console.log(JSON.stringify({
   phonicsPerLetter:3,
   quickMix:6,
   targetAlwaysPresent:true,
+  noSameRoundRespawn:true,
+  completionWithDepletedFields:true,
+  depletionRounds,
+  letterChangeIntervalMultiplier:1.25,
+  movementDurationsUnchanged:true,
   wrongTapDoesNotScore:true,
   correctTapScores:true,
   transitions:true,
