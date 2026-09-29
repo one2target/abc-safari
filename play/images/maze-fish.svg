@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">Fish</title>
+  <path d="M91 48c9-8 20-13 28-12-1 11-4 20-11 28 7 8 10 17 11 28-8 1-19-4-28-12" fill="#f28b39" stroke="#375668" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M99 64c-11-22-29-32-48-29-19 3-34 14-43 29 9 15 24 26 43 29 19 3 37-7 48-29z" fill="#3fb7d5" stroke="#375668" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M55 36c7-9 15-14 24-16 3 9 1 17-4 23M55 92c7 9 15 14 24 16 3-9 1-17-4-23" fill="#67cde2" stroke="#375668" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M43 40c8 13 8 35 0 48M64 38c8 15 8 37 0 52" fill="none" stroke="#268cae" stroke-width="4" stroke-linecap="round" opacity=".8"/>
+  <circle cx="26" cy="58" r="6" fill="#fff"/>
+  <circle cx="27" cy="58" r="3" fill="#263742"/>
+  <path d="M10 64h13" stroke="#375668" stroke-width="4" stroke-linecap="round"/>
+</svg>

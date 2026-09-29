@@ -501,6 +501,36 @@ const MEDIA_ASSETS = {
     }
   },
   "images": {
+    "maze_d": {
+      "src": "./images/maze-d.png",
+      "width": 941,
+      "height": 1672
+    },
+    "maze_e": {
+      "src": "./images/maze-e.png",
+      "width": 941,
+      "height": 1672
+    },
+    "maze_f": {
+      "src": "./images/maze-f.png",
+      "width": 941,
+      "height": 1672
+    },
+    "maze_dog": {
+      "src": "./images/maze-dog.svg",
+      "width": 128,
+      "height": 128
+    },
+    "maze_egg": {
+      "src": "./images/maze-egg.svg",
+      "width": 128,
+      "height": 128
+    },
+    "maze_fish": {
+      "src": "./images/maze-fish.svg",
+      "width": 128,
+      "height": 128
+    },
     "marius_letter_maze_def": {
       "src": "./images/marius-letter-maze-def.png",
       "width": 941,

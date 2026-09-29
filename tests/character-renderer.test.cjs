@@ -223,7 +223,7 @@ assert.equal((handReward.match(/accessory-art/g)||[]).length,2);
 // The maze moves one complete canvas, not separate CSS layers.
 a.run("AppState.cursor={phase:'maze',index:5,step:4}");
 const maze=a.run('renderLetterMazeGame()');
-assert.ok(maze.includes('marius-letter-maze-def.png'));
+assert.ok(maze.includes('maze-d.png'));
 assert.ok(maze.includes('gameplay-marius letter-maze-marius'));
 assert.equal((maze.match(/class="marius-composite"/g)||[]).length,1);
 

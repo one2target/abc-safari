@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">Dog</title>
+  <path d="M31 43C18 36 11 46 17 64c3 9 11 13 21 8M97 43c13-7 20 3 14 21-3 9-11 13-21 8" fill="#8b552c" stroke="#55331e" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M31 44c7-16 20-24 33-24s26 8 33 24l-5 44c-2 18-14 29-28 29S38 106 36 88z" fill="#d9954f" stroke="#55331e" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M42 38c5-8 13-12 22-12s17 4 22 12" fill="none" stroke="#f2bd75" stroke-width="7" stroke-linecap="round"/>
+  <ellipse cx="45" cy="62" rx="6" ry="7" fill="#29333b"/>
+  <ellipse cx="83" cy="62" rx="6" ry="7" fill="#29333b"/>
+  <path d="M46 87c2-14 9-21 18-21s16 7 18 21c-2 13-9 20-18 20S48 100 46 87z" fill="#f4d5ad"/>
+  <path d="M55 78c2-5 16-5 18 0 1 6-3 10-9 10s-10-4-9-10z" fill="#2e2927"/>
+  <path d="M64 88v8m0 0c-7 0-10-3-12-6m12 6c7 0 10-3 12-6" fill="none" stroke="#55331e" stroke-width="4" stroke-linecap="round"/>
+</svg>

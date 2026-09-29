@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">Egg</title>
+  <path d="M64 12c-15 0-38 38-38 67 0 22 17 37 38 37s38-15 38-37c0-29-23-67-38-67z" fill="#fffdf4" stroke="#6c755f" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M42 50c6-17 15-29 22-29" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" opacity=".9"/>
+  <circle cx="64" cy="79" r="22" fill="#f7b928" stroke="#d98a17" stroke-width="4"/>
+  <ellipse cx="57" cy="72" rx="7" ry="5" fill="#ffd968" opacity=".85"/>
+</svg>
