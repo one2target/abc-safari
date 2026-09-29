@@ -17,6 +17,8 @@
 | `play/letter-maze-game.css` | Mobile-first вертикальный layout, буквы/SVG на камнях и перемещение общего character stack. |
 | `play/balloon-pop-game.js` | Чистые правила трёх этапов G/H/I, генерация безопасного поля и HTML Balloon Pop. |
 | `play/balloon-pop-game.css` | Mobile-first игровое поле, движение, pop/shake/hint, частицы и short-height layout. |
+| `play/river-crossing-game.js` | Чистые правила 12 заданий J/K/L, четыре этапа, restore, пороги переправы и HTML «Переправы Мариуса». |
+| `play/river-crossing-game.css` | Вертикальная mobile-first сцена, пять платформ, три крупные кнопки, прыжок, посадка, сундук и landscape layout. |
 | `play/audio-manager.js` | `createAudioManager()`: воспроизведение записей и речевой fallback. Загружается после каталога ресурсов. |
 | `play/manifest.webmanifest` | Название приложения, запуск, область действия, цвета и иконки для установки на домашний экран. |
 | `README.md` | Запуск, пользовательские сценарии и описание сохранений. |
@@ -38,6 +40,8 @@
 │   ├── letter-maze-game.css
 │   ├── balloon-pop-game.js
 │   ├── balloon-pop-game.css
+│   ├── river-crossing-game.js
+│   ├── river-crossing-game.css
 │   ├── manifest.webmanifest
 │   ├── icon-180.png
 │   ├── icon-192.png
@@ -75,6 +79,7 @@
 - `lessonSteps()` строит урок из данных буквы: знакомство, английское слово, карточка значения, `translationPicture`, затем прежние три упражнения. Если visual, английская или русская запись отсутствует, два шага значения не добавляются.
 - `CORE_TYPES` — `find`, `letterPicture`, `pictureLetter`; `TRANSLATION_TYPE` — отдельная проверка значения без влияния на mastery; старые `MINI_TYPES` и A–I mini-flow сохранены. `REVIEW_TYPES` задаёт шесть типов новых review, включая `soundLetter`, внутри того же question UI.
 - `LOCAL_REVIEW_BLOCKS` описывает JKL, MNO, PQR, STU, VWX, YZ; `CUMULATIVE_REVIEW_BLOCKS` — A–O, A–U, A–Z. Каждый блок содержит шесть вопросов.
+- После завершения L перед существующим `review_JKL` запускается фаза `river_jkl`: 12 вопросов на названия, звуки, слова Juice/Kite/Lion и смешанный финал. Ошибка не двигает прогресс, а каждые два правильных ответа переводят Мариуса на следующую точку маршрута.
 - `startGame()` обслуживает прежние mini; `startReview()` создаёт новый local/cumulative review. В cumulative выбираются шесть уникальных целей: две случайные из последнего блока и четыре случайные из более раннего изученного диапазона. `gamePool()` оставляет весь диапазон доступным для вариантов ответа.
 - `ensureQuestion()` восстанавливает подходящий вопрос либо вызывает `createQuestion()`; `validQuestion()` проверяет структуру сохранённого вопроса.
 - `questionPrompt()` / `questionBody()` выводят вопрос и варианты.
@@ -87,7 +92,7 @@
 
 - `cursor` хранит `phase`, индекс буквы и шаг. К прежним фазам добавлены `reviewIntro`, `review`, `reviewResult`, `cumulativeIntro`, `cumulative`, `cumulativeResult`; `results` теперь открывается после `cumulative_review_AZ`.
 - `stats` по каждой букве: `attempts`, `correct`, `mistakes`, `mastery`, `skills`, `practiceDebt`. Итоги для родителей вычисляет `renderParentView()`.
-- `game`, `question`, `reviews`, `questionSerial` сохраняют позицию обычных заданий; `balloonPop` хранит phase/target/score/quickOrder/completion новой игры; `started`, `completed`, `soundEnabled` — общие флаги.
+- `game`, `question`, `reviews`, `questionSerial` сохраняют позицию обычных заданий; `balloonPop` хранит phase/target/score/quickOrder/completion; `riverCrossing` хранит 12 созданных вопросов, текущий индекс, число правильных ответов, ошибки текущего задания и completion; `started`, `completed`, `soundEnabled` — общие флаги.
 - Награды: `characterState.ownedItems`, стандартные слоты `characterState.equipped`, `completedBlocks`, `claimedRewards`, `rewardFlow`.
 - `localStorage`: `alfie-abc-v1`; при `?demo=1` — отдельный `alfie-abc-demo-v1`. Общая версия состояния остаётся 3; загрузчик принимает версии 1–3. Для сохранений v1/v2 прежние lesson steps 2–4 сдвигаются на два места. Завершённое A–F продолжает с G, завершённое A–I или сохранение в прежнем финале — с J; статистика, `completedBlocks`, inventory и экипировка сохраняются. Новые `game.poolLetters` / `game.letterOrder` восстанавливают точную позицию review. Инвентарь отдельно мигрирует `migrateRewards()` с `REWARD_STATE_VERSION = 3`.
 - При невозможности записи состояние остаётся в памяти вкладки, показывается `#storage-notice`. Сохранение также вызывается при скрытии страницы и `pagehide`. Сброс сохраняет настройку звука.
@@ -130,16 +135,20 @@
 
 - `play/images/` — сцены, персонаж, одежда, аксессуары и изображения карточек; `play/images/stickers/` — реакции.
 - `play/images/character-assets.sha256.json` фиксирует SHA-256 ключевых body/head/hand PNG; `tests/character-assets.test.cjs` проверяет наличие, Git tracking и точное совпадение хэшей. Перед диагностикой renderer сначала проверить фактический asset path, SHA-256 и Git tracking. При намеренной замене PNG manifest обновляется вместе с файлом.
-- `play/audio/` — 166 MP3: прежние 81 плюс 85 файлов J–Z (по пять на букву).
+- `play/audio/` — 166 MP3: прежние 81 плюс 85 файлов J–Z (по пять на букву), и шесть PCM WAV переправы.
+- `play/images/river-crossing-background.png` — неизменённая копия предоставленного `rivar back.png` 941×1672. Пять `stone_*.png` также сохранены и зарегистрированы; сцена использует уже нарисованные в фоне камни и прозрачные route anchors, поэтому отдельные PNG не накладываются второй раз.
+- `play/river-crossing-assets.sha256.json` фиксирует точные SHA-256 фона, пяти камней и шести WAV. `tests/river-crossing-engine.test.cjs` проверяет bytes, PNG/RIFF signatures, PCM codec, registry и Git tracking.
 - `play/assets.js` — каталог активных изображений и аудио. Стикеры перечисляются отдельно в `play/index.html`.
 - Учебные буквы выводятся текстом, картинки слов сейчас — семантические emoji (`letters[].image === null`, `media()`), включая все слова G–Z. Отдельных raster-файлов слов в `play/images/` нет. Иконки управления — встроенные SVG в `icons` и emoji; иконки установки — корневые `play/icon-*.png`.
 - Отдельной фоновой музыки и отдельного каталога изображений букв нет.
 
 ## 10. Audio
 
-`play/audio-manager.js`: `createAudioManager()` создаёт один переиспользуемый `Audio`; `unlock()` подготавливает его по жесту пользователя, `play()` / `playSequence()` воспроизводят очередь, `stop()` отменяет её, `setEnabled()` управляет звуком. `setInstruction()` / `repeatLastInstruction()` запоминают и повторяют инструкцию. При отсутствии/ошибке файла используется `speechSynthesis`, если у реплики есть текст.
+`play/audio-manager.js`: `createAudioManager()` создаёт один переиспользуемый голосовой `Audio`; `unlock()` подготавливает его по жесту пользователя, `play()` / `playSequence()` воспроизводят очередь, `stop()` отменяет её, `setEnabled()` управляет звуком. `setInstruction()` / `repeatLastInstruction()` запоминают и повторяют инструкцию. При отсутствии/ошибке файла используется `speechSynthesis`, если у реплики есть текст. `createSoundEffectManager()` отдельно предзагружает шесть коротких WAV, использует один player на эффект и не позволяет смене речевой инструкции обрывать игровой звук.
 
 `play/index.html`: `announceScreen()` озвучивает экран/задание, `checkAnswer()` — ошибку или похвалу, `toggleSound()` — настройку звука, действие `repeat` — повтор. `AUDIO_TEXT`, `ru()`, `enName()`, `enSound()`, `enLetterWord()`, `enWord()`, `translatedWord()` задают ключи файлов из `MEDIA_ASSETS.audio`. Новые word-intro используют `g_goat.mp3`, `h_hat.mp3`, `i_iguana.mp3`; фонетика I отдельно использует `i_sound.mp3` для /ɪ/, тогда как `i_name.mp3` остаётся названием /aɪ/. Карточка значения проигрывает English → пауза 500 мс → Russian; meaning quiz при входе произносит английское слово, а при правильном выборе — только готовую русскую запись. У translation item намеренно нет TTS-текста: отсутствующий русский файл не подменяется синтезом. Смена экрана останавливает старую очередь.
+
+«Переправа Мариуса» использует те же `j/k/l_name`, `j/k/l_sound`, `juice`, `kite`, `lion`. `RIVER_EFFECT_AUDIO` связывает действия с `river_correct`, `river_wrong`, `river_jump`, `river_land`, `river_chest`, `river_victory`. `EffectsManager` воспроизводит их независимо от голосовой очереди, а `toggleSound()` синхронно переключает оба менеджера.
 
 ## 11. Important functions and modules
 
@@ -165,6 +174,8 @@
 | `announceScreen()` | `play/index.html` | Последовательности озвучки текущего экрана. |
 | `MEDIA_ASSETS` | `play/assets.js` | Реальные пути медиа. |
 | `createAudioManager()` | `play/audio-manager.js` | Загрузка, очередь, отмена, повтор и fallback аудио. |
+| `RiverCrossingGame` | `play/river-crossing-game.js` | Двенадцать заданий J/K/L, сохранение, hint, пороги 2/4/6/8/10/12 и шаблон сцены. |
+| River course adapter | `play/index.html` | Фаза `river_jkl`, общий renderer Мариуса, аудио, частицы, дуговой прыжок, блокировка ввода и переход в `review_JKL`. |
 
 ## 12. Common modification paths
 
@@ -182,6 +193,7 @@
 - Награды → `play/index.html`: `ITEMS`, `rewardConfig`, `finishBlock()`, `chooseReward()`, `migrateRewards()`.
 - Сохранение → `play/index.html`: `initialState()`, `loadProgress()`, `saveProgress()`.
 - Звуки → `play/audio/`, `play/assets.js`, `play/audio-manager.js`; события озвучки — `announceScreen()` в `play/index.html`.
+- Переправа J/K/L → правила и HTML в `play/river-crossing-game.js`; layout в `play/river-crossing-game.css`; курс/аудио/анимация в `play/index.html` по `river_jkl`.
 
 ## 13. Sensitive areas
 
@@ -192,6 +204,7 @@
 - `FIND_OBJECT_COURSE`, `AppState.findObjectGames` и миграция прежнего `roomABC` связывают find-object state с курсом. Не переиспользовать `scene.id` для другой сцены и не хранить найденные объекты вне словаря по ID.
 - `:root`, общие кнопки, `.character-stage`, `.gameplay-marius` и поздние `@media` влияют на несколько экранов. `.marius-composite` разрешено масштабировать только целиком; координаты исходных PNG задаются исключительно Canvas compositor.
 - `createAudioManager()` общий для всех реплик; подготовка одного аудиоэлемента по пользовательскому жесту важна для Safari. Отмена очереди предотвращает наложение старых инструкций на новый экран.
+- `riverAnimating`, `answerLocked`, `viewEpoch`, `riverTimers` и `riverAnimations` совместно запрещают двойной ответ и устаревшее завершение прыжка после смены экрана. Состояние переправы сохраняется сразу после ответа, до визуальной анимации.
 
 ## 14. Deployment-related files
 
@@ -220,6 +233,7 @@ Rewards → play/index.html: rewardConfig / chooseReward / finishBlock
 Progress → play/index.html: initialState / loadProgress / saveProgress
 Mobile CSS → play/index.html: <style> / @media / .character-stage
 Audio → play/audio-manager.js; play/index.html: announceScreen; play/assets.js
+River crossing J/K/L → play/river-crossing-game.js; play/river-crossing-game.css; play/index.html: river_jkl
 Find-object game → play/hidden-object-game.js; play/find-object-scenes.js; play/index.html: FIND_OBJECT_COURSE
 Letter maze → play/letter-maze-game.js; play/letter-maze-scenes.js; play/letter-maze-game.css; play/index.html: LETTER_MAZE_COURSE
 Word meaning → play/index.html: letters / lessonSteps / renderWordMeaningCard / renderTranslationQuiz; play/audio/*_ru.mp3
@@ -305,9 +319,21 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 
 ## 20. Буквы J–Z и повторение
 
-Полный новый поток после награды GHI: J → K → L → `review_JKL` → M → N → O → `review_MNO` → `cumulative_review_AO` → P → Q → R → `review_PQR` → S → T → U → `review_STU` → `cumulative_review_AU` → V → W → X → `review_VWX` → Y → Z → `review_YZ` → `cumulative_review_AZ` → `results`.
+Полный новый поток после награды GHI: J → K → L → `river_jkl` → `review_JKL` → M → N → O → `review_MNO` → `cumulative_review_AO` → P → Q → R → `review_PQR` → S → T → U → `review_STU` → `cumulative_review_AU` → V → W → X → `review_VWX` → Y → Z → `review_YZ` → `cumulative_review_AZ` → `results`.
 
-- Уроки J–Z создаёт прежний `lessonSteps()` из `letters[]`; новых game engines, reward screens и предметов нет.
+- Уроки J–Z создаёт прежний `lessonSteps()` из `letters[]`; отдельная переправа J/K/L не добавляет reward screen или предмет.
 - Local review использует только буквы своего блока. Все шесть `REVIEW_TYPES` появляются ровно по одному разу; буквы перемешиваются и равномерно повторяются.
 - Cumulative review хранит полный доступный range в `game.poolLetters`, а шесть уникальных целей — в `game.letterOrder`. Две цели берутся из только что изученного блока, четыре — из более ранних букв; оба набора и общий порядок перемешиваются при новом прохождении.
 - `completeQuestion()` переводит review в result-фазу после шестого ответа; `advanceAfterReview()` открывает следующий урок, cumulative block либо итоговый A–Z экран.
+
+## 21. Переправа Мариуса J/K/L
+
+После `letterReward` буквы L свежий курс открывает `river_jkl`, а после 12-го правильного ответа и кнопки продолжения — прежний `review_JKL`, затем урок M. Награда за переправу не определена, поэтому игра не добавляет предмет и не вызывает `finishBlock()`.
+
+- Движок: `play/river-crossing-game.js`. Этапы: name J/K/L, sound J/K/L, word Juice/Kite/Lion, смешанный финал с J/K/L и всеми тремя типами. Варианты всегда состоят из J/K/L и перемешиваются.
+- Состояние: `AppState.riverCrossing`. Ошибка увеличивает только `wrongAttempts`; с третьей ошибки `hint()` разрешает мягкую подсветку. Correct/questionIndex увеличиваются только при правильном ответе.
+- Маршрут: семь нормализованных точек — старт, пять камней, дальний берег. `platformIndex()` даёт переходы на 2/4/6/8/10/12 правильных ответах. `animateRiverMarius()` перемещает один общий Canvas stack по дуге; outfit/head/hand overlays остаются внутри renderer.
+- Аудио: текущее задание собирает `riverAudioItems()` и повторяет через общий AudioManager. Любая смена задания отменяет прежнюю очередь; mute отключает и задания, и эффекты.
+- UI: три ответа находятся в отдельной крупной touch-grid и не перекрывают actor. Word-вопросы показывают семантические emoji, уже используемые уроками, без английского текста. Фон масштабируется внутри сцены с исходным соотношением 941:1672 без растяжения. Мариус занимает 19–22% ширины сцены; apex прыжка ограничен 19%, чтобы увеличенный renderer не обрезался. Финал использует детерминированный слой ровно из трёх звёзд: вылет снизу, сборка в центре, пульсация и fade, плюс восемь небольших искр; общий случайный `celebrate()` для переправы не вызывается.
+- Ассеты: `river_crossing_background` обязателен и служит единой сценой. При ошибке загрузки показывается диагностируемое сообщение вместо CSS-заглушки. Пять прозрачных route anchors совмещены с нарисованными камнями; отдельные `stone_*.png` хранятся как оригинальные authored-ассеты без визуального удвоения.
+- Тест: `node tests/river-crossing-engine.test.cjs`; полный курс также проходит через переправу в `tests/course-regression.test.cjs`.

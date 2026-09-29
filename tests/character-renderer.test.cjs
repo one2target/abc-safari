@@ -129,7 +129,7 @@ for(const [asset,file] of Object.entries(runtimeAssets)){
  assert.equal(a.run(`MEDIA_ASSETS.images.${asset}.src`),`./images/${file}?v=character-canvas4`);
  assert.deepEqual(pngSize(file),file==='accessory_balloon.png'?[1024,1535]:[1024,1536]);
 }
-assert.match(trainerSource,/<script src="\.\/assets\.js\?v=character-canvas4"><\/script>/);
+assert.match(trainerSource,/<script src="\.\/assets\.js\?v=river-d868880e"><\/script>/);
 
 // Demo-only visual override ignores equipped state on the large reward canvas.
 const demoReward=createContext({search:'?demo=1&screen=reward_ghi'});

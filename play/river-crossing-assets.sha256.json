@@ -1,0 +1,17 @@
+{
+  "algorithm": "sha256",
+  "assets": {
+    "play/images/river-crossing-background.png": "d868880e8ffc9326ae9f0ede31c21a82c170dc5e20fac74712937f160191448e",
+    "play/images/stone_top_left.png": "bdbefec56a0cfd3d899695cc4413528cbaf00fc3443f63157e2b60565f1f28a3",
+    "play/images/stone_top_right.png": "b70895fe85c0a64ed0645c1fdc2ac424da2f1cfce460be23d9d3a70d4765ead1",
+    "play/images/stone_bottom_left.png": "0a27594472a9ddb7cc2a2db7ecaedba32d23f20e0601c7673e7cdd4d5891bdae",
+    "play/images/stone_bottom_center.png": "49550c068067c14565895540cfea915ee3efc860685954a4ad0ec450b4901f77",
+    "play/images/stone_bottom_right.png": "1bf6eab8eace30c6e25ea3c28dd178ff52ce33ee7458e35a04072daf1fe77b1d",
+    "play/audio/river-jump.wav": "175e5508bfa9edce21900f273ef7896a45f1902e30b8f7575d8be8fde37d1161",
+    "play/audio/river-land.wav": "e3eec668819b348bf4298e6f4a8d6458ac771aa3b070ff8c188e6ea89304ee2c",
+    "play/audio/river-correct.wav": "655d1d38b88be9b96ccb37a41b4b95fc88b16c142fae2fd64490dc1112b8d834",
+    "play/audio/river-wrong.wav": "7d96fe49bc5b62ab958a4494378c8673814365b7a676bc1ac60f0a72193f3bf0",
+    "play/audio/river-chest.wav": "1043e457f71bd566034c1c56df14b8edf35d16067db60d2f80bbc572607f7f1f",
+    "play/audio/river-victory.wav": "f31efc9f074b1da87f9b73bad81800bb4ea2979d132bc217c13f9558833e1ed0"
+  }
+}

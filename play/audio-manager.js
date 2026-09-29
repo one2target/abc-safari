@@ -241,3 +241,88 @@ function createAudioManager({assets, enabled=true, debug=false, gap=500}) {
 
   return manager;
 }
+
+/* Short gameplay effects use their own preloaded players. They must not be
+   cancelled when the voice manager advances to the next instruction. */
+function createSoundEffectManager({assets, keys=[], enabled=true, debug=false}) {
+  const warned = new Set();
+  const players = new Map();
+  let unlocked = false;
+
+  function warn(key, message, error) {
+    const signature = `${key}:${message}`;
+    if (warned.has(signature)) return;
+    warned.add(signature);
+    console.warn('[Alfie effects]', message, key, error || '');
+  }
+
+  for (const key of keys) {
+    const src = assets[key]?.src;
+    if (!src) {
+      warn(key, 'Audio asset is missing');
+      continue;
+    }
+    const player = new Audio();
+    player.preload = 'auto';
+    player.setAttribute('playsinline', '');
+    player.src = src;
+    player.onerror = () => warn(key, 'Audio could not be loaded');
+    players.set(key, player);
+    try { player.load(); } catch (error) { warn(key, 'Audio could not be preloaded', error); }
+  }
+
+  const manager = {
+    players,
+    enabled: Boolean(enabled),
+
+    unlock() {
+      if (unlocked) return;
+      // Re-loading from the first gesture primes every distinct element on
+      // mobile Safari without producing a sound.
+      for (const [key, player] of players) {
+        try { player.load(); } catch (error) { warn(key, 'Audio could not be unlocked', error); }
+      }
+      unlocked = true;
+    },
+
+    setEnabled(value) {
+      manager.enabled = Boolean(value);
+      if (!manager.enabled) manager.stopAll();
+    },
+
+    stopAll() {
+      for (const player of players.values()) {
+        try {
+          player.pause();
+          player.currentTime = 0;
+        } catch (_) {}
+      }
+    },
+
+    play(key) {
+      if (!manager.enabled || !unlocked) return Promise.resolve(false);
+      const player = players.get(key);
+      if (!player) {
+        warn(key, 'Audio asset is missing');
+        return Promise.resolve(false);
+      }
+      try {
+        // One player per effect prevents the same sound from piling up while
+        // still allowing a landing effect to overlap the end of a jump.
+        player.pause();
+        player.currentTime = 0;
+        if (debug) console.log('[Alfie effects]', player.src);
+        const result = player.play();
+        return result?.then ? result.then(() => true).catch(error => {
+          warn(key, 'Audio could not be played', error);
+          return false;
+        }) : Promise.resolve(true);
+      } catch (error) {
+        warn(key, 'Audio could not be played', error);
+        return Promise.resolve(false);
+      }
+    }
+  };
+
+  return manager;
+}

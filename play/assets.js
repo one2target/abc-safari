@@ -498,6 +498,24 @@ const MEDIA_ASSETS = {
     },
     "zebra_ru": {
       "src": "./audio/zebra_ru.mp3"
+    },
+    "river_jump": {
+      "src": "./audio/river-jump.wav?v=175e5508bfa9"
+    },
+    "river_land": {
+      "src": "./audio/river-land.wav?v=e3eec668819b"
+    },
+    "river_correct": {
+      "src": "./audio/river-correct.wav?v=655d1d38b88b"
+    },
+    "river_wrong": {
+      "src": "./audio/river-wrong.wav?v=7d96fe49bc5b"
+    },
+    "river_chest": {
+      "src": "./audio/river-chest.wav?v=1043e457f71b"
+    },
+    "river_victory": {
+      "src": "./audio/river-victory.wav?v=f31efc9f074b"
     }
   },
   "images": {
@@ -540,6 +558,36 @@ const MEDIA_ASSETS = {
       "src": "./images/marius-room-abc.png",
       "width": 1122,
       "height": 1402
+    },
+    "river_crossing_background": {
+      "src": "./images/river-crossing-background.png?v=d868880e8ffc",
+      "width": 941,
+      "height": 1672
+    },
+    "river_stone_top_left": {
+      "src": "./images/stone_top_left.png?v=bdbefec56a0c",
+      "width": 585,
+      "height": 398
+    },
+    "river_stone_top_right": {
+      "src": "./images/stone_top_right.png?v=b70895fe85c0",
+      "width": 580,
+      "height": 367
+    },
+    "river_stone_bottom_left": {
+      "src": "./images/stone_bottom_left.png?v=0a27594472a9",
+      "width": 465,
+      "height": 354
+    },
+    "river_stone_bottom_center": {
+      "src": "./images/stone_bottom_center.png?v=49550c068067",
+      "width": 458,
+      "height": 335
+    },
+    "river_stone_bottom_right": {
+      "src": "./images/stone_bottom_right.png?v=1bf6eab8eace",
+      "width": 458,
+      "height": 338
     },
     "accessory_balloon": {
       "src": "./images/accessory_balloon.png?v=character-canvas4",
