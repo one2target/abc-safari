@@ -276,6 +276,7 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 - `tests/find-object-engine.test.cjs`: две разные конфигурации, валидация, изоляция state, относительные координаты, counter/remaining и completion signal.
 - `tests/room.test.cjs`: текущая механика, сохранения и миграция `roomABC`, повтор, старые данные, загрузка изображения и расчёт размеров зон.
 - `tests/course-regression.test.cjs`: два полных прохода A–Z с комнатой, лабиринтом, G/H/I review, Balloon Pop, тремя прежними наградами, девятью новыми review и миграцией завершённых A–F/A–I; адаптер DOM/audio — `tests/support/trainer-harness.cjs`.
+- `tests/lesson-continue.test.cjs`: единое состояние card-кнопки `waitingForAudio` → `readyToContinue` для `letter`, `word` и `wordMeaning`, отдельный reset каждого слайда, блокировка перехода до завершения Promise обязательной аудиоочереди, повтор без повторной блокировки, mute/reset, A/B/M/Z и responsive/animation CSS.
 - `tests/alphabet-reviews.test.cjs`: порядок A–Z, конфигурации всех review, шесть разных типов, диапазоны, уникальный cumulative sampling, переходы, restore review и сохранение inventory при A–I → J.
 - `tests/balloon-pop-engine.test.cjs`: цели/дистракторы, обязательный target, score и переходы, persistence, reward gate, demo isolation и responsive CSS.
 - `tests/inventory.test.cjs`: шесть предметов, восемь слотов, ownership/lock новой награды, head equip/unequip, перезагрузка и миграция rewardStateVersion 2 → 3.

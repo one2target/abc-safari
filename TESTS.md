@@ -3,6 +3,7 @@
 Команды из корня репозитория:
 
 - `node tests/river-crossing-engine.test.cjs`
+- `node tests/lesson-continue.test.cjs`
 - `node tests/course-regression.test.cjs`
 - весь набор: `for test in tests/*.test.cjs; do node "$test" || exit 1; done`
 
@@ -14,7 +15,7 @@
 
 Тест сверяет `play/river-crossing-assets.sha256.json`: 12 точных SHA-256, наличие и Git tracking, PNG/RIFF signatures, PCM codec, registry с cache-busting, исходное соотношение фона 941:1672 и отсутствие CSS-реки, серых овалов и fallback-сундука.
 
-Все 11 файлов `tests/*.test.cjs` проходят. Локальный HTTP-сервер вернул `200 OK` для фона, пяти камней и шести WAV; фактические MIME-типы — `image/png` и `audio/x-wav`, а загруженные размеры совпали с исходниками. Управляемый браузер в текущей сессии не запустился из-за системной ошибки `TIOCSTI`, поэтому реальный browser layout, воспроизведение через аппаратный аудиовыход и физический iPhone не считаются проверенными.
+Все 12 файлов `tests/*.test.cjs` проходят. Локальный HTTP-сервер вернул `200 OK` для фона, пяти камней и шести WAV; фактические MIME-типы — `image/png` и `audio/x-wav`, а загруженные размеры совпали с исходниками. Управляемый браузер в текущей сессии не запустился из-за системной ошибки `TIOCSTI`, поэтому реальный browser layout, воспроизведение через аппаратный аудиовыход и физический iPhone не считаются проверенными.
 
 ---
 

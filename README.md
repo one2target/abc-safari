@@ -92,6 +92,7 @@ play/index.html содержит исходное обучение и сцены
 node tests/character-assets.test.cjs
 node tests/character-renderer.test.cjs
 node tests/inventory.test.cjs
+node tests/lesson-continue.test.cjs
 node tests/find-object-engine.test.cjs
 node tests/room.test.cjs
 node tests/letter-maze-engine.test.cjs

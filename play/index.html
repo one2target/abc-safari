@@ -494,6 +494,47 @@ main {
 .lesson-actions .primary {
   min-width:250px;
 }
+.lesson-continue {
+  position:relative;
+  isolation:isolate;
+  overflow:visible;
+  gap:12px;
+  white-space:nowrap;
+  will-change:transform;
+}
+.lesson-continue-icon {
+  font-size:26px;
+  line-height:1;
+}
+.lesson-continue.is-waiting {
+  background:var(--green);
+  box-shadow:0 4px 0 rgba(17,75,57,.72);
+  opacity:.62;
+}
+.lesson-continue.is-waiting:hover {
+  background:var(--green);
+}
+.lesson-continue.is-ready {
+  background:#17815d;
+  box-shadow:0 5px 0 #0f513c;
+  animation:lesson-continue-pulse 2.6s ease-in-out 1.4s infinite;
+}
+.lesson-continue.is-ready:hover {
+  background:#137253;
+}
+.lesson-continue.is-ready.is-activating {
+  animation:lesson-continue-activate .42s cubic-bezier(.2,.8,.3,1),lesson-continue-pulse 2.6s ease-in-out 1.4s infinite;
+}
+.lesson-continue.is-activating::after {
+  content:"";
+  position:absolute;
+  inset:-10px;
+  border:3px solid rgba(45,169,123,.5);
+  border-radius:31px;
+  pointer-events:none;
+  z-index:-1;
+  animation:lesson-continue-ring .65s ease-out both;
+}
 .word-art {
   font-size:130px;
   line-height:1.25;
@@ -926,6 +967,32 @@ main {
 @keyframes pulse {
   50% {
     transform:scale(1.05);
+  }
+}
+@keyframes lesson-continue-activate {
+  0%,100% {
+    transform:scale(1);
+  }
+  55% {
+    transform:scale(1.07);
+  }
+}
+@keyframes lesson-continue-pulse {
+  0%,16%,100% {
+    transform:scale(1);
+  }
+  8% {
+    transform:scale(1.025);
+  }
+}
+@keyframes lesson-continue-ring {
+  0% {
+    opacity:.65;
+    transform:scale(.92);
+  }
+  100% {
+    opacity:0;
+    transform:scale(1.12);
   }
 }
 @keyframes shake {
@@ -1731,14 +1798,27 @@ function letterMazeComplete(config=DEF_LETTER_MAZE){return Boolean(letterMazeSta
 function balloonPopState(){return AppState.balloonPop;}
 function riverCrossingState(){return AppState.riverCrossing;}
 let view=DEMO_LETTER_INDEX>=0||DEMO_BALLOON_PREVIEW||DEMO_RIVER_PREVIEW?'course':DEMO_REWARD_PREVIEW?'reward':DEMO_INVENTORY_PREVIEW?'progress':AppState.rewardFlow?'reward':'home',lastView='home',answerLocked=false,transitionTimer=null,viewEpoch=0,restoreFocus=null,rewardReady=Boolean(visibleRewardFlow()?.selected);
+const SLIDE_AUDIO_WAITING='waitingForAudio',SLIDE_AUDIO_READY='readyToContinue';
+const completedLessonCardAudioKeys=new Set();
+let lessonCardAudioState={key:null,status:SLIDE_AUDIO_READY},lessonCardAudioRun=0;
+function lessonCardKey(){const c=AppState.cursor,step=currentLessonStep(c);return view==='course'&&c.phase==='lesson'&&step?.kind==='card'?`${c.index}:${letters[c.index].letter}:${step.id}`:null;}
+function syncLessonCardAudioState(){const key=lessonCardKey();lessonCardAudioState={key,status:key&&!completedLessonCardAudioKeys.has(key)?SLIDE_AUDIO_WAITING:SLIDE_AUDIO_READY};return lessonCardAudioState;}
+function lessonCardAudioIsWaiting(){return Boolean(lessonCardKey())&&syncLessonCardAudioState().status===SLIDE_AUDIO_WAITING;}
 /* AUDIO — all screen instructions and reactions pass through this manager. */
 const AudioManager=createAudioManager({assets:MEDIA_ASSETS.audio,enabled:AppState.soundEnabled,debug:DEBUG,gap:500});
 const RIVER_EFFECT_KEYS=Object.freeze(['river_correct','river_wrong','river_jump','river_land','river_chest','river_victory']);
 const EffectsManager=createSoundEffectManager({assets:MEDIA_ASSETS.audio,keys:RIVER_EFFECT_KEYS,enabled:AppState.soundEnabled,debug:DEBUG});
 function unlockAudio(){AudioManager.unlock();EffectsManager.unlock();}
 function stopAudio(){AudioManager.stop();}
-function repeatInstruction(){return AudioManager.repeatLastInstruction();}
+function trackLessonCardAudioCompletion(completion,key=lessonCardKey(),epoch=viewEpoch){const run=++lessonCardAudioRun;Promise.resolve(completion).then(completed=>{if(completed&&run===lessonCardAudioRun)completeLessonCardAudio(key,epoch);});return completion;}
+function repeatInstruction(){const completion=AudioManager.repeatLastInstruction();return lessonCardAudioIsWaiting()?trackLessonCardAudioCompletion(completion):completion;}
 function setInstruction(items){return AudioManager.setInstruction(items);}
+function lessonCardAudioItems(step,d){
+ if(step.id==='letter')return [ru('new_letter'),enName(d),enSound(d),enWord(d)];
+ if(step.id==='word')return d.preferLetterWordAudio&&d.letterWordAudio?[ru('listen_word'),enLetterWord(d)]:[ru('listen_word'),enName(d),enWord(d)];
+ if(step.id==='wordMeaning')return [enWord(d),translatedWord(d)];
+ return [];
+}
 /* QUESTIONS — distinct choices, shuffled positions, weighted practice, and
    a delayed review queue. Questions are generated on demand so recent mistakes count. */
 function shuffle(items){const a=[...items];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -1961,10 +2041,15 @@ function continueReward(){if(!rewardReady||!AppState.rewardFlow?.selected)return
 function renderHome(){return `<section class="screen"><div class="home"><div class="home-copy"><p class="eyebrow">A little adventure in English</p><h1>ABC<br><em>Safari</em></h1><p class="subline">Учим буквы вместе с жирафиком</p><div class="home-actions"><button class="primary" data-action="start">${AppState.started?'CONTINUE':'START'} ${icons.arrow}</button>${AppState.started?'<button class="text-button" data-action="reset">START OVER</button>':''}</div></div><div class="hero-scene">${renderCharacter("home")}</div></div>${journeyStrip()}</section>`;}
 function lessonTop(){const c=AppState.cursor,steps=lessonSteps(letters[c.index]);return `<div class="lesson-top"><span class="lesson-label">УЧИМ ${escapeHTML(letters[c.index].letter)}</span><div class="step-track" role="progressbar" aria-label="Lesson steps" aria-valuemin="0" aria-valuemax="${steps.length}" aria-valuenow="${c.step+1}">${steps.map((_,i)=>`<span class="${i<=c.step?'done':''}"></span>`).join('')}</div></div>`;}
 function panelStyle(d){return `style="--accent:${d.color||'#17664c'};--tint:${d.tint||'#dff4e7'}"`;}
-function renderLearnLetter(){const d=letters[AppState.cursor.index];return `${lessonTop()}<section class="lesson-panel" ${panelStyle(d)}><div class="alfie-line">${buddy()}<span>Знакомься: ${escapeHTML(d.letter)}</span></div><h1 class="letter-pair" id="audio-focus" tabindex="-1" aria-label="${d.letter}, lowercase ${d.lowercase}">${escapeHTML(d.letter)}<span>${escapeHTML(d.lowercase)}</span></h1><p class="sound-label">Звук /${escapeHTML(d.sound)}/</p><button class="repeat" data-action="repeat" aria-label="Hear the letter name and sound">${icons.speaker} Послушать</button></section><div class="lesson-actions"><button class="primary" data-action="next">LET'S GO ${icons.arrow}</button></div>`;}
+function lessonContinueContent(ready){return `<span class="lesson-continue-icon" aria-hidden="true">${ready?'☝️':'👂'}</span><span>${ready?'ЖМИ!':'Слушай'}</span>`;}
+function renderLessonContinueButton(){const ready=syncLessonCardAudioState().status===SLIDE_AUDIO_READY;return `<button class="primary lesson-continue ${ready?'is-ready':'is-waiting'}" data-action="next" data-lesson-continue data-audio-state="${ready?SLIDE_AUDIO_READY:SLIDE_AUDIO_WAITING}" aria-label="${ready?'ЖМИ!':'Слушай'}" aria-disabled="${String(!ready)}" ${ready?'':'disabled'}>${lessonContinueContent(ready)}</button>`;}
+function renderLessonCardActions(){return `<div class="lesson-actions">${renderLessonContinueButton()}</div>`;}
+function updateLessonContinueButton(){const button=document.querySelector('[data-lesson-continue]');if(!button)return false;button.disabled=false;button.dataset.audioState=SLIDE_AUDIO_READY;button.setAttribute('aria-disabled','false');button.setAttribute('aria-label','ЖМИ!');button.classList.remove('is-waiting');button.classList.add('is-ready','is-activating');button.innerHTML=lessonContinueContent(true);return true;}
+function completeLessonCardAudio(key,epoch=viewEpoch){if(!key||epoch!==viewEpoch||key!==lessonCardKey())return false;completedLessonCardAudioKeys.add(key);lessonCardAudioState={key,status:SLIDE_AUDIO_READY};return updateLessonContinueButton();}
+function renderLearnLetter(){const d=letters[AppState.cursor.index];return `${lessonTop()}<section class="lesson-panel" ${panelStyle(d)}><div class="alfie-line">${buddy()}<span>Знакомься: ${escapeHTML(d.letter)}</span></div><h1 class="letter-pair" id="audio-focus" tabindex="-1" aria-label="${d.letter}, lowercase ${d.lowercase}">${escapeHTML(d.letter)}<span>${escapeHTML(d.lowercase)}</span></h1><p class="sound-label">Звук /${escapeHTML(d.sound)}/</p><button class="repeat" data-action="repeat" aria-label="Hear the letter name and sound">${icons.speaker} Послушать</button></section>${renderLessonCardActions()}`;}
 function renderWordLabel(d){const index=d.word.toLowerCase().indexOf(d.lowercase);if(index<0)return escapeHTML(d.word);return `${escapeHTML(d.word.slice(0,index))}<strong>${escapeHTML(d.word[index])}</strong>${escapeHTML(d.word.slice(index+1))}`;}
-function renderWordScreen(){const d=letters[AppState.cursor.index];return `${lessonTop()}<section class="lesson-panel" ${panelStyle(d)}><div class="alfie-line">${buddy()}<span>${escapeHTML(d.letter)} — как в слове…</span></div><div class="word-art" id="audio-focus">${media(d,'picture')}</div><h1 class="word-label" tabindex="-1">${renderWordLabel(d)}</h1><button class="repeat" data-action="repeat" aria-label="Hear ${d.letter}, ${d.word}">${icons.speaker} Послушать</button></section><div class="lesson-actions"><button class="primary" data-action="next">NEXT ${icons.arrow}</button></div>`;}
-function renderWordMeaningCard(){const d=letters[AppState.cursor.index];return `${lessonTop()}<section class="lesson-panel word-meaning-card" data-word-meaning ${panelStyle(d)}><div class="alfie-line">${buddy()}<span>Слушай и запоминай</span></div><div class="word-art translation-art" id="audio-focus">${media(d,'picture')}</div><h1 class="translation-word" tabindex="-1">${escapeHTML(d.word.toUpperCase())}</h1><button class="repeat" data-action="repeat" aria-label="Hear ${escapeHTML(d.word)} and its meaning">${icons.speaker} Послушать</button></section><div class="lesson-actions"><button class="primary" data-action="next">LET'S PLAY ${icons.arrow}</button></div>`;}
+function renderWordScreen(){const d=letters[AppState.cursor.index];return `${lessonTop()}<section class="lesson-panel" ${panelStyle(d)}><div class="alfie-line">${buddy()}<span>${escapeHTML(d.letter)} — как в слове…</span></div><div class="word-art" id="audio-focus">${media(d,'picture')}</div><h1 class="word-label" tabindex="-1">${renderWordLabel(d)}</h1><button class="repeat" data-action="repeat" aria-label="Hear ${d.letter}, ${d.word}">${icons.speaker} Послушать</button></section>${renderLessonCardActions()}`;}
+function renderWordMeaningCard(){const d=letters[AppState.cursor.index];return `${lessonTop()}<section class="lesson-panel word-meaning-card" data-word-meaning ${panelStyle(d)}><div class="alfie-line">${buddy()}<span>Слушай и запоминай</span></div><div class="word-art translation-art" id="audio-focus">${media(d,'picture')}</div><h1 class="translation-word" tabindex="-1">${escapeHTML(d.word.toUpperCase())}</h1><button class="repeat" data-action="repeat" aria-label="Hear ${escapeHTML(d.word)} and its meaning">${icons.speaker} Послушать</button></section>${renderLessonCardActions()}`;}
 function renderTranslationQuiz(q){const d=byLetter.get(q.letter);return `<section class="lesson-panel translation-quiz" data-translation-quiz ${panelStyle(d)}><h1 class="translation-word" id="audio-focus" tabindex="-1">${escapeHTML(d.word.toUpperCase())}</h1><p class="sound-label">Выбери картинку</p><div class="choices" role="group" aria-label="Choose the picture for ${escapeHTML(d.word)}">${q.options.map(letter=>{const option=byLetter.get(letter);return `<button class="choice translation-choice" data-answer="${escapeHTML(letter)}" aria-label="${escapeHTML(option.word)}">${media(option,'picture')}</button>`;}).join('')}</div><div class="feedback" id="feedback" role="status" aria-live="polite"></div><button class="repeat question-repeat" data-action="repeat" aria-label="Hear ${escapeHTML(d.word)} again">${icons.speaker} Послушать ещё</button></section>`;}
 function questionPrompt(q){const d=byLetter.get(q.letter),inside=d.wordLetterPosition==='end';return {find:`Найди букву ${d.letter}`,soundLetter:'Какую букву ты слышишь?',letterPicture:inside?`Где слышен звук ${d.letter}?`:`Что начинается с ${d.letter}?`,pictureLetter:inside?`Какая буква есть в ${d.word}?`:`С какой буквы начинается ${d.word}?`,wordPicture:`Найди ${d.word}`,lowercase:`Найди маленькую ${d.letter}`,translationPicture:d.word.toUpperCase()}[q.type];}
 function questionBody(q){const d=byLetter.get(q.letter),pictures=['letterPicture','wordPicture'].includes(q.type);
@@ -2399,6 +2484,7 @@ function renderCourse(){const c=AppState.cursor;let content;if(c.phase==='lesson
  return `<div class="screen learning">${content}${c.phase==='lesson'?journeyStrip():''}</div>`;}
 function showScreen(){
  viewEpoch++;const epoch=viewEpoch;clearTimeout(transitionTimer);transitionTimer=null;clearBalloonPopRuntime();clearRiverCrossingRuntime();answerLocked=false;letterMazeAnimating=false;stopAudio();$('#confetti').replaceChildren();
+ syncLessonCardAudioState();
  document.body.classList.toggle('maze-active',view==='course'&&Boolean(activeLetterMazeEntry()));
  document.body.classList.toggle('balloon-active',view==='course'&&AppState.cursor.phase==='balloon_ghi');
  document.body.classList.toggle('river-active',view==='course'&&AppState.cursor.phase==='river_jkl');
@@ -2420,9 +2506,11 @@ function announceScreen(){const c=AppState.cursor,d=letters[c.index];
  if(FIND_OBJECT_COURSE[c.phase]){const config=activeFindObjectEntry().scene;const state=findObjectState(config),round=HiddenObjectGame.currentRound(config,state),letter=byLetter.get(round.letter);setInstruction(state.gameCompleted?[ru('well_done')]:[ru('find_letter'),enName(letter),ru('find_picture'),enWord(letter)]);return;}
  if(c.phase==='lesson'){
   const step=currentLessonStep(c);
-  if(step?.id==='letter')setInstruction([ru('new_letter'),enName(d),enSound(d),enWord(d)]);
-  else if(step?.id==='word')setInstruction(d.preferLetterWordAudio&&d.letterWordAudio?[ru('listen_word'),enLetterWord(d)]:[ru('listen_word'),enName(d),enWord(d)]);
-  else if(step?.id==='wordMeaning')setInstruction([enWord(d),translatedWord(d)]);
+  if(step?.kind==='card'){
+   const key=lessonCardKey(),epoch=viewEpoch,waiting=syncLessonCardAudioState().status===SLIDE_AUDIO_WAITING;
+   const completion=setInstruction(lessonCardAudioItems(step,d));
+   if(waiting){if(!AppState.soundEnabled){lessonCardAudioRun++;completeLessonCardAudio(key,epoch);}else trackLessonCardAudioCompletion(completion,key,epoch);}
+  }
   else if(step?.type===TRANSLATION_TYPE)setInstruction([enWord(d)]);
   else{
    const q=AppState.question,target=byLetter.get(q.letter),inside=target.wordLetterPosition==='end',command={find:'find_letter',letterPicture:inside?'choose_picture':'which_starts',pictureLetter:inside?'choose_letter':'which_letter'}[q.type];
@@ -2435,7 +2523,7 @@ function announceScreen(){const c=AppState.cursor,d=letters[c.index];
  }else setInstruction(c.phase==='results'?[ru('all_done'),ru('giraffe_happy')]:c.phase==='letterReward'?[ru('well_done'),enName(d)]:['miniResult','reviewResult','cumulativeResult'].includes(c.phase)?[ru('level_complete')]:[ru(['reviewIntro','cumulativeIntro'].includes(c.phase)?'repeat_letters':c.phase==='finalIntro'?'final_challenge':'challenge')]);
 }
 function begin(){unlockAudio();AppState.started=true;go('course');preloadFeedbackStickers();}
-function nextLessonStep(){if(answerLocked)return;AppState.cursor.step++;AppState.question=null;go('course');}
+function nextLessonStep(){if(answerLocked||lessonCardAudioIsWaiting())return false;AppState.cursor.step++;AppState.question=null;go('course');return true;}
 function completeTranslationQuestion(){const c=AppState.cursor;if(c.phase!=='lesson'||currentLessonStep(c)?.type!==TRANSLATION_TYPE)return false;c.step++;AppState.question=null;saveProgress();return true;}
 function advanceAfterLetter(){const c=AppState.cursor;if(c.index===JKL_END_INDEX&&!riverCrossingState().gameCompleted)c.phase='river_jkl';else if(c.index<=GHI_END_INDEX&&((c.index+1)%GROUP_SIZE===0||c.index===GHI_END_INDEX))c.phase=c.index===2&&!findObjectComplete(ABC_FIND_OBJECT_GAME)?'room':c.index===5?'maze':'miniIntro';else if(localReviewAt(c.index))c.phase='reviewIntro';else{c.index++;c.phase='lesson';c.step=0;}AppState.question=null;go('course');}
 function advanceAfterMini(){const c=AppState.cursor;if(c.index===GHI_END_INDEX){if(AppState.completedBlocks.includes('reward_ghi')&&letters[GHI_END_INDEX+1]){c.index=GHI_END_INDEX+1;c.phase='lesson';c.step=0;}else c.phase='balloon_ghi';}else{c.index++;c.phase='lesson';c.step=0;}AppState.game=null;AppState.question=null;go('course');}
@@ -2513,6 +2601,7 @@ function checkAnswer(button){
 function updateSoundButton(){const b=$('#sound-button');b.textContent=AppState.soundEnabled?'🔊':'🔇';b.setAttribute('aria-label',AppState.soundEnabled?'Turn sound off':'Turn sound on');b.setAttribute('aria-pressed',String(!AppState.soundEnabled));}
 function toggleSound(){
  unlockAudio();AppState.soundEnabled=!AppState.soundEnabled;AudioManager.setEnabled(AppState.soundEnabled);EffectsManager.setEnabled(AppState.soundEnabled);saveProgress();updateSoundButton();
+ if(!AppState.soundEnabled&&lessonCardAudioIsWaiting()){lessonCardAudioRun++;completeLessonCardAudio(lessonCardKey(),viewEpoch);}
  if(AppState.cursor.phase==='balloon_ghi'&&!balloonPopState().gameCompleted){
   const target=document.querySelector('[data-balloon-target]');clearTimeout(balloonTargetTimer);
   if(target&&!AppState.soundEnabled){const letter=BalloonPopGame.target(GHI_BALLOON_GAME,balloonPopState());target.textContent=letter;target.classList.remove('is-hidden');}
@@ -2526,7 +2615,7 @@ function openProgress(){if(view==='progress'){go(lastView);return;}lastView=view
 function openModal(html){if(answerLocked)go('course');stopAudio();const layer=$('#modal-layer');if(layer.hidden)restoreFocus=document.activeElement;layer.innerHTML=`<section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" lang="ru">${html}</section>`;layer.hidden=false;$('#app').inert=true;layer.querySelector('button')?.focus();wireMedia();}
 function closeModal(){const layer=$('#modal-layer');layer.hidden=true;layer.replaceChildren();$('#app').inert=false;if(restoreFocus?.isConnected)restoreFocus.focus();}
 function showReset(){openModal(`<div class="modal-head"><h2 id="modal-title">Начать сначала?</h2></div><p>Все звёзды и подарки будут сброшены. Жирафик снова будет без одежды. Настройка звука сохранится.</p><div class="modal-actions"><button class="secondary" data-action="close-modal">Продолжить игру</button><button class="primary" data-action="confirm-reset">Начать заново</button></div>`);}
-function resetProgress(){const sound=AppState.soundEnabled;stopAudio();EffectsManager.stopAll();clearTimeout(transitionTimer);Object.assign(AppState,initialState(),{soundEnabled:sound});rewardReady=false;AudioManager.setEnabled(sound);EffectsManager.setEnabled(sound);closeModal();go('home');}
+function resetProgress(){const sound=AppState.soundEnabled;stopAudio();EffectsManager.stopAll();clearTimeout(transitionTimer);completedLessonCardAudioKeys.clear();lessonCardAudioRun++;lessonCardAudioState={key:null,status:SLIDE_AUDIO_READY};Object.assign(AppState,initialState(),{soundEnabled:sound});rewardReady=false;AudioManager.setEnabled(sound);EffectsManager.setEnabled(sound);closeModal();go('home');}
 function showParentGate(){openModal(`<div class="modal-head"><h2 id="modal-title">Для родителей</h2><button class="icon-button" data-action="close-modal" aria-label="Закрыть">×</button></div><p>Можно удерживать Parents две секунды или ответить:</p><p style="font-size:32px;font-weight:800;color:var(--ink);margin-top:20px">Сколько будет 7 + 5?</p><div class="modal-actions"><button class="secondary" data-action="gate-retry">10</button><button class="primary" data-action="parent-view">12</button><button class="secondary" data-action="gate-retry">14</button></div><p id="gate-message" role="status" style="min-height:24px;margin-top:15px"></p>`);}
 function renderParentView(){const totals=Object.values(AppState.stats).reduce((a,s)=>({attempts:a.attempts+s.attempts,correct:a.correct+s.correct,mistakes:a.mistakes+s.mistakes}),{attempts:0,correct:0,mistakes:0});
  openModal(`<div class="modal-head"><h2 id="modal-title">Для родителей</h2><button class="icon-button" data-action="close-modal" aria-label="Закрыть">×</button></div><p>Звезда — три связи: найти букву, выбрать картинку и узнать букву по картинке.</p><div class="stats-totals"><div><b>${totals.attempts}</b>Всего ответов</div><div><b>${totals.correct}</b>Правильных</div><div><b>${totals.mistakes}</b>Ошибок</div></div><table class="stats-table"><thead><tr><th>Буква</th><th>Освоение</th><th>Связи</th><th>Ошибки</th></tr></thead><tbody>${letters.map(d=>{const s=AppState.stats[d.letter],status=s.mastery===3?'★ Освоена':!s.attempts?'Ещё впереди':s.practiceDebt?'Повторяем':'Изучаем';return `<tr><td>${escapeHTML(d.letter)}</td><td class="status-tag">${status}</td><td>${s.mastery} / 3</td><td>${s.mistakes}</td></tr>`;}).join('')}</tbody></table><p>При ошибке буква чаще встречается в играх. Исправленный ответ тоже считается успешной связью.</p><p style="margin-top:12px">Озвучка: готовые записи из audio/. Инструкции — по-русски, буквы, звуки и слова — по-английски. Между репликами пауза 0,5 секунды.</p><p style="margin-top:12px">Прогресс хранится только в этом браузере${DEMO?' (отдельный деморежим)':''}.</p><div class="modal-actions"><button class="secondary" data-action="close-modal">В игру</button><button class="secondary" data-action="reset">Сбросить прогресс</button></div>`);
