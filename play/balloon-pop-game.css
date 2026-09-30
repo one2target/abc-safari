@@ -20,6 +20,7 @@
 .balloon-pop-field::before,.balloon-pop-field::after {content:"";position:absolute;border-radius:50%;background:rgba(255,255,255,.54);filter:blur(.2px);}
 .balloon-pop-field::before {width:90px;height:34px;left:6%;top:13%;box-shadow:130px 70px 0 rgba(255,255,255,.42),390px 25px 0 rgba(255,255,255,.5);}
 .balloon-pop-field::after {width:54px;height:20px;right:8%;top:45%;box-shadow:-330px 85px 0 rgba(255,255,255,.42);}
+.balloon-pop-balloons {display:contents;}
 .balloon-pop-balloon {position:absolute;z-index:3;left:calc(var(--balloon-x) * 1%);bottom:-112px;width:var(--balloon-size);height:calc(var(--balloon-size) * 1.22);padding:0;background:transparent;transform:translateX(-50%);animation:balloon-rise var(--balloon-duration) linear var(--balloon-delay) infinite;will-change:bottom;}
 .balloon-pop-balloon:active {transform:translateX(-50%);}
 .balloon-pop-shape {position:absolute;left:4%;right:4%;top:0;height:82%;display:grid;place-items:center;border:4px solid rgba(255,255,255,.72);border-radius:52% 48% 49% 51% / 45% 45% 55% 55%;background:#f28a6a;box-shadow:inset -9px -10px 0 rgba(111,38,24,.12),0 8px 12px rgba(49,91,69,.13);animation:balloon-sway 1.8s ease-in-out infinite alternate;transform-origin:50% 100%;}
@@ -34,7 +35,7 @@
 .balloon-pop-balloon:focus-visible {outline:0;}
 .balloon-pop-balloon:focus-visible .balloon-pop-shape {outline:4px solid #fff;box-shadow:0 0 0 8px var(--purple),inset -9px -10px 0 rgba(111,38,24,.12);}
 .balloon-pop-balloon.is-wrong .balloon-pop-shape {animation:balloon-wrong .18s ease-out;}
-.balloon-pop-balloon.is-hint .balloon-pop-shape {animation:balloon-hint .72s ease-in-out infinite alternate;box-shadow:0 0 0 8px rgba(255,204,84,.58),inset -9px -10px 0 rgba(111,38,24,.12),0 9px 16px rgba(49,91,69,.18);}
+.balloon-pop-balloon.is-hint .balloon-pop-shape {animation:balloon-hint .82s ease-out 1;}
 .balloon-pop-balloon.is-pop {animation-play-state:paused;pointer-events:none;}
 .balloon-pop-balloon.is-pop .balloon-pop-shape {animation:balloon-pop .2s cubic-bezier(.2,.82,.3,1) forwards;}
 .balloon-pop-balloon.is-pop .balloon-pop-letter {animation:balloon-letter-punch .2s ease-out forwards;}
@@ -63,7 +64,7 @@
 @keyframes balloon-rise {from{bottom:-112px}to{bottom:calc(100% + 112px)}}
 @keyframes balloon-sway {from{transform:translateX(calc(var(--balloon-drift) * -.5)) rotate(-4deg)}to{transform:translateX(calc(var(--balloon-drift) * .5)) rotate(4deg)}}
 @keyframes balloon-wrong {0%,100%{transform:translateX(0) rotate(0)}30%{transform:translateX(-5px) rotate(-3deg)}68%{transform:translateX(5px) rotate(3deg)}}
-@keyframes balloon-hint {from{transform:scale(1)}to{transform:scale(1.08)}}
+@keyframes balloon-hint {0%,100%{transform:scale(1)}42%{transform:scale(1.08)}68%{transform:scale(1.025)}}
 @keyframes balloon-pop {0%{transform:scale(1);opacity:1}30%{transform:scale(1.18);opacity:1}65%{transform:scale(.75);opacity:1}78%,100%{transform:scale(0);opacity:0}}
 @keyframes balloon-letter-punch {0%{transform:scale(1);opacity:1}30%{transform:scale(1.45);opacity:1}65%{transform:scale(1.25);opacity:1}100%{transform:scale(0);opacity:0}}
 @keyframes balloon-flash {0%{opacity:1;transform:translate(-50%,-50%) scale(.2)}65%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.22)}}

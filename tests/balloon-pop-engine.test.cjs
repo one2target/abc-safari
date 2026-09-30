@@ -14,15 +14,30 @@ assert.equal(engine.validate(config),true);
 assert.deepEqual(Array.from(config.targets),['G','H','I']);
 assert.deepEqual(Array.from(config.learnedLetters),['A','B','C','D','E','F','G','H','I']);
 
-// Every generated field has 5-7 learned letters and at least one live target.
+// Every generated field stays within the 7-10 density budget and starts with
+// at least one live target.
 for(const target of config.targets){
   for(let trial=0;trial<300;trial++){
-    const count=5+(trial%3),letters=engine.createBalloonLetters(config,target,count,Math.random);
+    const count=7+(trial%4),letters=engine.createBalloonLetters(config,target,count,Math.random);
     assert.equal(letters.length,count);
     assert.ok(letters.every(letter=>config.learnedLetters.includes(letter)));
     assert.ok(letters.includes(target));
   }
 }
+assert.equal(engine.createBalloonLetters(config,'G',2,()=>.99).length,engine.SPAWN.minCount);
+assert.equal(engine.createBalloonLetters(config,'G',99,()=>.99).length,engine.SPAWN.maxCount);
+
+// Normal spawns use the shared 35% target probability; a forced spawn always
+// wins regardless of the random value.
+let probabilityTargets=0;
+for(let sample=0;sample<1000;sample++){
+  let call=0;
+  const random=()=>call++===0?(sample+.5)/1000:.5;
+  if(engine.randomBalloonLetter(config,'G',random)==='G')probabilityTargets++;
+}
+assert.equal(probabilityTargets,350);
+assert.equal(engine.randomBalloonLetter(config,'G',()=>.99,true),'G');
+assert.ok(engine.spacedBalloonX(43,42)-42>=12);
 
 const scoreState=engine.initialState(config,()=>.25);
 const initialTarget=engine.target(config,scoreState);
@@ -33,7 +48,7 @@ assert.equal(scoreState.totalCorrect,0);
 assert.equal(engine.tap(config,scoreState,initialTarget),'correct');
 assert.equal(scoreState.score,1);
 assert.equal(scoreState.totalCorrect,1);
-assert.ok(engine.createBalloonLetters(config,initialTarget,6,()=>.99).includes(initialTarget));
+assert.ok(engine.createBalloonLetters(config,initialTarget,7,()=>.99).includes(initialTarget));
 
 // Three mistakes reveal a hint without reducing progress.
 engine.tap(config,scoreState,wrong);engine.tap(config,scoreState,wrong);engine.tap(config,scoreState,wrong);
@@ -59,42 +74,21 @@ assert.ok(state.quickOrder.every((letter,index)=>!index||letter!==state.quickOrd
 const restored=engine.restore(config,JSON.parse(JSON.stringify(state)),()=>.8);
 assert.equal(restored.gameCompleted,true);
 assert.equal(restored.totalCorrect,30);
-const balloons=engine.createBalloons(config,engine.initialState(config,()=>.1),6,()=>.5);
-assert.equal(balloons.length,6);
+const balloons=engine.createBalloons(config,engine.initialState(config,()=>.1),9,()=>.5);
+assert.equal(balloons.length,9);
 assert.ok(balloons.every(balloon=>balloon.size>=72&&balloon.size<=95&&balloon.x>=15&&balloon.x<=85));
-assert.ok(balloons.filter(balloon=>balloon.letter===engine.target(config,engine.initialState(config,()=>.1))).length>=config.phases[0].perTarget);
+assert.ok(balloons.some(balloon=>balloon.letter===engine.target(config,engine.initialState(config,()=>.1))));
 const html=engine.render(config,engine.initialState(config,()=>.1),{balloons});
-assert.equal((html.match(/class="balloon-pop-balloon/g)||[]).length,6);
+assert.equal((html.match(/class="balloon-pop-balloon color-/g)||[]).length,9);
 assert.ok(html.includes('Лопни букву'));
 assert.ok(html.includes('balloon-pop-repeat'));
+assert.ok(html.includes('data-balloon-container'));
 assert.ok(html.includes('data-duration="'));
 
-// A complete game remains possible while every correctly popped balloon is
-// permanently removed from the current round. Letter changes may randomize
-// the remaining balloons but cannot consume the targets still needed.
-const depletionState=engine.initialState(config,()=>.4);
-let depletionRounds=0,depletionPops=0;
-while(!depletionState.gameCompleted){
-  depletionRounds++;
-  const phaseIndex=depletionState.phaseIndex,targetIndex=depletionState.targetIndex;
-  const phase=engine.currentPhase(config,depletionState),target=engine.target(config,depletionState);
-  const field=engine.createBalloons(config,depletionState,6,()=>0);
-  const liveLetters=field.map(balloon=>balloon.letter);
-  while(!depletionState.gameCompleted&&depletionState.phaseIndex===phaseIndex&&depletionState.targetIndex===targetIndex){
-    const needed=phase.perTarget-depletionState.score;
-    for(let index=0;index<liveLetters.length;index++)liveLetters[index]=engine.replacementLetter(config,liveLetters,index,target,()=>0,needed);
-    assert.ok(liveLetters.filter(letter=>letter===target).length>=needed);
-    const poppedIndex=liveLetters.indexOf(target);
-    assert.notEqual(poppedIndex,-1);
-    const result=engine.tap(config,depletionState,target);
-    liveLetters.splice(poppedIndex,1);
-    depletionPops++;
-    if(result!=='correct')break;
-    assert.ok(liveLetters.filter(letter=>letter===target).length>=phase.perTarget-depletionState.score);
-  }
-}
-assert.equal(depletionRounds,config.phases.length*config.targets.length);
-assert.equal(depletionPops,30);
+// A normal letter change cannot remove the final live target.
+const liveLetters=['G','A','B','C','D','E','F'];
+assert.equal(engine.replacementLetter(config,liveLetters,0,'G',()=>.99),'G');
+assert.ok(config.learnedLetters.includes(engine.replacementLetter(config,['G','G','A','B','C','D','E'],0,'G',()=>.99)));
 
 // Course adapter: review G/H/I leads to Balloon Pop, not directly to reward.
 const course=createContext();
@@ -104,32 +98,74 @@ assert.equal(course.run('AppState.rewardFlow'),null);
 assert.equal(course.run('BALLOON_LETTER_CHANGE_INTERVAL_MULTIPLIER'),1.25);
 assert.equal(course.run('balloonLetterChangeDelay(16)'),20000);
 
-// Runtime timers use the slower interval, and a normal correct tap removes
-// the button after the existing pop animation instead of repopulating it.
+// Runtime timers keep the slowed letter cycle. A correct pop disappears after
+// 200 ms, leaves a visible gap, then refills at a new position after 1.4 s.
 const runtime=createContext();
 runtime.run("view='course';AppState.started=true;AppState.cursor={phase:'balloon_ghi',index:8,step:0};AppState.game=BalloonPopGame.initialState(GHI_BALLOON_GAME,()=>.4);clearBalloonPopRuntime()");
 const runtimeClasses=new Set(),runtimeButton={
   isConnected:true,disabled:false,removed:false,
   dataset:{duration:'16',letter:runtime.run('BalloonPopGame.target(GHI_BALLOON_GAME,balloonPopState())')},
   classList:{add(value){runtimeClasses.add(value)},remove(value){runtimeClasses.delete(value)},toggle(value,force){if(force)runtimeClasses.add(value);else runtimeClasses.delete(value)}},
-  setAttribute(){},querySelector(){return{textContent:''}},
+  style:{getPropertyValue(){return'42'}},setAttribute(){},querySelector(){return{textContent:''}},
   remove(){this.removed=true;this.isConnected=false}
 };
-runtime.context.runtimeButton=runtimeButton;
-runtime.run('letterChangeCount=0;replaceBalloonButton=()=>{letterChangeCount++};scheduleBalloonLetterChange(runtimeButton)');
+runtime.context.runtimeButton=runtimeButton;runtime.context.runtimeButtons=[runtimeButton];
+runtime.run("document.querySelectorAll=selector=>selector.startsWith('.balloon-pop-balloon')?runtimeButtons.filter(button=>button.isConnected):[];letterChangeCount=0;scheduleBalloonTargetGuarantee=()=>{};replaceBalloonButton=()=>{letterChangeCount++};scheduleBalloonLetterChange(runtimeButton)");
 let [runtimeTimerId,runtimeTimer]=[...runtime.timers][0];
 assert.equal(runtimeTimer.at,20000);
 runtime.timers.delete(runtimeTimerId);runtimeTimer.f();
 assert.equal(runtime.run('letterChangeCount'),1);
-runtime.run("clearBalloonPopRuntime();addBalloonBurst=()=>{};playBalloonPopEffect=()=>{};updateBalloonProgress=()=>{};setBalloonFeedback=()=>{};saveProgress=()=>{};scheduleBalloonHint=()=>{};AppState.game=BalloonPopGame.initialState(GHI_BALLOON_GAME,()=>.4)");
+runtime.run("clearBalloonPopRuntime();addBalloonBurst=()=>{};playBalloonPopEffect=()=>{};updateBalloonProgress=()=>{};setBalloonFeedback=()=>{};saveProgress=()=>{};scheduleBalloonHint=()=>{};scheduleBalloonTargetGuarantee=()=>{};spawned=[];spawnBalloonButton=(forced,avoidX)=>{spawned.push({forced,avoidX});return{}};AppState.game=BalloonPopGame.initialState(GHI_BALLOON_GAME,()=>.4)");
 assert.equal(runtime.run('tapBalloonPop(runtimeButton.dataset.letter,runtimeButton)'),'correct');
 assert.equal(runtimeButton.removed,false);
 assert.equal(runtimeClasses.has('is-pop'),true);
-[runtimeTimerId,runtimeTimer]=[...runtime.timers][0];
+assert.equal(runtime.run('spawned.length'),0);
+[runtimeTimerId,runtimeTimer]=[...runtime.timers].find(([,timer])=>timer.at===200);
 assert.equal(runtimeTimer.at,200);
 runtime.timers.delete(runtimeTimerId);runtimeTimer.f();
 assert.equal(runtimeButton.removed,true);
-assert.equal(runtime.run('letterChangeCount'),1);
+assert.equal(runtime.run('spawned.length'),0);
+[runtimeTimerId,runtimeTimer]=[...runtime.timers].find(([,timer])=>timer.at===1400);
+runtime.timers.delete(runtimeTimerId);runtimeTimer.f();
+assert.equal(runtime.run('spawned.length'),1);
+assert.equal(runtime.run('spawned[0].forced'),runtime.run('BalloonPopGame.target(GHI_BALLOON_GAME,balloonPopState())'));
+assert.equal(runtime.run('spawned[0].avoidX'),42);
+
+// If a target is absent for too long, the watchdog forces it by 2.8 seconds.
+const guarantee=createContext();
+guarantee.run("view='course';AppState.cursor={phase:'balloon_ghi',index:8,step:0};AppState.game=BalloonPopGame.initialState(GHI_BALLOON_GAME,()=>.4);document.querySelectorAll=()=>[];forcedTargetCount=0;forceBalloonTarget=()=>{forcedTargetCount++};scheduleBalloonTargetGuarantee()");
+const [guaranteeTimerId,guaranteeTimer]=[...guarantee.timers][0];
+assert.ok(guaranteeTimer.at>=2500&&guaranteeTimer.at<=2800);
+guarantee.timers.delete(guaranteeTimerId);guaranteeTimer.f();
+assert.equal(guarantee.run('forcedTargetCount'),1);
+assert.equal(guarantee.timers.size,1);
+
+// Runtime density follows the responsive cap and refuses an extra active ball.
+const density=createContext();
+density.run("view='course';window.innerWidth=390;AppState.cursor={phase:'balloon_ghi',index:8,step:0};AppState.game=BalloonPopGame.initialState(GHI_BALLOON_GAME,()=>.4);densityBalls=Array.from({length:7},(_,index)=>({isConnected:true,disabled:false,dataset:{letter:index?'A':'G'}}));document.querySelectorAll=()=>densityBalls");
+assert.equal(density.run('balloonFieldCount()'),7);
+assert.equal(density.run('spawnBalloonButton()'),null);
+density.run('window.innerWidth=900');
+assert.equal(density.run('balloonFieldCount()'),9);
+
+// Idle help starts only after 5.5 seconds and removes its class after one pulse.
+const hintRuntime=createContext();
+const hintClasses=new Set(),hintButton={isConnected:true,disabled:false,dataset:{letter:'G'},offsetWidth:80,classList:{add(value){hintClasses.add(value)},remove(value){hintClasses.delete(value)}}};
+hintRuntime.context.hintButton=hintButton;hintRuntime.context.hintButtons=[hintButton];
+hintRuntime.run("view='course';AppState.cursor={phase:'balloon_ghi',index:8,step:0};AppState.game=BalloonPopGame.initialState(GHI_BALLOON_GAME,()=>.4);document.querySelectorAll=()=>hintButtons;scheduleBalloonHint()");
+let [hintTimerId,hintTimer]=[...hintRuntime.timers][0];
+assert.equal(hintTimer.at,5500);
+const firstHintTimerId=hintTimerId;
+hintRuntime.run('noteBalloonInteraction()');
+assert.equal(hintRuntime.timers.has(firstHintTimerId),false);
+[hintTimerId,hintTimer]=[...hintRuntime.timers][0];
+assert.equal(hintTimer.at,5500);
+hintRuntime.timers.delete(hintTimerId);hintTimer.f();
+assert.equal(hintClasses.has('is-hint'),true);
+[hintTimerId,hintTimer]=[...hintRuntime.timers][0];
+assert.equal(hintTimer.at,900);
+hintRuntime.timers.delete(hintTimerId);hintTimer.f();
+assert.equal(hintClasses.has('is-hint'),false);
 
 // Completion is persisted before the success button is pressed.
 course.run("while(!balloonPopState().gameCompleted)BalloonPopGame.tap(GHI_BALLOON_GAME,balloonPopState(),BalloonPopGame.target(GHI_BALLOON_GAME,balloonPopState()));saveProgress()");
@@ -174,11 +210,14 @@ assert.match(css,/\.balloon-pop-balloon\.is-wrong \.balloon-pop-shape \{animatio
 assert.match(appSource,/for\(let index=0;index<10;index\+\+\)/);
 assert.match(appSource,/setTimeout\(\(\)=>burst\.remove\(\),460\)/);
 assert.match(appSource,/const BALLOON_LETTER_CHANGE_INTERVAL_MULTIPLIER=1\.25,BALLOON_POP_ANIMATION_MS=200/);
+assert.match(appSource,/BALLOON_TARGET_MAX_WAIT_MS=2800,BALLOON_RESPAWN_DELAY_MS=1400,BALLOON_IDLE_HINT_MS=5500/);
 assert.match(appSource,/duration\*1000\*BALLOON_LETTER_CHANGE_INTERVAL_MULTIPLIER/);
 assert.match(appSource,/document\.querySelectorAll\('\.balloon-pop-balloon'\)\.forEach\(scheduleBalloonLetterChange\)/);
 assert.doesNotMatch(appSource,/addEventListener\('animationiteration'/);
-assert.match(appSource,/button\?\.remove\?\.\(\);scheduleBalloonHint\(\);\},BALLOON_POP_ANIMATION_MS\)/);
-assert.doesNotMatch(appSource,/replaceBalloonButton\(button\);scheduleBalloonHint\(\)/);
+assert.match(appSource,/scheduleBalloonRefill\(poppedX\);scheduleBalloonTargetGuarantee\(\)/);
+assert.match(css,/\.balloon-pop-balloon\.is-hint \.balloon-pop-shape \{animation:balloon-hint \.82s ease-out 1;\}/);
+assert.doesNotMatch(css,/\.balloon-pop-balloon\.is-hint[^{]*\{[^}]*infinite/);
+assert.doesNotMatch(css,/\.balloon-pop-balloon\.is-hint[^{]*\{[^}]*box-shadow/);
 assert.match(appSource,/window\.navigator\?\.vibrate\?\.\(20\)/);
 
 console.log(JSON.stringify({
@@ -187,14 +226,19 @@ console.log(JSON.stringify({
   targets:Array.from(config.targets),
   distractors:'A-I only',
   generatedFields:900,
+  targetSpawnProbability:engine.SPAWN.targetProbability,
+  mobileBalloonCount:engine.SPAWN.mobileCount,
+  desktopBalloonCount:engine.SPAWN.desktopCount,
   correctAnswers:state.totalCorrect,
   namePerLetter:5,
   phonicsPerLetter:3,
   quickMix:6,
   targetAlwaysPresent:true,
-  noSameRoundRespawn:true,
-  completionWithDepletedFields:true,
-  depletionRounds,
+  maximumTargetWaitMilliseconds:2800,
+  respawnDelayMilliseconds:1400,
+  noImmediateSamePositionRespawn:true,
+  idleHintMilliseconds:5500,
+  idleHintOneShot:true,
   letterChangeIntervalMultiplier:1.25,
   movementDurationsUnchanged:true,
   wrongTapDoesNotScore:true,

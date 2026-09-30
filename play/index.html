@@ -2224,12 +2224,26 @@ function continueLetterMazeGame(gameId){
  AppState.cursor.phase=entry.nextPhase;AppState.game=null;AppState.question=null;finishBlock();go('course');
 }
 /* BALLOON POP G/H/I — pure game rules live in balloon-pop-game.js. */
-const BALLOON_LETTER_CHANGE_INTERVAL_MULTIPLIER=1.25,BALLOON_POP_ANIMATION_MS=200;
-let balloonVisuals=[],balloonHintTimer=null,balloonTargetTimer=null,balloonFeedbackTimer=null,balloonAudioContext=null,balloonLetterTimers=new Map();
+const BALLOON_LETTER_CHANGE_INTERVAL_MULTIPLIER=1.25,BALLOON_POP_ANIMATION_MS=200,BALLOON_TARGET_MAX_WAIT_MS=2800,BALLOON_RESPAWN_DELAY_MS=1400,BALLOON_IDLE_HINT_MS=5500,BALLOON_HINT_DURATION_MS=900;
+let balloonVisuals=[],balloonHintTimer=null,balloonHintClearTimer=null,balloonTargetTimer=null,balloonTargetGuaranteeTimer=null,balloonFeedbackTimer=null,balloonAudioContext=null,balloonTargetMissingSince=null,balloonLastInteractionTime=0,balloonSpawnSerial=0,balloonLetterTimers=new Map(),balloonLifecycleTimers=new Set();
+function clearBalloonLifecycleTimers(){balloonLifecycleTimers.forEach(timer=>clearTimeout(timer));balloonLifecycleTimers.clear();}
 function clearBalloonPopRuntime(){
- clearTimeout(balloonHintTimer);clearTimeout(balloonTargetTimer);clearTimeout(balloonFeedbackTimer);
+ clearTimeout(balloonHintTimer);clearTimeout(balloonHintClearTimer);clearTimeout(balloonTargetTimer);clearTimeout(balloonTargetGuaranteeTimer);clearTimeout(balloonFeedbackTimer);
  balloonLetterTimers.forEach(timer=>clearTimeout(timer));balloonLetterTimers.clear();
- balloonHintTimer=balloonTargetTimer=balloonFeedbackTimer=null;
+ clearBalloonLifecycleTimers();
+ balloonHintTimer=balloonHintClearTimer=balloonTargetTimer=balloonTargetGuaranteeTimer=balloonFeedbackTimer=null;
+ balloonTargetMissingSince=null;balloonLastInteractionTime=0;balloonSpawnSerial=0;
+}
+function balloonLifecycleTimer(callback,delay){
+ const timer=setTimeout(()=>{balloonLifecycleTimers.delete(timer);callback();},delay);balloonLifecycleTimers.add(timer);return timer;
+}
+function balloonFieldCount(width=window.innerWidth){
+ const viewport=Number(width)||390;return viewport<=420?BalloonPopGame.SPAWN.mobileCount:BalloonPopGame.SPAWN.desktopCount;
+}
+function activeBalloonButtons(){return [...document.querySelectorAll('.balloon-pop-balloon')].filter(button=>button.isConnected&&!button.disabled);}
+function hasBalloonTarget(){
+ const state=balloonPopState();if(state.gameCompleted)return false;
+ const target=BalloonPopGame.target(GHI_BALLOON_GAME,state);return activeBalloonButtons().some(button=>button.dataset.letter===target);
 }
 function balloonAudioItem(){
  const state=balloonPopState(),letter=byLetter.get(BalloonPopGame.target(GHI_BALLOON_GAME,state));
@@ -2237,7 +2251,7 @@ function balloonAudioItem(){
 }
 function renderBalloonPopGame(){
  const state=balloonPopState();
- if(!state.gameCompleted)balloonVisuals=BalloonPopGame.createBalloons(GHI_BALLOON_GAME,state,6);
+ if(!state.gameCompleted)balloonVisuals=BalloonPopGame.createBalloons(GHI_BALLOON_GAME,state,balloonFieldCount());
  const character=state.gameCompleted?'':renderCharacter('gameplay',{includeBackground:false,className:'gameplay-marius balloon-pop-marius-stage',decorative:true});
  return BalloonPopGame.render(GHI_BALLOON_GAME,state,{icons,balloons:balloonVisuals,characterHTML:character,successVisual:state.gameCompleted?renderCompletionSticker():''});
 }
@@ -2254,18 +2268,33 @@ function scheduleBalloonTargetHide(){
 function showBalloonHint(){
  if(AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return;
  const target=BalloonPopGame.target(GHI_BALLOON_GAME,balloonPopState());
- const balloons=[...document.querySelectorAll('.balloon-pop-balloon')];
+ const balloons=activeBalloonButtons();
  balloons.forEach(balloon=>balloon.classList.remove('is-hint'));
- balloons.find(balloon=>balloon.dataset.letter===target)?.classList.add('is-hint');
+ const balloon=balloons.find(item=>item.dataset.letter===target);if(!balloon)return;
+ void balloon.offsetWidth;balloon.classList.add('is-hint');clearTimeout(balloonHintClearTimer);
+ balloonHintClearTimer=setTimeout(()=>{if(balloon.isConnected)balloon.classList.remove('is-hint');},BALLOON_HINT_DURATION_MS);
 }
 function scheduleBalloonHint(){
  clearTimeout(balloonHintTimer);balloonHintTimer=null;
- if(AppState.cursor.phase==='balloon_ghi'&&!balloonPopState().gameCompleted)balloonHintTimer=setTimeout(showBalloonHint,5000);
+ if(AppState.cursor.phase==='balloon_ghi'&&!balloonPopState().gameCompleted)balloonHintTimer=setTimeout(showBalloonHint,BALLOON_IDLE_HINT_MS);
+}
+function noteBalloonInteraction(){balloonLastInteractionTime=Date.now();scheduleBalloonHint();}
+function scheduleBalloonTargetGuarantee(delay=BALLOON_TARGET_MAX_WAIT_MS){
+ clearTimeout(balloonTargetGuaranteeTimer);balloonTargetGuaranteeTimer=null;
+ if(AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return;
+ if(hasBalloonTarget()){balloonTargetMissingSince=null;return;}
+ if(balloonTargetMissingSince===null)balloonTargetMissingSince=Date.now();
+ const elapsed=Math.max(0,Date.now()-balloonTargetMissingSince),wait=Math.max(0,Math.min(delay,BALLOON_TARGET_MAX_WAIT_MS-elapsed));
+ balloonTargetGuaranteeTimer=setTimeout(()=>{
+  balloonTargetGuaranteeTimer=null;if(AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted||hasBalloonTarget())return;
+  forceBalloonTarget();
+  if(hasBalloonTarget())balloonTargetMissingSince=null;else{balloonTargetMissingSince=Date.now();scheduleBalloonTargetGuarantee();}
+ },wait);
 }
 function wireBalloonPopGame(){
  if(view!=='course'||AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return;
  document.querySelectorAll('.balloon-pop-balloon').forEach(scheduleBalloonLetterChange);
- scheduleBalloonTargetHide();scheduleBalloonHint();
+ scheduleBalloonTargetHide();scheduleBalloonTargetGuarantee();scheduleBalloonHint();
 }
 function balloonLetterChangeDelay(durationSeconds){
  const duration=Number(durationSeconds);
@@ -2281,21 +2310,45 @@ function scheduleBalloonLetterChange(button){
  const timer=setTimeout(()=>{
   balloonLetterTimers.delete(button);
   if(!button.isConnected||button.disabled||AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return;
-  replaceBalloonButton(button);scheduleBalloonLetterChange(button);
+  replaceBalloonButton(button);scheduleBalloonLetterChange(button);scheduleBalloonTargetGuarantee();
  },delay);
  balloonLetterTimers.set(button,timer);
 }
-function replaceBalloonButton(button){
+function replaceBalloonButton(button,forcedLetter=null){
  if(!button?.isConnected||AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return;
- const buttons=[...document.querySelectorAll('.balloon-pop-balloon')].filter(item=>!item.disabled),index=buttons.indexOf(button);
+ const buttons=activeBalloonButtons(),index=buttons.indexOf(button);
  if(index<0)return;
- const state=balloonPopState(),phase=BalloonPopGame.currentPhase(GHI_BALLOON_GAME,state),target=BalloonPopGame.target(GHI_BALLOON_GAME,state);
- const letters=buttons.map(item=>item.dataset.letter),remainingTargets=Math.max(1,phase.perTarget-state.score);
- const letter=BalloonPopGame.replacementLetter(GHI_BALLOON_GAME,letters,index,target,Math.random,remainingTargets);
+ const state=balloonPopState(),target=BalloonPopGame.target(GHI_BALLOON_GAME,state),letters=buttons.map(item=>item.dataset.letter);
+ const letter=forcedLetter||BalloonPopGame.replacementLetter(GHI_BALLOON_GAME,letters,index,target,Math.random,1);
  const color=Math.floor(Math.random()*6);
  button.dataset.letter=letter;button.setAttribute('aria-label',`Буква ${letter}`);button.querySelector('.balloon-pop-letter').textContent=letter;
  for(let value=0;value<6;value++)button.classList.toggle(`color-${value}`,value===color);
  button.classList.remove('is-pop','is-wrong','is-hint');button.disabled=false;
+}
+function spawnBalloonButton(forcedLetter=null,avoidX=null){
+ if(AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return null;
+ const count=balloonFieldCount(),buttons=activeBalloonButtons(),state=balloonPopState(),target=BalloonPopGame.target(GHI_BALLOON_GAME,state);
+ if(buttons.length>=count){
+  if(forcedLetter&&!hasBalloonTarget()){const replacement=buttons.find(button=>button.dataset.letter!==target);if(replacement){replaceBalloonButton(replacement,target);scheduleBalloonLetterChange(replacement);return replacement;}}
+  return null;
+ }
+ const candidates=BalloonPopGame.createBalloons(GHI_BALLOON_GAME,state,count),descriptor={...candidates[balloonSpawnSerial%count]};
+ descriptor.id=`balloon-runtime-${++balloonSpawnSerial}`;descriptor.letter=forcedLetter||BalloonPopGame.randomBalloonLetter(GHI_BALLOON_GAME,target);descriptor.delay=Number((descriptor.duration*-.22).toFixed(2));
+ descriptor.x=BalloonPopGame.spacedBalloonX(descriptor.x,avoidX);
+ const container=document.querySelector('[data-balloon-container]');if(!container)return null;
+ const previous=container.lastElementChild;container.insertAdjacentHTML('beforeend',BalloonPopGame.renderBalloon(descriptor,balloonSpawnSerial));
+ const button=container.lastElementChild;if(!button||button===previous)return null;
+ scheduleBalloonLetterChange(button);if(button.dataset.letter===target)balloonTargetMissingSince=null;return button;
+}
+function forceBalloonTarget(){
+ const target=BalloonPopGame.target(GHI_BALLOON_GAME,balloonPopState());return spawnBalloonButton(target);
+}
+function scheduleBalloonRefill(avoidX=null){
+ balloonLifecycleTimer(()=>{
+  if(AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return;
+  if(activeBalloonButtons().length<balloonFieldCount())spawnBalloonButton(hasBalloonTarget()?null:BalloonPopGame.target(GHI_BALLOON_GAME,balloonPopState()),avoidX);
+  scheduleBalloonTargetGuarantee();
+ },BALLOON_RESPAWN_DELAY_MS);
 }
 function updateBalloonProgress(){
  const progress=BalloonPopGame.progress(GHI_BALLOON_GAME,balloonPopState()),label=$('#balloon-pop-score'),track=document.querySelector('.balloon-pop-progress');
@@ -2346,25 +2399,28 @@ function playBalloonPopEffect(){
 function tapBalloonPop(letter,button=null){
  if(view!=='course'||AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return 'ignored';
  const result=BalloonPopGame.tap(GHI_BALLOON_GAME,balloonPopState(),letter);if(result==='ignored')return result;
- clearTimeout(balloonHintTimer);
+ noteBalloonInteraction();document.querySelectorAll('.balloon-pop-balloon.is-hint').forEach(item=>item.classList.remove('is-hint'));
  if(result==='wrong'){
   saveProgress();button?.classList.add('is-wrong');setBalloonFeedback('Почти! Ищи другую букву');AudioManager.play(ru('almost'));
   setTimeout(()=>button?.classList.remove('is-wrong'),190);
-  if(BalloonPopGame.hint(GHI_BALLOON_GAME,balloonPopState()))showBalloonHint();else scheduleBalloonHint();
   return result;
  }
  playBalloonPopEffect();window.navigator?.vibrate?.(20);addBalloonBurst(button);clearBalloonLetterTimer(button);button?.classList.add('is-pop');if(button)button.disabled=true;
  saveProgress();updateBalloonProgress();setBalloonFeedback('Лоп! Правильно!');
- const epoch=viewEpoch;
+ const epoch=viewEpoch,poppedX=Number(button?.style?.getPropertyValue?.('--balloon-x'));
  if(['target-complete','phase-complete','game-complete'].includes(result)){
-  transitionTimer=setTimeout(()=>{if(epoch===viewEpoch)showScreen();},BALLOON_POP_ANIMATION_MS);
+  clearBalloonLifecycleTimers();clearTimeout(balloonTargetGuaranteeTimer);balloonTargetGuaranteeTimer=null;balloonTargetMissingSince=null;
+  activeBalloonButtons().forEach(item=>item.disabled=true);
+  transitionTimer=setTimeout(()=>{if(epoch===viewEpoch)showScreen();},BALLOON_RESPAWN_DELAY_MS);
  }else{
-  transitionTimer=setTimeout(()=>{if(epoch!==viewEpoch)return;button?.remove?.();scheduleBalloonHint();},BALLOON_POP_ANIMATION_MS);
+  balloonLifecycleTimer(()=>{if(epoch===viewEpoch)button?.remove?.();},BALLOON_POP_ANIMATION_MS);
+  scheduleBalloonRefill(poppedX);scheduleBalloonTargetGuarantee();
  }
  return result;
 }
 function repeatBalloonInstruction(){
  if(AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return;
+ noteBalloonInteraction();
  const target=document.querySelector('[data-balloon-target]'),letter=BalloonPopGame.target(GHI_BALLOON_GAME,balloonPopState());
  if(target){target.textContent=letter;target.classList.remove('is-hidden','is-pulsing');void target.offsetWidth;target.classList.add('is-pulsing');}
  setInstruction([balloonAudioItem()]);scheduleBalloonTargetHide();
@@ -2603,6 +2659,7 @@ function toggleSound(){
  unlockAudio();AppState.soundEnabled=!AppState.soundEnabled;AudioManager.setEnabled(AppState.soundEnabled);EffectsManager.setEnabled(AppState.soundEnabled);saveProgress();updateSoundButton();
  if(!AppState.soundEnabled&&lessonCardAudioIsWaiting()){lessonCardAudioRun++;completeLessonCardAudio(lessonCardKey(),viewEpoch);}
  if(AppState.cursor.phase==='balloon_ghi'&&!balloonPopState().gameCompleted){
+  noteBalloonInteraction();
   const target=document.querySelector('[data-balloon-target]');clearTimeout(balloonTargetTimer);
   if(target&&!AppState.soundEnabled){const letter=BalloonPopGame.target(GHI_BALLOON_GAME,balloonPopState());target.textContent=letter;target.classList.remove('is-hidden');}
   if(AppState.soundEnabled&&!answerLocked)repeatBalloonInstruction();

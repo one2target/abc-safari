@@ -2,6 +2,14 @@
 /* Reusable Balloon Pop rules and markup. Course navigation, persistence,
    audio, timers and character rendering are supplied by the caller. */
 const BalloonPopGame = {
+  SPAWN:Object.freeze({
+    targetProbability:.35,
+    minCount:7,
+    maxCount:10,
+    mobileCount:7,
+    desktopCount:9
+  }),
+
   CONFIG:Object.freeze({
     id:'balloon-ghi',
     targets:Object.freeze(['G','H','I']),
@@ -94,14 +102,29 @@ const BalloonPopGame = {
     return 'game-complete';
   },
 
-  createBalloonLetters(config=this.CONFIG,target,count=6,random=Math.random,minimumTargetCount=1) {
-    const length=Math.max(5,Math.min(7,Math.round(count)));
+  randomBalloonLetter(config=this.CONFIG,target,random=Math.random,forceTarget=false) {
     if(!config.targets.includes(target))throw new TypeError('Balloon target must be G, H or I');
-    const weighted=[...config.learnedLetters,...config.targets,...config.targets];
+    if(forceTarget||random()<this.SPAWN.targetProbability)return target;
+    const distractors=config.learnedLetters.filter(letter=>letter!==target);
+    return distractors[Math.floor(random()*distractors.length)];
+  },
+
+  spacedBalloonX(x,previousX,minGap=12) {
+    const next=Number(x),previous=Number(previousX),gap=Math.max(0,Number(minGap)||0);
+    if(!Number.isFinite(previous)||!Number.isFinite(next)||Math.abs(next-previous)>=gap)return next;
+    return previous<50?Math.min(85,previous+Math.max(gap,18)):Math.max(15,previous-Math.max(gap,18));
+  },
+
+  createBalloonLetters(config=this.CONFIG,target,count=8,random=Math.random,minimumTargetCount=1) {
+    const length=Math.max(this.SPAWN.minCount,Math.min(this.SPAWN.maxCount,Math.round(count)));
+    if(!config.targets.includes(target))throw new TypeError('Balloon target must be G, H or I');
     const requestedTargets=Number.isFinite(minimumTargetCount)?Math.round(minimumTargetCount):1;
-    const targetCount=Math.max(length>=6?2:1,Math.min(length,Math.max(1,requestedTargets)));
-    const letters=Array.from({length:targetCount},()=>target);
-    while(letters.length<length)letters.push(weighted[Math.floor(random()*weighted.length)]);
+    const targetCount=Math.max(0,Math.min(length,requestedTargets));
+    const letters=Array.from({length},()=>this.randomBalloonLetter(config,target,random));
+    for(let missing=targetCount-letters.filter(letter=>letter===target).length;missing>0;missing--){
+      const index=letters.findIndex(letter=>letter!==target);
+      if(index>=0)letters[index]=target;
+    }
     for(let index=letters.length-1;index>0;index--){
       const swap=Math.floor(random()*(index+1));
       [letters[index],letters[swap]]=[letters[swap],letters[index]];
@@ -115,13 +138,12 @@ const BalloonPopGame = {
     const requestedTargets=Number.isFinite(minimumTargetCount)?Math.round(minimumTargetCount):1;
     const requiredTargets=Math.max(1,Math.min(letters.length,requestedTargets));
     if(remaining.filter(letter=>letter===target).length<requiredTargets)return target;
-    const weighted=[...config.learnedLetters,...config.targets,...config.targets];
-    return weighted[Math.floor(random()*weighted.length)];
+    return this.randomBalloonLetter(config,target,random);
   },
 
-  createBalloons(config=this.CONFIG,state,count=6,random=Math.random) {
-    const target=this.target(config,state),phase=this.currentPhase(config,state),remainingTargets=Math.max(1,phase.perTarget-state.score);
-    const letters=this.createBalloonLetters(config,target,count,random,remainingTargets);
+  createBalloons(config=this.CONFIG,state,count=8,random=Math.random) {
+    const target=this.target(config,state);
+    const letters=this.createBalloonLetters(config,target,count,random,1);
     const lanes=letters.map((_,index)=>16+(68*(index+.5)/letters.length));
     for(let index=lanes.length-1;index>0;index--){
       const swap=Math.floor(random()*(index+1));
@@ -136,9 +158,14 @@ const BalloonPopGame = {
       duration:Number(((13+random()*5)*speed).toFixed(2)),
       delay:Number((-(index/letters.length)*(11+random()*3)).toFixed(2)),
       drift:Math.round(10+random()*16),
-      staticY:[7,31,57,18,44,68,76][index],
+      staticY:[7,31,57,18,44,68,76,12,52,34][index],
       color:index%6
     }));
+  },
+
+  renderBalloon(balloon,index=0,action='balloon-pop') {
+    const escape=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    return `<button type="button" class="balloon-pop-balloon color-${balloon.color}" data-action="${escape(action)}" data-index="${index}" data-letter="${escape(balloon.letter)}" data-duration="${balloon.duration}" aria-label="Буква ${escape(balloon.letter)}" style="--balloon-x:${balloon.x};--balloon-size:${balloon.size}px;--balloon-duration:${balloon.duration}s;--balloon-delay:${balloon.delay}s;--balloon-drift:${balloon.drift}px;--balloon-y:${balloon.staticY}%"><span class="balloon-pop-shape"><span class="balloon-pop-letter">${escape(balloon.letter)}</span></span></button>`;
   },
 
   render(config=this.CONFIG,state,options={}) {
@@ -162,7 +189,7 @@ const BalloonPopGame = {
         <div class="balloon-pop-progress" role="progressbar" aria-label="${escape(copy.progressLabel||'Прогресс раунда')}" aria-valuemin="0" aria-valuemax="${progress.max}" aria-valuenow="${progress.value}">${Array.from({length:progress.max},(_,index)=>`<span class="${index<progress.value?'done':index===progress.value?'current':''}"></span>`).join('')}</div>
       </header>
       <div class="balloon-pop-field" role="group" aria-label="${escape(copy.fieldLabel||'Воздушные шарики с буквами')}">
-        ${balloons.map((balloon,index)=>`<button type="button" class="balloon-pop-balloon color-${balloon.color}" data-action="${escape(action.pop)}" data-index="${index}" data-letter="${escape(balloon.letter)}" data-duration="${balloon.duration}" aria-label="Буква ${escape(balloon.letter)}" style="--balloon-x:${balloon.x};--balloon-size:${balloon.size}px;--balloon-duration:${balloon.duration}s;--balloon-delay:${balloon.delay}s;--balloon-drift:${balloon.drift}px;--balloon-y:${balloon.staticY}%"><span class="balloon-pop-shape"><span class="balloon-pop-letter">${escape(balloon.letter)}</span></span></button>`).join('')}
+        <div class="balloon-pop-balloons" data-balloon-container>${balloons.map((balloon,index)=>this.renderBalloon(balloon,index,action.pop)).join('')}</div>
         <div class="balloon-pop-character" aria-hidden="true">${options.characterHTML||''}</div>
         <div id="balloon-pop-feedback" class="balloon-pop-feedback" role="status" aria-live="polite"></div>
       </div>
