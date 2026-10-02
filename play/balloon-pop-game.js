@@ -23,9 +23,9 @@ const BalloonPopGame = {
 
   validate(config=this.CONFIG) {
     if(!config || typeof config.id!=='string' || !config.id)throw new TypeError('Balloon Pop needs a stable id');
-    if(!Array.isArray(config.targets) || config.targets.length!==3 || new Set(config.targets).size!==3 || config.targets.some(letter=>!config.learnedLetters.includes(letter)))throw new TypeError('Balloon Pop needs three distinct learned targets');
-    if(!Array.isArray(config.learnedLetters) || config.learnedLetters.join('')!=='ABCDEFGHI')throw new TypeError('Balloon Pop distractors must be A-I');
-    if(!Array.isArray(config.phases) || config.phases.length!==3 || config.phases.some(phase=>!phase.id || !Number.isInteger(phase.perTarget) || phase.perTarget<1))throw new TypeError('Invalid Balloon Pop phases');
+    if(!Array.isArray(config.learnedLetters) || config.learnedLetters.length<2 || new Set(config.learnedLetters).size!==config.learnedLetters.length)throw new TypeError('Balloon Pop needs distinct learned letters');
+    if(!Array.isArray(config.targets) || config.targets.length<1 || new Set(config.targets).size!==config.targets.length || config.targets.some(letter=>!config.learnedLetters.includes(letter)))throw new TypeError('Balloon Pop targets must be learned and distinct');
+    if(!Array.isArray(config.phases) || config.phases.length<1 || config.phases.some(phase=>!phase.id || !Number.isInteger(phase.perTarget) || phase.perTarget<1))throw new TypeError('Invalid Balloon Pop phases');
     return true;
   },
 
@@ -52,7 +52,8 @@ const BalloonPopGame = {
     if(Number.isInteger(saved.targetIndex) && saved.targetIndex>=0 && saved.targetIndex<config.targets.length)state.targetIndex=saved.targetIndex;
     const required=this.currentPhase(config,state).perTarget;
     state.score=Number.isInteger(saved.score)?Math.max(0,Math.min(required,saved.score)):0;
-    state.totalCorrect=Number.isInteger(saved.totalCorrect)?Math.max(0,Math.min(30,saved.totalCorrect)):0;
+    const maxCorrect=config.phases.reduce((sum,phase)=>sum+phase.perTarget*config.targets.length,0);
+    state.totalCorrect=Number.isInteger(saved.totalCorrect)?Math.max(0,Math.min(maxCorrect,saved.totalCorrect)):0;
     state.wrongStreak=Number.isInteger(saved.wrongStreak)?Math.max(0,Math.min(999,saved.wrongStreak)):0;
     state.gameCompleted=Boolean(saved.gameCompleted && state.phaseIndex===config.phases.length-1 && state.targetIndex===config.targets.length-1 && state.score===required);
     return state;
@@ -73,7 +74,8 @@ const BalloonPopGame = {
   },
 
   hint(config=this.CONFIG,state) {
-    return state.wrongStreak>=3?this.target(config,state):null;
+    const threshold=Number.isInteger(config.hintAfterMistakes)?Math.max(1,config.hintAfterMistakes):3;
+    return state.wrongStreak>=threshold?this.target(config,state):null;
   },
 
   tap(config=this.CONFIG,state,letter) {
@@ -83,7 +85,8 @@ const BalloonPopGame = {
       return 'wrong';
     }
     state.score++;
-    state.totalCorrect=Math.min(30,state.totalCorrect+1);
+    const maxCorrect=config.phases.reduce((sum,item)=>sum+item.perTarget*config.targets.length,0);
+    state.totalCorrect=Math.min(maxCorrect,state.totalCorrect+1);
     state.wrongStreak=0;
     const phase=this.currentPhase(config,state);
     if(state.score<phase.perTarget)return 'correct';
@@ -103,8 +106,9 @@ const BalloonPopGame = {
   },
 
   randomBalloonLetter(config=this.CONFIG,target,random=Math.random,forceTarget=false) {
-    if(!config.targets.includes(target))throw new TypeError('Balloon target must be G, H or I');
-    if(forceTarget||random()<this.SPAWN.targetProbability)return target;
+    if(!config.targets.includes(target))throw new TypeError('Balloon target must belong to this game');
+    const probability=Number.isFinite(config.targetProbability)?Math.max(0,Math.min(1,config.targetProbability)):this.SPAWN.targetProbability;
+    if(forceTarget||random()<probability)return target;
     const distractors=config.learnedLetters.filter(letter=>letter!==target);
     return distractors[Math.floor(random()*distractors.length)];
   },
@@ -117,7 +121,7 @@ const BalloonPopGame = {
 
   createBalloonLetters(config=this.CONFIG,target,count=8,random=Math.random,minimumTargetCount=1) {
     const length=Math.max(this.SPAWN.minCount,Math.min(this.SPAWN.maxCount,Math.round(count)));
-    if(!config.targets.includes(target))throw new TypeError('Balloon target must be G, H or I');
+    if(!config.targets.includes(target))throw new TypeError('Balloon target must belong to this game');
     const requestedTargets=Number.isFinite(minimumTargetCount)?Math.round(minimumTargetCount):1;
     const targetCount=Math.max(0,Math.min(length,requestedTargets));
     const letters=Array.from({length},()=>this.randomBalloonLetter(config,target,random));

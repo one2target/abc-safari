@@ -213,7 +213,7 @@ main {
   height:23px;
 }
 .home .primary {
-  width:min(100%,330px);
+  width:100%;
 }
 .secondary {
   min-height:60px;
@@ -235,10 +235,11 @@ main {
 .home-actions {
   display:flex;
   flex-direction:column;
-  align-items:flex-start;
+  align-items:stretch;
+  width:min(100%,330px);
 }
 .home-actions .text-button {
-  width:min(100%,330px);
+  width:100%;
 }
 .hero-scene {
   position:relative;
@@ -605,6 +606,37 @@ main {
   max-width:560px;
   gap:16px;
   margin:15px 0;
+}
+/* Training answer columns are explicit modifiers on the container rendered by
+   renderTrainingQuestion. Keep these critical rules with the base .choices
+   rule so a stale optional stylesheet can never fall back to 3 + 1. */
+.training-question .answers-grid {
+  display:grid;
+  gap:16px;
+  margin:0 auto 14px;
+  align-self:center;
+}
+.training-question .answers-grid.answers-grid--2,
+.training-question .answers-grid.answers-grid--4 {
+  width:min(100%,440px);
+  max-width:440px;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+.training-question .answers-grid.answers-grid--3 {
+  width:min(100%,560px);
+  max-width:560px;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+@media(max-width:520px) {
+  .training-question .answers-grid.answers-grid--3 {
+    grid-template-columns:repeat(4,minmax(0,1fr));
+  }
+  .training-question .answers-grid.answers-grid--3 .answer-card {
+    grid-column:span 2;
+  }
+  .training-question .answers-grid.answers-grid--3 .answer-card:last-child {
+    grid-column:2 / span 2;
+  }
 }
 .choice {
   height:132px;
@@ -1144,10 +1176,17 @@ main {
   }
   .home-actions {
     align-items:center;
+    width:100%;
+    max-width:350px;
+    margin-inline:auto;
   }
   .home .primary {
     width:100%;
-    max-width:350px;
+  }
+  .home-actions .primary {
+    padding-inline:20px;
+    gap:12px;
+    font-size:17px;
   }
   .journey-strip {
     flex-direction:column;
@@ -1480,6 +1519,7 @@ main {
 <link rel="stylesheet" href="./letter-maze-game.css">
 <link rel="stylesheet" href="./balloon-pop-game.css">
 <link rel="stylesheet" href="./river-crossing-game.css?v=river-finale3">
+<link rel="stylesheet" href="./training.css?v=training-layout-v3">
 </head>
 <body>
 <div class="app" id="app">
@@ -1495,8 +1535,11 @@ main {
 <script src="./hidden-object-game.js"></script>
 <script src="./letter-maze-scenes.js"></script>
 <script src="./letter-maze-game.js"></script>
-<script src="./balloon-pop-game.js"></script>
-<script src="./river-crossing-game.js?v=river-finale3"></script>
+<script src="./balloon-pop-game.js?v=training-v1"></script>
+<script src="./river-crossing-game.js?v=river-training-v1"></script>
+<script src="./training-config.js?v=training-v1"></script>
+<script src="./training-state.js?v=training-v1"></script>
+<script src="./training-engine.js?v=training-v1"></script>
 <script>
 'use strict';
 /* DATA — A–Z curriculum. Assets are indexed from the shared registry. */
@@ -1540,7 +1583,8 @@ const DEMO_REWARD_PREVIEW=DEMO&&DEMO_SCREEN==='reward_ghi';
 const DEMO_INVENTORY_PREVIEW=DEMO&&DEMO_SCREEN==='inventory';
 const DEMO_BALLOON_PREVIEW=DEMO&&DEMO_SCREEN==='balloon_ghi';
 const DEMO_RIVER_PREVIEW=DEMO&&DEMO_SCREEN==='river_jkl';
-const DEMO_SHORTCUT_ACTIVE=DEMO&&(DEMO_LETTER_INDEX>=0||DEMO_REWARD_PREVIEW||DEMO_INVENTORY_PREVIEW||DEMO_BALLOON_PREVIEW||DEMO_RIVER_PREVIEW);
+const DEMO_TRAINING_PREVIEW=DEMO&&DEMO_SCREEN==='training';
+const DEMO_SHORTCUT_ACTIVE=DEMO&&(DEMO_LETTER_INDEX>=0||DEMO_REWARD_PREVIEW||DEMO_INVENTORY_PREVIEW||DEMO_BALLOON_PREVIEW||DEMO_RIVER_PREVIEW||DEMO_TRAINING_PREVIEW);
 const REWARD_RENDER_TOKEN=String(Date.now());
 const DEMO_REWARD_FLOW={id:'reward_ghi',resume:'course',selected:null};
 let demoRewardHeadAsset='marius_hat_adventure';
@@ -1648,7 +1692,7 @@ const blankLetterMazeGames=()=>Object.fromEntries(LETTER_MAZE_CONFIGS.map(config
 const blankBalloonPop=()=>BalloonPopGame.initialState(GHI_BALLOON_GAME);
 const blankRiverCrossing=()=>RiverCrossingGame.initialState(JKL_RIVER_GAME);
 /* STATE & STORAGE — keep the v1 key so existing progress survives. */
-const initialState=()=>({version:3,rewardStateVersion:REWARD_STATE_VERSION,characterState:blankCharacter(),findObjectGames:blankFindObjectGames(),mazeGames:blankLetterMazeGames(),balloonPop:blankBalloonPop(),riverCrossing:blankRiverCrossing(),completedBlocks:[],claimedRewards:[],rewardFlow:null,started:false,completed:false,soundEnabled:true,cursor:{phase:'lesson',index:0,step:0},stats:Object.fromEntries(letters.map(d=>[d.letter,blankStats()])),game:null,question:null,reviews:[],questionSerial:0});
+const initialState=()=>({version:3,rewardStateVersion:REWARD_STATE_VERSION,characterState:blankCharacter(),findObjectGames:blankFindObjectGames(),mazeGames:blankLetterMazeGames(),balloonPop:blankBalloonPop(),riverCrossing:blankRiverCrossing(),training:TrainingState.initialState(),completedBlocks:[],claimedRewards:[],rewardFlow:null,started:false,completed:false,soundEnabled:true,cursor:{phase:'lesson',index:0,step:0},stats:Object.fromEntries(letters.map(d=>[d.letter,blankStats()])),game:null,question:null,reviews:[],questionSerial:0});
 let storageAvailable=true;
 function loadProgress(){
  const fresh=initialState();
@@ -1662,6 +1706,7 @@ function loadProgress(){
    t.skills=[...new Set(Array.isArray(s.skills)?s.skills.filter(v=>CORE_TYPES.includes(v)):[])];t.mastery=t.skills.length;
    t.attempts=t.correct+t.mistakes;
   }
+  fresh.training=TrainingState.restore(saved.training,letters.map(d=>d.letter));
   const c=saved.cursor;
   const phases=['lesson','letterReward',...Object.keys(FIND_OBJECT_COURSE),...Object.keys(LETTER_MAZE_COURSE),'miniIntro','mini','miniResult','balloon_ghi','river_jkl','reviewIntro','review','reviewResult','cumulativeIntro','cumulative','cumulativeResult','finalIntro','final','results'];
   if(c&&phases.includes(c.phase)&&Number.isInteger(c.index)&&c.index>=0&&c.index<letters.length&&Number.isInteger(c.step)&&c.step>=0){
@@ -1785,9 +1830,11 @@ function ensureRewardFlow(state=AppState){
  if(reward)state.rewardFlow={id:reward.id,resume:state.cursor.phase==='miniResult'&&reward.afterLetters.at(-1)===letters[state.cursor.index].letter?'after-mini':'course',selected:null};
 }
 const AppState=loadProgress();
+const completedTrainingLetters=(state=AppState)=>letters.filter(d=>state.stats[d.letter].mastery===3).map(d=>d.letter);
 if(DEMO_LETTER_INDEX>=0){AppState.cursor={phase:'lesson',index:DEMO_LETTER_INDEX,step:0};AppState.question=null;AppState.game=null;AppState.rewardFlow=null;}
 if(DEMO_BALLOON_PREVIEW){AppState.cursor={phase:'balloon_ghi',index:GHI_END_INDEX,step:lessonSteps(letters[GHI_END_INDEX]).length-1};AppState.balloonPop=blankBalloonPop();AppState.question=null;AppState.game=null;AppState.rewardFlow=null;}
 if(DEMO_RIVER_PREVIEW){AppState.cursor={phase:'river_jkl',index:JKL_END_INDEX,step:lessonSteps(letters[JKL_END_INDEX]).length-1};AppState.riverCrossing=blankRiverCrossing();AppState.question=null;AppState.game=null;AppState.rewardFlow=null;}
+if(DEMO_TRAINING_PREVIEW){for(const d of letters.slice(0,8)){AppState.stats[d.letter].skills=[...CORE_TYPES];AppState.stats[d.letter].mastery=CORE_TYPES.length;}AppState.started=true;AppState.rewardFlow=null;AppState.training.activeSession=TrainingEngine.createSession(completedTrainingLetters(),AppState.training.progress,TRAINING_CONFIG,Math.random,AppState.training.lastSignature);}
 const visibleRewardFlow=()=>DEMO_REWARD_PREVIEW?DEMO_REWARD_FLOW:AppState.rewardFlow;
 function activeFindObjectEntry(){return FIND_OBJECT_COURSE[AppState.cursor.phase]||null;}
 function findObjectState(config=activeFindObjectEntry()?.scene){return config?AppState.findObjectGames[config.id]||null:null;}
@@ -1797,7 +1844,26 @@ function letterMazeState(config=activeLetterMazeEntry()?.scene){return config?Ap
 function letterMazeComplete(config=DEF_LETTER_MAZE){return Boolean(letterMazeState(config)?.gameCompleted);}
 function balloonPopState(){return AppState.balloonPop;}
 function riverCrossingState(){return AppState.riverCrossing;}
-let view=DEMO_LETTER_INDEX>=0||DEMO_BALLOON_PREVIEW||DEMO_RIVER_PREVIEW?'course':DEMO_REWARD_PREVIEW?'reward':DEMO_INVENTORY_PREVIEW?'progress':AppState.rewardFlow?'reward':'home',lastView='home',answerLocked=false,transitionTimer=null,viewEpoch=0,restoreFocus=null,rewardReady=Boolean(visibleRewardFlow()?.selected);
+function trainingBalloonConfig(activity=trainingActivity()){
+ const session=trainingSession();return {id:`${session.id}-balloon`,targets:[activity.targetLetter],learnedLetters:[...session.pool],targetProbability:TRAINING_CONFIG.balloon.targetProbability,hintAfterMistakes:TRAINING_CONFIG.hintAfterMistakes,duration:TRAINING_CONFIG.balloon.duration,phases:[{id:'training',label:`Лопай только ${activity.targetLetter}!`,perTarget:TRAINING_CONFIG.balloon.targetHits}]};
+}
+function ensureTrainingBalloonState(){const activity=trainingActivity(),config=trainingBalloonConfig(activity);if(!activity.gameState)activity.gameState=BalloonPopGame.initialState(config);return activity.gameState;}
+function trainingBalloonActive(){return view==='training'&&!trainingSession()?.completed&&trainingActivity()?.kind==='balloon';}
+function courseBalloonActive(){return view==='course'&&AppState.cursor.phase==='balloon_ghi';}
+function balloonContextActive(){return trainingBalloonActive()||courseBalloonActive();}
+function activeBalloonConfig(){return trainingBalloonActive()?trainingBalloonConfig():GHI_BALLOON_GAME;}
+function activeBalloonState(){return trainingBalloonActive()?ensureTrainingBalloonState():balloonPopState();}
+function trainingRiverConfig(activity=trainingActivity()){
+ const session=trainingSession(),mapType=q=>q.type==='soundLetter'?(q.promptType==='name'?'name':'sound'):q.type==='wordPicture'?'word':q.type;
+ return {id:`${session.id}-river`,targets:[...session.pool],totalQuestions:activity.questions.length,hintAfterMistakes:TRAINING_CONFIG.hintAfterMistakes,stages:[{id:'training',type:'mixed',title:'Тренировочная переправа',prompt:'Выбери правильный ответ'}],answers:Object.fromEntries(session.pool.map(letter=>{const d=byLetter.get(letter);return [letter,{word:d.word,visual:d.image||d.emoji}];})),questions:activity.questions.map((q,index)=>({id:`training-river-${index+1}`,stage:'training',type:mapType(q),letter:q.letter,options:[...q.options],answerType:q.answerType,skill:q.skill,prompt:trainingPrompt(q)})),route:JKL_RIVER_GAME.route};
+}
+function ensureTrainingRiverState(){const activity=trainingActivity(),config=trainingRiverConfig(activity);if(!activity.gameState)activity.gameState=RiverCrossingGame.initialState(config);return activity.gameState;}
+function trainingRiverActive(){return view==='training'&&!trainingSession()?.completed&&trainingActivity()?.kind==='river';}
+function courseRiverActive(){return view==='course'&&AppState.cursor.phase==='river_jkl';}
+function riverContextActive(){return trainingRiverActive()||courseRiverActive();}
+function activeRiverConfig(){return trainingRiverActive()?trainingRiverConfig():JKL_RIVER_GAME;}
+function activeRiverState(){return trainingRiverActive()?ensureTrainingRiverState():riverCrossingState();}
+let view=DEMO_TRAINING_PREVIEW?'training':DEMO_LETTER_INDEX>=0||DEMO_BALLOON_PREVIEW||DEMO_RIVER_PREVIEW?'course':DEMO_REWARD_PREVIEW?'reward':DEMO_INVENTORY_PREVIEW?'progress':AppState.rewardFlow?'reward':'home',lastView='home',answerLocked=false,transitionTimer=null,viewEpoch=0,restoreFocus=null,rewardReady=Boolean(visibleRewardFlow()?.selected);
 const SLIDE_AUDIO_WAITING='waitingForAudio',SLIDE_AUDIO_READY='readyToContinue';
 const completedLessonCardAudioKeys=new Set();
 let lessonCardAudioState={key:null,status:SLIDE_AUDIO_READY},lessonCardAudioRun=0;
@@ -2037,8 +2103,13 @@ function chooseReward(id){
 }
 function continueReward(){if(!rewardReady||!AppState.rewardFlow?.selected)return;const resume=AppState.rewardFlow.resume;AppState.rewardFlow=null;rewardReady=false;if(resume==='after-mini')advanceAfterMini();else{ensureRewardFlow();go('course');}}
 
-/* SCREENS — existing lessons plus character and gift views. */
-function renderHome(){return `<section class="screen"><div class="home"><div class="home-copy"><p class="eyebrow">A little adventure in English</p><h1>ABC<br><em>Safari</em></h1><p class="subline">Учим буквы вместе с жирафиком</p><div class="home-actions"><button class="primary" data-action="start">${AppState.started?'CONTINUE':'START'} ${icons.arrow}</button>${AppState.started?'<button class="text-button" data-action="reset">START OVER</button>':''}</div></div><div class="hero-scene">${renderCharacter("home")}</div></div>${journeyStrip()}</section>`;}
+/* SCREENS — existing lessons plus character, training and gift views. */
+function renderTrainingHomeCard(){
+ const completed=completedTrainingLetters(),unlocked=completed.length>=TRAINING_CONFIG.minCompletedLetters,session=AppState.training.activeSession,resumable=Boolean(session&&!session.completed);
+ const unlockLetter=letters[Math.max(0,TRAINING_CONFIG.minCompletedLetters-1)]?.letter||String(TRAINING_CONFIG.minCompletedLetters);
+ return `<div class="training-home-card"><button class="primary training-button" data-action="start-training" ${unlocked?'':'disabled'}><span aria-hidden="true">🎯</span><span>${resumable?'Продолжить тренировку':'Тренировка'}</span></button><p>${unlocked?'Повтори изученные буквы':`Откроется после буквы ${escapeHTML(unlockLetter)}`}</p></div>`;
+}
+function renderHome(){return `<section class="screen"><div class="home"><div class="home-copy"><p class="eyebrow">A little adventure in English</p><h1>ABC<br><em>Safari</em></h1><p class="subline">Учим буквы вместе с жирафиком</p><div class="home-actions"><button class="primary" data-action="start">${AppState.started?'Продолжить':'Начать'} ${icons.arrow}</button>${AppState.started?'<button class="text-button" data-action="reset">Начать заново</button>':''}${renderTrainingHomeCard()}</div></div><div class="hero-scene">${renderCharacter("home")}</div></div>${journeyStrip()}</section>`;}
 function lessonTop(){const c=AppState.cursor,steps=lessonSteps(letters[c.index]);return `<div class="lesson-top"><span class="lesson-label">УЧИМ ${escapeHTML(letters[c.index].letter)}</span><div class="step-track" role="progressbar" aria-label="Lesson steps" aria-valuemin="0" aria-valuemax="${steps.length}" aria-valuenow="${c.step+1}">${steps.map((_,i)=>`<span class="${i<=c.step?'done':''}"></span>`).join('')}</div></div>`;}
 function panelStyle(d){return `style="--accent:${d.color||'#17664c'};--tint:${d.tint||'#dff4e7'}"`;}
 function lessonContinueContent(ready){return `<span class="lesson-continue-icon" aria-hidden="true">${ready?'☝️':'👂'}</span><span>${ready?'ЖМИ!':'Слушай'}</span>`;}
@@ -2070,6 +2141,85 @@ function renderInterlude(kind){const c=AppState.cursor,group=groups[Math.floor(c
  }
  const isFinal=kind==='finalIntro',isResult=kind==='miniResult';return `<section class="interlude">${buddy('interlude')}<div class="group-badge">${escapeHTML(isFinal?range:group.map(d=>d.letter).join(' '))}</div><h1>${isResult?'Уровень пройден!':isFinal?'Большая игра!':'Мини-игра!'}</h1><div class="stars" aria-label="Три звезды">★★★</div><p>${isResult?'Отправляемся дальше?':isFinal?'Вспомним все буквы. Готов?':'Поиграем с новыми буквами.'}</p><button class="primary" data-action="${isResult?'after-mini':isFinal?'play-final':'play-mini'}">${isResult?'Дальше':'Играть'} ${icons.arrow}</button>${kind==='miniIntro'&&c.index===2?`<button class="text-button" data-action="find-object-replay" data-game="${ABC_FIND_OBJECT_GAME.id}">Ещё раз в комнату</button>`:''}</section>`;
 }
+/* TRAINING — pure session data comes from TrainingEngine; these adapters reuse
+   the course letter catalog, audio, feedback, Marius and both large games. */
+function trainingSession(){return AppState.training.activeSession;}
+function trainingActivity(){return TrainingEngine.currentActivity(trainingSession());}
+function trainingQuestion(){return TrainingEngine.currentQuestion(trainingSession());}
+function trainingUnlocked(){return completedTrainingLetters().length>=TRAINING_CONFIG.minCompletedLetters;}
+function startTraining(forceNew=false){
+ if(!trainingUnlocked())return false;
+ let session=trainingSession();
+ if(forceNew||!session||session.completed||session.pool.some(letter=>!completedTrainingLetters().includes(letter))){
+  session=TrainingEngine.createSession(completedTrainingLetters(),AppState.training.progress,TRAINING_CONFIG,Math.random,AppState.training.lastSignature);
+  TrainingState.startSession(AppState.training,session);
+ }
+ preloadFeedbackStickers();view='training';saveProgress();showScreen();return true;
+}
+function trainingTop(){
+ const session=trainingSession(),value=Math.min(session.activities.length,session.activityIndex),percent=Math.round(value/session.activities.length*100);
+ return `<div class="training-top"><span class="training-kicker">🎯 Тренировка</span><div class="training-progress" role="progressbar" aria-label="Прогресс тренировки" aria-valuemin="0" aria-valuemax="${session.activities.length}" aria-valuenow="${value}"><i style="--training-progress:${percent}%"></i></div><span class="training-count">${Math.min(value+1,session.activities.length)} / ${session.activities.length}</span></div>`;
+}
+function trainingPrompt(q){
+ const d=byLetter.get(q.letter),inside=d.wordLetterPosition==='end';
+ if(q.type==='soundLetter')return q.promptType==='name'?'Какую букву ты слышишь?':'Найди букву по звуку';
+ if(q.type==='letterPicture')return inside?`Где слышен звук ${d.letter}?`:`Что начинается с ${d.letter}?`;
+ if(q.type==='pictureLetter')return inside?`Какая буква есть в ${d.word}?`:`С какой буквы начинается ${d.word}?`;
+ return `Найди ${d.word}`;
+}
+function trainingQuestionAudio(q=trainingQuestion()){
+ if(!q)return [ru('challenge')];const d=byLetter.get(q.letter);
+ if(q.type==='soundLetter')return [ru('choose_letter'),q.promptType==='name'?enName(d):enSound(d)];
+ if(q.type==='pictureLetter')return [ru('choose_letter'),enWord(d)];
+ if(q.type==='letterPicture')return [ru('choose_picture'),enName(d)];
+ return [ru('find_picture'),enWord(d)];
+}
+function renderTrainingQuestion(q,blitz=false){
+ const d=byLetter.get(q.letter),pictures=q.answerType==='image';
+ const cue=q.promptType==='image'?media(d,'picture'):q.promptType==='letter'?escapeHTML(d.letter):icons.speaker;
+ const activity=trainingActivity(),combo=activity?.kind==='blitz'?(activity.streak||0):0;
+ const answerCount=q.options.length;
+ return `${blitz?`<div class="training-blitz-banner"><strong>⚡ БЛИЦ!</strong><span class="training-combo">${combo>=2?`x${combo} ${combo>=4?'🔥':''}`:'Вперёд!'}</span></div>`:''}<section class="lesson-panel training-question" ${panelStyle(d)}><div class="training-question-content"><h1 class="lesson-heading">${escapeHTML(trainingPrompt(q))}</h1><div class="question-cue" aria-hidden="true">${cue}</div><div class="choices answers-grid answers-grid--${answerCount}" data-answer-count="${answerCount}" role="group" aria-label="Выбери ответ">${q.options.map(letter=>{const option=byLetter.get(letter),label=pictures?option.word:letter;return `<button class="choice answer-card" data-action="training-answer" data-training-answer="${escapeHTML(letter)}" aria-label="${escapeHTML(label)}">${pictures?media(option,'picture'):escapeHTML(letter)}</button>`;}).join('')}</div><div class="feedback" id="feedback" role="status" aria-live="polite"></div><button class="repeat question-repeat" data-action="training-repeat" aria-label="Повторить задание">${icons.speaker} Послушать ещё</button></div></section>`;
+}
+function renderTrainingResults(){
+ const session=trainingSession(),seen=session.seenLetters||[];
+ const noun=seen.length%10===1&&seen.length%100!==11?'букву':[2,3,4].includes(seen.length%10)&&![12,13,14].includes(seen.length%100)?'буквы':'букв';
+ return `<section class="interlude training-results"><p class="eyebrow">🎉 Тренировка закончена!</p><h1>Отличная работа!</h1><p>Мариус отлично потренировался вместе с тобой!</p>${renderCharacter('results')}<div class="stars" aria-label="Три звезды">★★★</div><p class="training-result-note">Повторили ${seen.length} ${noun}</p><div class="training-letter-cloud" aria-label="Повторённые буквы">${seen.map(letter=>`<span>${escapeHTML(letter)}</span>`).join('')}</div><p class="training-result-note">🔥 Лучшая серия: ${session.bestStreak||0}</p><div class="training-actions"><button class="primary" data-action="new-training">Ещё тренировку ${icons.arrow}</button><button class="secondary" data-action="training-home">На главную</button></div></section>`;
+}
+function renderTraining(){
+ const session=trainingSession();if(!session)return `<section class="interlude"><h1>Тренировка</h1><p>Сначала открой три буквы.</p><button class="primary" data-action="training-home">На главную</button></section>`;
+ if(session.completed)return renderTrainingResults();
+ const activity=trainingActivity();if(!activity){TrainingState.completeSession(AppState.training);saveProgress();return renderTrainingResults();}
+ let content;if(activity.kind==='balloon')content=renderTrainingBalloonPop();else if(activity.kind==='river')content=renderTrainingRiverCrossing();else content=renderTrainingQuestion(trainingQuestion(),activity.kind==='blitz');
+ return `<div class="screen learning training-shell">${trainingTop()}${content}</div>`;
+}
+function completeTrainingSession(){TrainingState.completeSession(AppState.training);saveProgress();showScreen();return true;}
+function advanceTrainingActivity(){
+ const session=trainingSession();if(!TrainingEngine.advanceActivity(session))return completeTrainingSession();
+ saveProgress();showScreen();return true;
+}
+function finishTrainingQuestion(){
+ const session=trainingSession(),activity=trainingActivity();
+ if(activity.kind==='blitz'&&TrainingEngine.advanceQuestion(session)){saveProgress();showScreen();return true;}
+ return advanceTrainingActivity();
+}
+function recordTrainingAttempt(question,correct){
+ const session=trainingSession();TrainingState.recordAttempt(AppState.training,question.letter,question.skill,correct);
+ if(correct){TrainingEngine.noteCorrect(session,question);if(trainingActivity()?.kind==='blitz')trainingActivity().streak=(trainingActivity().streak||0)+1;}
+ else{TrainingEngine.noteMistake(session,question);if(trainingActivity()?.kind==='blitz')trainingActivity().streak=0;TrainingEngine.scheduleRetry(session,question,AppState.training.progress,TRAINING_CONFIG);}
+ saveProgress();
+}
+function checkTrainingAnswer(button){
+ const q=trainingQuestion();if(answerLocked||!q)return;answerLocked=true;unlockAudio();stopAudio();const correct=button.dataset.trainingAnswer===q.letter;
+ document.querySelectorAll('.training-question .choice').forEach(item=>item.disabled=true);
+ recordTrainingAttempt(q,correct);
+ if(!correct){button.classList.add('wrong');showAnswerFeedback('retry','Попробуй ещё раз!');AudioManager.play(ru(q.mistakes>=TRAINING_CONFIG.hintAfterMistakes?'almost':'try_again'));if(q.mistakes>=TRAINING_CONFIG.hintAfterMistakes)document.querySelector(`[data-training-answer="${q.letter}"]`)?.classList.add('training-hint');const epoch=viewEpoch;transitionTimer=setTimeout(()=>{if(epoch!==viewEpoch)return;answerLocked=false;button.classList.remove('wrong');document.querySelectorAll('.training-question .choice').forEach(item=>item.disabled=false);button.focus({preventScroll:true});},DEMO?80:520);return;}
+ const d=byLetter.get(q.letter);button.classList.add('correct');celebrate();showAnswerFeedback('success',q.answerType==='image'?`${d.letter} → ${d.word} ${d.emoji}`:'Отлично!');
+ const praise=getRandomItems(['correct','great','well_done','super'],1)[0],finishAudio=trainingActivity()?.kind==='blitz'?AudioManager.play(ru(praise)):AudioManager.playSequence([ru(praise),q.skill==='word'?enWord(d):enName(d)]);document.querySelectorAll('#main button').forEach(item=>item.disabled=true);
+ const epoch=viewEpoch;transitionTimer=setTimeout(()=>{finishAudio.then(()=>{if(epoch===viewEpoch)finishTrainingQuestion();});},DEMO?70:activityDelay());
+}
+function activityDelay(){return trainingActivity()?.kind==='blitz'?340:760;}
+function repeatTrainingInstruction(){unlockAudio();return setInstruction(trainingQuestionAudio());}
 /* FIND-OBJECT PRACTICE — generic engine plus the active course scene config. */
 function renderFindObjectGame(){
  const entry=activeFindObjectEntry();if(!entry)return '';
@@ -2242,12 +2392,12 @@ function balloonFieldCount(width=window.innerWidth){
 }
 function activeBalloonButtons(){return [...document.querySelectorAll('.balloon-pop-balloon')].filter(button=>button.isConnected&&!button.disabled);}
 function hasBalloonTarget(){
- const state=balloonPopState();if(state.gameCompleted)return false;
- const target=BalloonPopGame.target(GHI_BALLOON_GAME,state);return activeBalloonButtons().some(button=>button.dataset.letter===target);
+ const state=activeBalloonState(),config=activeBalloonConfig();if(state.gameCompleted)return false;
+ const target=BalloonPopGame.target(config,state);return activeBalloonButtons().some(button=>button.dataset.letter===target);
 }
 function balloonAudioItem(){
- const state=balloonPopState(),letter=byLetter.get(BalloonPopGame.target(GHI_BALLOON_GAME,state));
- return BalloonPopGame.currentPhase(GHI_BALLOON_GAME,state).id==='phonics'?enSound(letter):enName(letter);
+ const state=activeBalloonState(),config=activeBalloonConfig(),letter=byLetter.get(BalloonPopGame.target(config,state));
+ return BalloonPopGame.currentPhase(config,state).id==='phonics'?enSound(letter):enName(letter);
 }
 function renderBalloonPopGame(){
  const state=balloonPopState();
@@ -2255,19 +2405,25 @@ function renderBalloonPopGame(){
  const character=state.gameCompleted?'':renderCharacter('gameplay',{includeBackground:false,className:'gameplay-marius balloon-pop-marius-stage',decorative:true});
  return BalloonPopGame.render(GHI_BALLOON_GAME,state,{icons,balloons:balloonVisuals,characterHTML:character,successVisual:state.gameCompleted?renderCompletionSticker():''});
 }
+function renderTrainingBalloonPop(){
+ const state=ensureTrainingBalloonState(),config=trainingBalloonConfig(),target=trainingActivity().targetLetter;
+ if(!state.gameCompleted)balloonVisuals=BalloonPopGame.createBalloons(config,state,balloonFieldCount());
+ const character=state.gameCompleted?'':renderCharacter('gameplay',{includeBackground:false,className:'gameplay-marius balloon-pop-marius-stage',decorative:true});
+ return BalloonPopGame.render(config,state,{icons,balloons:balloonVisuals,characterHTML:character,successVisual:state.gameCompleted?renderCompletionSticker():'',actions:{continue:'training-balloon-continue'},copy:{title:'🎈 Тренировка',instruction:'Лопай только',training:`Лопай только ${target}!`,successEyebrow:'Воздушные шарики',successTitle:'Отлично!',successMessage:`Ты нашёл все шарики с буквой ${target}.`,continueLabel:'Дальше'}});
+}
 function hideBalloonTarget(){
- const state=balloonPopState(),target=document.querySelector('[data-balloon-target]');
- if(!target||AppState.cursor.phase!=='balloon_ghi'||state.gameCompleted||!AppState.soundEnabled||BalloonPopGame.currentPhase(GHI_BALLOON_GAME,state).id!=='phonics')return;
+ const state=activeBalloonState(),config=activeBalloonConfig(),target=document.querySelector('[data-balloon-target]');
+ if(!target||!balloonContextActive()||state.gameCompleted||!AppState.soundEnabled||BalloonPopGame.currentPhase(config,state).id!=='phonics')return;
  target.textContent='?';target.classList.add('is-hidden');
 }
 function scheduleBalloonTargetHide(){
  clearTimeout(balloonTargetTimer);balloonTargetTimer=null;
- const state=balloonPopState();
- if(AppState.soundEnabled&&!state.gameCompleted&&BalloonPopGame.currentPhase(GHI_BALLOON_GAME,state).id==='phonics')balloonTargetTimer=setTimeout(hideBalloonTarget,900);
+ const state=activeBalloonState(),config=activeBalloonConfig();
+ if(AppState.soundEnabled&&!state.gameCompleted&&BalloonPopGame.currentPhase(config,state).id==='phonics')balloonTargetTimer=setTimeout(hideBalloonTarget,900);
 }
 function showBalloonHint(){
- if(AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return;
- const target=BalloonPopGame.target(GHI_BALLOON_GAME,balloonPopState());
+ if(!balloonContextActive()||activeBalloonState().gameCompleted)return;
+ const target=BalloonPopGame.target(activeBalloonConfig(),activeBalloonState());
  const balloons=activeBalloonButtons();
  balloons.forEach(balloon=>balloon.classList.remove('is-hint'));
  const balloon=balloons.find(item=>item.dataset.letter===target);if(!balloon)return;
@@ -2276,23 +2432,23 @@ function showBalloonHint(){
 }
 function scheduleBalloonHint(){
  clearTimeout(balloonHintTimer);balloonHintTimer=null;
- if(AppState.cursor.phase==='balloon_ghi'&&!balloonPopState().gameCompleted)balloonHintTimer=setTimeout(showBalloonHint,BALLOON_IDLE_HINT_MS);
+ if(balloonContextActive()&&!activeBalloonState().gameCompleted)balloonHintTimer=setTimeout(showBalloonHint,BALLOON_IDLE_HINT_MS);
 }
 function noteBalloonInteraction(){balloonLastInteractionTime=Date.now();scheduleBalloonHint();}
 function scheduleBalloonTargetGuarantee(delay=BALLOON_TARGET_MAX_WAIT_MS){
  clearTimeout(balloonTargetGuaranteeTimer);balloonTargetGuaranteeTimer=null;
- if(AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return;
+ if(!balloonContextActive()||activeBalloonState().gameCompleted)return;
  if(hasBalloonTarget()){balloonTargetMissingSince=null;return;}
  if(balloonTargetMissingSince===null)balloonTargetMissingSince=Date.now();
  const elapsed=Math.max(0,Date.now()-balloonTargetMissingSince),wait=Math.max(0,Math.min(delay,BALLOON_TARGET_MAX_WAIT_MS-elapsed));
  balloonTargetGuaranteeTimer=setTimeout(()=>{
-  balloonTargetGuaranteeTimer=null;if(AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted||hasBalloonTarget())return;
+  balloonTargetGuaranteeTimer=null;if(!balloonContextActive()||activeBalloonState().gameCompleted||hasBalloonTarget())return;
   forceBalloonTarget();
   if(hasBalloonTarget())balloonTargetMissingSince=null;else{balloonTargetMissingSince=Date.now();scheduleBalloonTargetGuarantee();}
  },wait);
 }
 function wireBalloonPopGame(){
- if(view!=='course'||AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return;
+ if(!balloonContextActive()||activeBalloonState().gameCompleted)return;
  document.querySelectorAll('.balloon-pop-balloon').forEach(scheduleBalloonLetterChange);
  scheduleBalloonTargetHide();scheduleBalloonTargetGuarantee();scheduleBalloonHint();
 }
@@ -2306,34 +2462,34 @@ function clearBalloonLetterTimer(button){
 function scheduleBalloonLetterChange(button){
  clearBalloonLetterTimer(button);
  const delay=balloonLetterChangeDelay(button?.dataset?.duration);
- if(!button?.isConnected||!delay||AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return;
+ if(!button?.isConnected||!delay||!balloonContextActive()||activeBalloonState().gameCompleted)return;
  const timer=setTimeout(()=>{
   balloonLetterTimers.delete(button);
-  if(!button.isConnected||button.disabled||AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return;
+  if(!button.isConnected||button.disabled||!balloonContextActive()||activeBalloonState().gameCompleted)return;
   replaceBalloonButton(button);scheduleBalloonLetterChange(button);scheduleBalloonTargetGuarantee();
  },delay);
  balloonLetterTimers.set(button,timer);
 }
 function replaceBalloonButton(button,forcedLetter=null){
- if(!button?.isConnected||AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return;
+ if(!button?.isConnected||!balloonContextActive()||activeBalloonState().gameCompleted)return;
  const buttons=activeBalloonButtons(),index=buttons.indexOf(button);
  if(index<0)return;
- const state=balloonPopState(),target=BalloonPopGame.target(GHI_BALLOON_GAME,state),letters=buttons.map(item=>item.dataset.letter);
- const letter=forcedLetter||BalloonPopGame.replacementLetter(GHI_BALLOON_GAME,letters,index,target,Math.random,1);
+ const state=activeBalloonState(),config=activeBalloonConfig(),target=BalloonPopGame.target(config,state),letters=buttons.map(item=>item.dataset.letter);
+ const letter=forcedLetter||BalloonPopGame.replacementLetter(config,letters,index,target,Math.random,1);
  const color=Math.floor(Math.random()*6);
  button.dataset.letter=letter;button.setAttribute('aria-label',`Буква ${letter}`);button.querySelector('.balloon-pop-letter').textContent=letter;
  for(let value=0;value<6;value++)button.classList.toggle(`color-${value}`,value===color);
  button.classList.remove('is-pop','is-wrong','is-hint');button.disabled=false;
 }
 function spawnBalloonButton(forcedLetter=null,avoidX=null){
- if(AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return null;
- const count=balloonFieldCount(),buttons=activeBalloonButtons(),state=balloonPopState(),target=BalloonPopGame.target(GHI_BALLOON_GAME,state);
+ if(!balloonContextActive()||activeBalloonState().gameCompleted)return null;
+ const count=balloonFieldCount(),buttons=activeBalloonButtons(),state=activeBalloonState(),config=activeBalloonConfig(),target=BalloonPopGame.target(config,state);
  if(buttons.length>=count){
   if(forcedLetter&&!hasBalloonTarget()){const replacement=buttons.find(button=>button.dataset.letter!==target);if(replacement){replaceBalloonButton(replacement,target);scheduleBalloonLetterChange(replacement);return replacement;}}
   return null;
  }
- const candidates=BalloonPopGame.createBalloons(GHI_BALLOON_GAME,state,count),descriptor={...candidates[balloonSpawnSerial%count]};
- descriptor.id=`balloon-runtime-${++balloonSpawnSerial}`;descriptor.letter=forcedLetter||BalloonPopGame.randomBalloonLetter(GHI_BALLOON_GAME,target);descriptor.delay=Number((descriptor.duration*-.22).toFixed(2));
+ const candidates=BalloonPopGame.createBalloons(config,state,count),descriptor={...candidates[balloonSpawnSerial%count]};
+ descriptor.id=`balloon-runtime-${++balloonSpawnSerial}`;descriptor.letter=forcedLetter||BalloonPopGame.randomBalloonLetter(config,target);descriptor.delay=Number((descriptor.duration*-.22).toFixed(2));
  descriptor.x=BalloonPopGame.spacedBalloonX(descriptor.x,avoidX);
  const container=document.querySelector('[data-balloon-container]');if(!container)return null;
  const previous=container.lastElementChild;container.insertAdjacentHTML('beforeend',BalloonPopGame.renderBalloon(descriptor,balloonSpawnSerial));
@@ -2341,17 +2497,17 @@ function spawnBalloonButton(forcedLetter=null,avoidX=null){
  scheduleBalloonLetterChange(button);if(button.dataset.letter===target)balloonTargetMissingSince=null;return button;
 }
 function forceBalloonTarget(){
- const target=BalloonPopGame.target(GHI_BALLOON_GAME,balloonPopState());return spawnBalloonButton(target);
+ const target=BalloonPopGame.target(activeBalloonConfig(),activeBalloonState());return spawnBalloonButton(target);
 }
 function scheduleBalloonRefill(avoidX=null){
  balloonLifecycleTimer(()=>{
-  if(AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return;
-  if(activeBalloonButtons().length<balloonFieldCount())spawnBalloonButton(hasBalloonTarget()?null:BalloonPopGame.target(GHI_BALLOON_GAME,balloonPopState()),avoidX);
+  if(!balloonContextActive()||activeBalloonState().gameCompleted)return;
+  if(activeBalloonButtons().length<balloonFieldCount())spawnBalloonButton(hasBalloonTarget()?null:BalloonPopGame.target(activeBalloonConfig(),activeBalloonState()),avoidX);
   scheduleBalloonTargetGuarantee();
  },BALLOON_RESPAWN_DELAY_MS);
 }
 function updateBalloonProgress(){
- const progress=BalloonPopGame.progress(GHI_BALLOON_GAME,balloonPopState()),label=$('#balloon-pop-score'),track=document.querySelector('.balloon-pop-progress');
+ const progress=BalloonPopGame.progress(activeBalloonConfig(),activeBalloonState()),label=$('#balloon-pop-score'),track=document.querySelector('.balloon-pop-progress');
  if(label)label.textContent=`${progress.value} / ${progress.max}`;
  if(track){track.setAttribute('aria-valuenow',String(progress.value));track.querySelectorAll('span').forEach((dot,index)=>{dot.classList.toggle('done',index<progress.value);dot.classList.toggle('current',index===progress.value);});}
 }
@@ -2396,15 +2552,23 @@ function playBalloonPopEffect(){
   gain.gain.setValueAtTime(.075,now);gain.gain.exponentialRampToValueAtTime(.001,now+.09);oscillator.connect(gain).connect(balloonAudioContext.destination);oscillator.start(now);oscillator.stop(now+.095);
  }catch(_){/* Voice audio remains available if Web Audio is unsupported. */}
 }
+function trainingBalloonStatQuestion(){
+ const activity=trainingActivity();
+ if(!activity.statQuestion)activity.statQuestion={id:`${trainingSession().id}-balloon-stat`,type:'soundLetter',letter:activity.targetLetter,promptType:'name',answerType:'letter',skill:'letterName',options:[...trainingSession().pool],correctIndex:0,mistakes:0,retryScheduled:false,completed:false};
+ return activity.statQuestion;
+}
 function tapBalloonPop(letter,button=null){
- if(view!=='course'||AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return 'ignored';
- const result=BalloonPopGame.tap(GHI_BALLOON_GAME,balloonPopState(),letter);if(result==='ignored')return result;
+ if(!balloonContextActive()||activeBalloonState().gameCompleted)return 'ignored';
+ const training=trainingBalloonActive(),config=activeBalloonConfig(),state=activeBalloonState(),result=BalloonPopGame.tap(config,state,letter);if(result==='ignored')return result;
  noteBalloonInteraction();document.querySelectorAll('.balloon-pop-balloon.is-hint').forEach(item=>item.classList.remove('is-hint'));
  if(result==='wrong'){
+  if(training)recordTrainingAttempt(trainingBalloonStatQuestion(),false);
   saveProgress();button?.classList.add('is-wrong');setBalloonFeedback('Почти! Ищи другую букву');AudioManager.play(ru('almost'));
+  const hinted=BalloonPopGame.hint(config,state);if(hinted)activeBalloonButtons().find(item=>item.dataset.letter===hinted)?.classList.add('is-hint');
   setTimeout(()=>button?.classList.remove('is-wrong'),190);
   return result;
  }
+ if(training)recordTrainingAttempt(trainingBalloonStatQuestion(),true);
  playBalloonPopEffect();window.navigator?.vibrate?.(20);addBalloonBurst(button);clearBalloonLetterTimer(button);button?.classList.add('is-pop');if(button)button.disabled=true;
  saveProgress();updateBalloonProgress();setBalloonFeedback('Лоп! Правильно!');
  const epoch=viewEpoch,poppedX=Number(button?.style?.getPropertyValue?.('--balloon-x'));
@@ -2419,15 +2583,19 @@ function tapBalloonPop(letter,button=null){
  return result;
 }
 function repeatBalloonInstruction(){
- if(AppState.cursor.phase!=='balloon_ghi'||balloonPopState().gameCompleted)return;
+ if(!balloonContextActive()||activeBalloonState().gameCompleted)return;
  noteBalloonInteraction();
- const target=document.querySelector('[data-balloon-target]'),letter=BalloonPopGame.target(GHI_BALLOON_GAME,balloonPopState());
+ const target=document.querySelector('[data-balloon-target]'),letter=BalloonPopGame.target(activeBalloonConfig(),activeBalloonState());
  if(target){target.textContent=letter;target.classList.remove('is-hidden','is-pulsing');void target.offsetWidth;target.classList.add('is-pulsing');}
  setInstruction([balloonAudioItem()]);scheduleBalloonTargetHide();
 }
 function continueBalloonPopGame(){
  if(view!=='course'||AppState.cursor.phase!=='balloon_ghi'||!balloonPopState().gameCompleted)return false;
  finishBlock();AppState.cursor=letters[GHI_END_INDEX+1]?{phase:'lesson',index:GHI_END_INDEX+1,step:0}:{phase:'finalIntro',index:GHI_END_INDEX,step:0};AppState.game=null;AppState.question=null;go('course');return true;
+}
+function continueTrainingBalloonGame(){
+ if(!trainingBalloonActive()||!activeBalloonState().gameCompleted)return false;
+ return advanceTrainingActivity();
 }
 function advanceBalloonPopDemo(){
  const state=balloonPopState();if(state.gameCompleted)return continueBalloonPopGame();
@@ -2443,17 +2611,22 @@ function clearRiverCrossingRuntime(){
 }
 function riverTimer(callback,delay){const timer=setTimeout(()=>{riverTimers.delete(timer);callback();},delay);riverTimers.add(timer);return timer;}
 function riverAudioItems(){
- const question=RiverCrossingGame.currentQuestion(JKL_RIVER_GAME,riverCrossingState());if(!question)return [ru('well_done')];
+ const config=activeRiverConfig(),state=activeRiverState(),question=RiverCrossingGame.currentQuestion(config,state);if(!question)return [ru('well_done')];
  const letter=byLetter.get(question.letter);
- return question.type==='word'?[ru('find_picture'),enWord(letter)]:question.type==='sound'?[ru('choose_letter'),enSound(letter)]:[ru('find_letter'),enName(letter)];
+ return question.type==='word'?[ru('find_picture'),enWord(letter)]:question.type==='sound'?[ru('choose_letter'),enSound(letter)]:question.type==='pictureLetter'?[ru('choose_letter'),enWord(letter)]:question.type==='letterPicture'?[ru('choose_picture'),enName(letter)]:[ru('find_letter'),enName(letter)];
 }
 function renderRiverCrossingGame(){
  const background=MEDIA_ASSETS.images.river_crossing_background?.src||'';
  const character=renderCharacter('gameplay',{includeBackground:false,className:'gameplay-marius river-gameplay-marius',decorative:true});
  return RiverCrossingGame.render(JKL_RIVER_GAME,riverCrossingState(),{icons,backgroundSource:background,characterHTML:character});
 }
+function renderTrainingRiverCrossing(){
+ const config=trainingRiverConfig(),state=ensureTrainingRiverState(),background=MEDIA_ASSETS.images.river_crossing_background?.src||'';
+ const character=renderCharacter('gameplay',{includeBackground:false,className:'gameplay-marius river-gameplay-marius',decorative:true});
+ return RiverCrossingGame.render(config,state,{icons,backgroundSource:background,characterHTML:character,actions:{continue:'training-river-continue'},copy:{title:'🎯 Переправа',successTitle:'Переправа пройдена!',successMessage:'Мариус добрался до другого берега!',successDetail:'Ты отлично повторил изученные буквы.',continueLabel:'Дальше',hideReplay:true}});
+}
 function wireRiverCrossingGame(){
- if(view!=='course'||AppState.cursor.phase!=='river_jkl')return;
+ if(!riverContextActive())return;
  const image=document.querySelector('[data-river-background]'),game=document.querySelector('[data-river-game]');
  if(image&&game){
   const loaded=()=>game.dataset.backgroundMode='image';
@@ -2464,8 +2637,8 @@ function wireRiverCrossingGame(){
 }
 function setRiverInputsEnabled(enabled){document.querySelectorAll('.river-answer,.river-repeat').forEach(button=>{button.disabled=!enabled;});}
 function setRiverFeedback(message){const feedback=$('#river-feedback');if(feedback)feedback.textContent=message;}
-function addRiverParticles(platform=RiverCrossingGame.platformIndex(JKL_RIVER_GAME,riverCrossingState())){
- const box=$('#river-particles'),point=JKL_RIVER_GAME.route[platform];if(!box||!point)return;
+function addRiverParticles(platform=RiverCrossingGame.platformIndex(activeRiverConfig(),activeRiverState()),config=activeRiverConfig()){
+ const box=$('#river-particles'),point=config.route[platform];if(!box||!point)return;
  const colors=['#ffd64d','#fff','#73d89c','#f48e68','#9c83df'];
  for(let index=0;index<12;index++){
   const particle=document.createElement('i'),angle=(index/12)*Math.PI*2,distance=35+Math.random()*42;
@@ -2476,8 +2649,8 @@ function addRiverParticles(platform=RiverCrossingGame.platformIndex(JKL_RIVER_GA
   riverTimer(()=>particle.remove(),620);
  }
 }
-function animateRiverMarius(fromIndex,toIndex,epoch){
- const actor=$('#river-marius'),from=JKL_RIVER_GAME.route[fromIndex],to=JKL_RIVER_GAME.route[toIndex];if(!actor||!from||!to)return Promise.resolve(false);
+function animateRiverMarius(fromIndex,toIndex,epoch,config=activeRiverConfig()){
+ const actor=$('#river-marius'),from=config.route[fromIndex],to=config.route[toIndex];if(!actor||!from||!to)return Promise.resolve(false);
  const apex=Math.max(19,Math.min(from.y,to.y)-11),keyframes=[
   {left:`${from.x}%`,top:`${from.y}%`,transform:'translate(-50%,-100%) scale(1)'},
   {left:`${from.x}%`,top:`${from.y}%`,transform:'translate(-50%,-100%) scale(1.06,.88)',offset:.12},
@@ -2488,23 +2661,25 @@ function animateRiverMarius(fromIndex,toIndex,epoch){
  ];
  if(!actor.animate){actor.style.setProperty('--river-x',`${to.x}%`);actor.style.setProperty('--river-y',`${to.y}%`);return new Promise(resolve=>riverTimer(()=>resolve(epoch===viewEpoch),900));}
  const animation=actor.animate(keyframes,{duration:900,easing:'cubic-bezier(.26,.02,.24,1)',fill:'forwards'});riverAnimations.add(animation);
- return animation.finished.then(()=>{riverAnimations.delete(animation);if(epoch!==viewEpoch)return false;actor.style.left=`${to.x}%`;actor.style.top=`${to.y}%`;animation.cancel();actor.classList.add('is-landing');addRiverParticles(toIndex);EffectsManager.play(RIVER_EFFECT_AUDIO.land);return true;}).catch(()=>false);
+ return animation.finished.then(()=>{riverAnimations.delete(animation);if(epoch!==viewEpoch)return false;actor.style.left=`${to.x}%`;actor.style.top=`${to.y}%`;animation.cancel();actor.classList.add('is-landing');addRiverParticles(toIndex,config);EffectsManager.play(RIVER_EFFECT_AUDIO.land);return true;}).catch(()=>false);
 }
 function repeatRiverInstruction(){
- if(AppState.cursor.phase!=='river_jkl'||riverCrossingState().gameCompleted)return Promise.resolve(false);
+ if(!riverContextActive()||activeRiverState().gameCompleted)return Promise.resolve(false);
  const repeat=$('.river-repeat');repeat?.classList.remove('is-pulsing');void repeat?.offsetWidth;repeat?.classList.add('is-pulsing');return setInstruction(riverAudioItems());
 }
 function tapRiverCrossing(letter,button=null){
- if(riverAnimating||answerLocked||view!=='course'||AppState.cursor.phase!=='river_jkl'||riverCrossingState().gameCompleted)return 'ignored';
- const state=riverCrossingState(),before=RiverCrossingGame.platformIndex(JKL_RIVER_GAME,state),result=RiverCrossingGame.answer(JKL_RIVER_GAME,state,letter);if(result==='ignored')return result;
+ if(riverAnimating||answerLocked||!riverContextActive()||activeRiverState().gameCompleted)return 'ignored';
+ const training=trainingRiverActive(),config=activeRiverConfig(),state=activeRiverState(),statQuestion=training?trainingActivity().questions[state.questionIndex]:null,before=RiverCrossingGame.platformIndex(config,state),result=RiverCrossingGame.answer(config,state,letter);if(result==='ignored')return result;
  riverAnimating=true;answerLocked=true;saveProgress();
  if(result==='wrong'){
+  if(training)recordTrainingAttempt(statQuestion,false);
   button?.classList.add('wrong');setRiverFeedback('Попробуй ещё раз!');EffectsManager.play(RIVER_EFFECT_AUDIO.wrong);
-  const hinted=RiverCrossingGame.hint(JKL_RIVER_GAME,state);if(hinted)document.querySelector(`.river-answer[data-letter="${hinted}"]`)?.classList.add('is-hint');
+  const hinted=RiverCrossingGame.hint(config,state);if(hinted)document.querySelector(`.river-answer[data-letter="${hinted}"]`)?.classList.add('is-hint');
   riverTimer(()=>{button?.classList.remove('wrong');riverAnimating=false;answerLocked=false;button?.focus?.({preventScroll:true});},DEMO?80:380);return result;
  }
+ if(training)recordTrainingAttempt(statQuestion,true);
  setRiverInputsEnabled(false);button?.classList.add('correct');setRiverFeedback(result==='reaction'?'Правильно! Ещё один шаг — и прыжок!':'Правильно! Прыгаем дальше!');
- window.navigator?.vibrate?.(result==='reaction'?15:25);addRiverParticles(before);const epoch=viewEpoch,after=RiverCrossingGame.platformIndex(JKL_RIVER_GAME,state);
+ window.navigator?.vibrate?.(result==='reaction'?15:25);addRiverParticles(before,config);const epoch=viewEpoch,after=RiverCrossingGame.platformIndex(config,state);
  EffectsManager.play(RIVER_EFFECT_AUDIO.correct);
  if(result==='reaction'){
   $('#river-marius')?.classList.add('is-reacting');
@@ -2526,6 +2701,10 @@ function continueRiverCrossingGame(){
  if(view!=='course'||AppState.cursor.phase!=='river_jkl'||!riverCrossingState().gameCompleted)return false;
  const block=localReviewAt(JKL_END_INDEX);AppState.cursor={phase:block?'reviewIntro':'lesson',index:block?JKL_END_INDEX:JKL_END_INDEX+1,step:0};AppState.game=null;AppState.question=null;go('course');return true;
 }
+function continueTrainingRiverCrossing(){
+ if(!trainingRiverActive()||!activeRiverState().gameCompleted)return false;
+ return advanceTrainingActivity();
+}
 function replayRiverCrossingGame(){
  if(AppState.cursor.phase!=='river_jkl')return false;
  AppState.riverCrossing=blankRiverCrossing();AppState.game=null;AppState.question=null;go('course');return true;
@@ -2542,9 +2721,10 @@ function showScreen(){
  viewEpoch++;const epoch=viewEpoch;clearTimeout(transitionTimer);transitionTimer=null;clearBalloonPopRuntime();clearRiverCrossingRuntime();answerLocked=false;letterMazeAnimating=false;stopAudio();$('#confetti').replaceChildren();
  syncLessonCardAudioState();
  document.body.classList.toggle('maze-active',view==='course'&&Boolean(activeLetterMazeEntry()));
- document.body.classList.toggle('balloon-active',view==='course'&&AppState.cursor.phase==='balloon_ghi');
- document.body.classList.toggle('river-active',view==='course'&&AppState.cursor.phase==='river_jkl');
- $('#main').innerHTML=view==='home'?renderHome():view==='progress'?renderWardrobe():view==='reward'?renderReward():renderCourse();
+ document.body.classList.toggle('balloon-active',courseBalloonActive()||trainingBalloonActive());
+ document.body.classList.toggle('river-active',courseRiverActive()||trainingRiverActive());
+ document.body.classList.toggle('training-active',view==='training');
+ $('#main').innerHTML=view==='home'?renderHome():view==='progress'?renderWardrobe():view==='reward'?renderReward():view==='training'?renderTraining():renderCourse();
  if(DEMO)$('#main').insertAdjacentHTML('beforeend',`<div class="demo-bar" lang="ru"><span>DEMO · отдельный прогресс · BUILD ${escapeHTML(BUILD_ID)}</span><button data-action="demo-next">Следующий этап →</button></div>`);
  $('#home-button').classList.toggle('hide',view==='home');updateSoundButton();wireMedia();wireFindObjectScene();wireLetterMazeScene();wireBalloonPopGame();wireRiverCrossingGame();
  announceScreen();
@@ -2556,6 +2736,13 @@ function announceScreen(){const c=AppState.cursor,d=letters[c.index];
  if(view==='home'){setInstruction([ru('welcome')]);return;}
  if(view==='progress'){setInstruction([ru('dress_giraffe')]);return;}
  if(view==='reward'){const flow=visibleRewardFlow();setInstruction(flow?.selected?[ru(flow.id==='reward_def'?'new_item':'new_clothes'),ru('giraffe_happy')]:[ru('level_complete'),ru('reward'),ru('choose_reward')]);return;}
+ if(view==='training'){
+  const session=trainingSession(),activity=trainingActivity();
+  if(session?.completed){setInstruction([ru('well_done'),ru('giraffe_happy')]);return;}
+  if(activity?.kind==='balloon'){setInstruction(activeBalloonState().gameCompleted?[ru('well_done')]:[balloonAudioItem()]);return;}
+  if(activity?.kind==='river'){setInstruction(activeRiverState().gameCompleted?[ru('well_done')]:riverAudioItems());return;}
+  setInstruction(trainingQuestionAudio());return;
+ }
  if(c.phase==='river_jkl'){setInstruction(riverCrossingState().gameCompleted?[ru('level_complete'),ru('reward')]:riverAudioItems());return;}
  if(c.phase==='balloon_ghi'){setInstruction(balloonPopState().gameCompleted?[ru('well_done')]:[balloonAudioItem()]);return;}
  if(LETTER_MAZE_COURSE[c.phase]){const config=activeLetterMazeEntry().scene,state=letterMazeState(config),round=LetterMazeGame.currentRound(config,state),letter=byLetter.get(round.targetLetter);setInstruction(state.gameCompleted?[ru('well_done')]:[ru('challenge'),ru('find_letter'),enName(letter)]);return;}
@@ -2658,12 +2845,12 @@ function updateSoundButton(){const b=$('#sound-button');b.textContent=AppState.s
 function toggleSound(){
  unlockAudio();AppState.soundEnabled=!AppState.soundEnabled;AudioManager.setEnabled(AppState.soundEnabled);EffectsManager.setEnabled(AppState.soundEnabled);saveProgress();updateSoundButton();
  if(!AppState.soundEnabled&&lessonCardAudioIsWaiting()){lessonCardAudioRun++;completeLessonCardAudio(lessonCardKey(),viewEpoch);}
- if(AppState.cursor.phase==='balloon_ghi'&&!balloonPopState().gameCompleted){
+ if(balloonContextActive()&&!activeBalloonState().gameCompleted){
   noteBalloonInteraction();
   const target=document.querySelector('[data-balloon-target]');clearTimeout(balloonTargetTimer);
-  if(target&&!AppState.soundEnabled){const letter=BalloonPopGame.target(GHI_BALLOON_GAME,balloonPopState());target.textContent=letter;target.classList.remove('is-hidden');}
+  if(target&&!AppState.soundEnabled){const letter=BalloonPopGame.target(activeBalloonConfig(),activeBalloonState());target.textContent=letter;target.classList.remove('is-hidden');}
   if(AppState.soundEnabled&&!answerLocked)repeatBalloonInstruction();
- }else if(AppState.cursor.phase==='river_jkl'&&!riverCrossingState().gameCompleted){
+ }else if(riverContextActive()&&!activeRiverState().gameCompleted){
   if(AppState.soundEnabled&&!answerLocked)repeatRiverInstruction();
  }else if(AppState.soundEnabled&&!answerLocked)repeatInstruction();
 }
@@ -2691,9 +2878,16 @@ const actions={
  'river-repeat':repeatRiverInstruction,
  'river-continue':continueRiverCrossingGame,
  'river-replay':replayRiverCrossingGame,
+ 'training-river-continue':continueTrainingRiverCrossing,
  'balloon-pop':button=>tapBalloonPop(button.dataset.letter,button),
  'balloon-repeat':repeatBalloonInstruction,
  'balloon-continue':continueBalloonPopGame,
+ 'training-balloon-continue':continueTrainingBalloonGame,
+ 'training-answer':checkTrainingAnswer,
+ 'training-repeat':repeatTrainingInstruction,
+ 'start-training':()=>startTraining(false),
+ 'new-training':()=>startTraining(true),
+ 'training-home':()=>go('home'),
  'letter-maze-move':button=>letterMazeMove(button.dataset.cell,button.dataset.game),
  'letter-maze-next':button=>nextLetterMazeRound(button.dataset.game),
  'letter-maze-continue':button=>continueLetterMazeGame(button.dataset.game),
@@ -2729,6 +2923,13 @@ const actions={
   if(view==='home')begin();
   else if(view==='progress')go(lastView);
  else if(view==='reward'){if(AppState.rewardFlow?.selected)continueReward();}
+  else if(view==='training'){
+   const session=trainingSession(),activity=trainingActivity();
+   if(session?.completed)startTraining(true);
+   else if(activity?.kind==='balloon'){const state=activeBalloonState();if(state.gameCompleted)continueTrainingBalloonGame();else tapBalloonPop(BalloonPopGame.target(activeBalloonConfig(),state));}
+   else if(activity?.kind==='river'){const state=activeRiverState();if(state.gameCompleted)continueTrainingRiverCrossing();else tapRiverCrossing(RiverCrossingGame.currentQuestion(activeRiverConfig(),state).letter);}
+   else checkTrainingAnswer(document.querySelector(`[data-training-answer="${trainingQuestion().letter}"]`));
+  }
   else{
    const c=AppState.cursor,entry=activeFindObjectEntry(),mazeEntry=activeLetterMazeEntry();
    if(c.phase==='lesson'){if(currentLessonStep(c)?.kind==='card')nextLessonStep();else checkAnswer(document.querySelector(`[data-answer="${AppState.question.letter}"]`));}

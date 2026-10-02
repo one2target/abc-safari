@@ -19,6 +19,10 @@
 | `play/balloon-pop-game.css` | Mobile-first игровое поле, движение, pop/shake/hint, частицы и short-height layout. |
 | `play/river-crossing-game.js` | Чистые правила 12 заданий J/K/L, четыре этапа, restore, пороги переправы и HTML «Переправы Мариуса». |
 | `play/river-crossing-game.css` | Вертикальная mobile-first сцена, пять платформ, три крупные кнопки, прыжок, посадка, сундук и landscape layout. |
+| `play/training-config.js` | Единые параметры разблокировки, длины сессии, smart random, шариков, переправы и блица. |
+| `play/training-state.js` | Восстановление и запись отдельной тренировочной статистики внутри существующего AppState. |
+| `play/training-engine.js` | Чистая сборка вариативной сессии, взвешенный выбор, покрытие пула, distractors и отложенный повтор после ошибки. |
+| `play/training.css` | Адаптивные стили CTA на главной, быстрых заданий, блица и итогов тренировки. |
 | `play/audio-manager.js` | `createAudioManager()`: воспроизведение записей и речевой fallback. Загружается после каталога ресурсов. |
 | `play/manifest.webmanifest` | Название приложения, запуск, область действия, цвета и иконки для установки на домашний экран. |
 | `README.md` | Запуск, пользовательские сценарии и описание сохранений. |
@@ -42,6 +46,10 @@
 │   ├── balloon-pop-game.css
 │   ├── river-crossing-game.js
 │   ├── river-crossing-game.css
+│   ├── training-config.js
+│   ├── training-state.js
+│   ├── training-engine.js
+│   ├── training.css
 │   ├── manifest.webmanifest
 │   ├── icon-180.png
 │   ├── icon-192.png
@@ -64,7 +72,7 @@
 Интерфейс тренажёра — в `play/index.html`. Лендинг имеет собственные стили и скрипт в корневом `index.html`.
 
 - Каркас: `.topbar`, `#main`, `.footer`, `#modal-layer`, `#confetti`.
-- Экраны: `renderHome()`, `renderCourse()`, `renderWardrobe()`, `renderReward()`, `renderResults()`. Учебные экраны: `renderLearnLetter()`, `renderWordScreen()`, `renderWordMeaningCard()`, `renderTranslationQuiz()`, `questionBody()`, `renderInterlude()`.
+- Экраны: `renderHome()`, `renderCourse()`, `renderTraining()`, `renderWardrobe()`, `renderReward()`, `renderResults()`. Учебные экраны: `renderLearnLetter()`, `renderWordScreen()`, `renderWordMeaningCard()`, `renderTranslationQuiz()`, `questionBody()`, `renderInterlude()`.
 - Навигация: `view`, `lastView`, `go()`, `showScreen()`, `openProgress()`. Маршрутизация переключает содержимое `#main`; URL-роутера нет.
 - Действия: объект `actions` и делегированный обработчик `document` для кнопок с `data-action` / `data-answer`; кнопки верхней панели имеют отдельные обработчики.
 - Кнопки и карточки: `.primary`, `.secondary`, `.icon-button`, `.choice`, `.outfit-option`; карточки одежды строит `outfitOptions()`.
@@ -83,6 +91,7 @@
 - `startGame()` обслуживает прежние mini; `startReview()` создаёт новый local/cumulative review. В cumulative выбираются шесть уникальных целей: две случайные из последнего блока и четыре случайные из более раннего изученного диапазона. `gamePool()` оставляет весь диапазон доступным для вариантов ответа.
 - `ensureQuestion()` восстанавливает подходящий вопрос либо вызывает `createQuestion()`; `validQuestion()` проверяет структуру сохранённого вопроса.
 - `questionPrompt()` / `questionBody()` выводят вопрос и варианты.
+- `completedTrainingLetters()` использует существующий `mastery === 3`; `TrainingEngine` получает только этот пул. Сессия из 10 этапов содержит 7 быстрых заданий, Balloon Pop, 4-шаговую переправу и блиц из 5 вопросов. Адаптеры передают динамические конфигурации существующим `BalloonPopGame` и `RiverCrossingGame`.
 - `checkAnswer()` сравнивает `button.dataset.answer` с `q.letter`, запускает реакцию и блокирует повторное нажатие. В прежних упражнениях ошибка вызывает `registerMistake()`, а успех — `registerCorrectAnswer()`; meaning quiz даёт мягкий retry без статистического штрафа, а при успехе проигрывает русское слово и переходит к прежним упражнениям.
 - Переходы: `nextLessonStep()`, `advanceAfterLetter()`, `advanceAfterMini()`, `advanceAfterReview()`, `completeQuestion()`, затем `go()` / `showScreen()`.
 
@@ -92,7 +101,7 @@
 
 - `cursor` хранит `phase`, индекс буквы и шаг. К прежним фазам добавлены `reviewIntro`, `review`, `reviewResult`, `cumulativeIntro`, `cumulative`, `cumulativeResult`; `results` теперь открывается после `cumulative_review_AZ`.
 - `stats` по каждой букве: `attempts`, `correct`, `mistakes`, `mastery`, `skills`, `practiceDebt`. Итоги для родителей вычисляет `renderParentView()`.
-- `game`, `question`, `reviews`, `questionSerial` сохраняют позицию обычных заданий; `balloonPop` хранит phase/target/score/quickOrder/completion; `riverCrossing` хранит 12 созданных вопросов, текущий индекс, число правильных ответов, ошибки текущего задания и completion; `started`, `completed`, `soundEnabled` — общие флаги.
+- `game`, `question`, `reviews`, `questionSerial` сохраняют позицию обычных заданий; `balloonPop` хранит phase/target/score/quickOrder/completion; `riverCrossing` хранит 12 созданных вопросов, текущий индекс, число правильных ответов, ошибки текущего задания и completion; `training` хранит активную сессию, историю и адаптивную статистику `letterName` / `sound` / `word`; `started`, `completed`, `soundEnabled` — общие флаги.
 - Награды: `characterState.ownedItems`, стандартные слоты `characterState.equipped`, `completedBlocks`, `claimedRewards`, `rewardFlow`.
 - `localStorage`: `alfie-abc-v1`; при `?demo=1` — отдельный `alfie-abc-demo-v1`. Общая версия состояния остаётся 3; загрузчик принимает версии 1–3. Для сохранений v1/v2 прежние lesson steps 2–4 сдвигаются на два места. Завершённое A–F продолжает с G, завершённое A–I или сохранение в прежнем финале — с J; статистика, `completedBlocks`, inventory и экипировка сохраняются. Новые `game.poolLetters` / `game.letterOrder` восстанавливают точную позицию review. Инвентарь отдельно мигрирует `migrateRewards()` с `REWARD_STATE_VERSION = 3`.
 - При невозможности записи состояние остаётся в памяти вкладки, показывается `#storage-notice`. Сохранение также вызывается при скрытии страницы и `pagehide`. Сброс сохраняет настройку звука.

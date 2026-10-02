@@ -60,6 +60,8 @@ assert.equal(corrupt.correct,0);assert.equal(corrupt.gameCompleted,false);
 const wordState=engine.initialState(config,seeded(23));wordState.questionIndex=6;wordState.correct=6;
 const wordHTML=engine.render(config,wordState,{icons:{speaker:'SPEAKER'},backgroundSource,characterHTML:'<canvas class="marius-composite"></canvas>'});
 assert.equal((wordHTML.match(/<button class="river-answer/g)||[]).length,3);
+assert.ok(wordHTML.includes('river-answers river-answers--3'));
+assert.ok(wordHTML.includes('data-answer-count="3"'));
 assert.ok(wordHTML.includes('river-answer-picture'));
 assert.ok(wordHTML.includes('data-background-mode="image"'));
 assert.ok(wordHTML.includes('data-river-background'));
