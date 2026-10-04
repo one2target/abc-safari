@@ -63,7 +63,7 @@ const fakeButton=answer=>`({dataset:{answer:'${answer}'},classList:{add(){},remo
 
  const data=createContext();
  assert.equal(data.run('STORAGE_KEY'),'alfie-abc-v1');
- assert.equal(data.run('AppState.version'),3);
+ assert.equal(data.run('AppState.version'),4);
  for(const [letter,word,translation,key] of words){
   assert.equal(data.run(`byLetter.get('${letter}').translation`),translation);
   assert.equal(data.run(`byLetter.get('${letter}').translationAudio`),`./audio/${key}_ru.mp3`);
@@ -178,7 +178,7 @@ const fakeButton=answer=>`({dataset:{answer:'${answer}'},classList:{add(){},remo
  legacy.cursor={phase:'lesson',index:0,step:2};
  legacy.question={type:'find',letter:'A',options:['A','M','S'],hadMistake:false,serial:0};
  const migrated=createContext({saved:{'alfie-abc-v1':JSON.stringify(legacy)}});
- assert.equal(migrated.run('AppState.version'),3);
+ assert.equal(migrated.run('AppState.version'),4);
  assert.equal(migrated.run('AppState.cursor.step'),4);
  assert.equal(migrated.run('AppState.question.type'),'find');
 

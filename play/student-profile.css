@@ -1,0 +1,53 @@
+.marius-home-button{margin-top:14px;background:linear-gradient(135deg,#7961bd,#5d4aa0);box-shadow:0 5px 0 #443378}
+.marius-home-button:hover{background:linear-gradient(135deg,#6f57b4,#51408e)}
+.student-shell{width:min(100%,960px);margin:0 auto;padding:10px 0 26px}
+.student-header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:4px 0 16px}
+.student-header h1{font-size:clamp(32px,6vw,48px)}
+.star-balance{display:inline-flex;align-items:center;justify-content:center;min-width:108px;min-height:54px;padding:10px 18px;border-radius:20px;background:#fff5cf;border:2px solid #efca57;color:#74521a;font-size:22px;font-weight:950;box-shadow:0 5px 0 #d6a936}
+.student-nav{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:18px}
+.student-nav button{min-height:76px;padding:9px 5px;border:2px solid var(--line);border-radius:20px;background:#fff;color:var(--muted);font-size:12px;font-weight:850;line-height:1.15}
+.student-nav button span{display:block;margin-bottom:5px;font-size:26px}
+.student-nav button.active{border-color:#78aa8c;background:var(--mint);color:var(--green);box-shadow:0 4px 0 #b7dac4}
+.student-panel{min-height:470px;border:1px solid var(--line);border-radius:32px;background:#fff;padding:clamp(16px,4vw,30px);box-shadow:0 14px 34px rgba(35,68,55,.08)}
+.student-panel-heading{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:20px}
+.student-panel-heading h2{font-size:clamp(25px,5vw,36px)}
+.student-panel-heading p{color:var(--muted);font-weight:750}
+.marius-dashboard{display:grid;grid-template-columns:minmax(220px,.85fr) minmax(280px,1.15fr);gap:28px;align-items:center}
+.marius-dashboard .character-stage{width:min(100%,290px);margin:auto}
+.marius-rank{text-align:center;margin-top:10px;font-size:20px;font-weight:900;color:var(--green)}
+.dashboard-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.dashboard-stat{min-height:94px;padding:16px;border-radius:22px;background:#f3f8f5;display:flex;flex-direction:column;justify-content:center}
+.dashboard-stat b{font-size:25px;line-height:1.1}.dashboard-stat span{margin-top:5px;color:var(--muted);font-size:13px;font-weight:750}
+.student-progress-copy{display:flex;justify-content:space-between;gap:10px;margin-bottom:7px;font-weight:850}
+.student-progress{height:17px;border-radius:99px;background:#e7ede9;overflow:hidden;box-shadow:inset 0 2px 3px rgba(0,0,0,.08)}
+.student-progress i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#58ae79,#e6b12c)}
+.student-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}.student-actions button{min-width:0}
+.alphabet-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+.alphabet-card{min-height:130px;padding:12px 7px;border-radius:22px;background:#f1f5f2;border:2px solid #e2eae5;text-align:center}
+.alphabet-card.unlocked{background:#fffaf0;border-color:#eed58b;box-shadow:0 4px 0 #e2c76d}
+.alphabet-card strong{display:block;font-size:32px}.alphabet-card small{display:block;margin-top:5px;color:var(--muted);font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mastery-stars{display:block;margin-top:5px;color:#e3aa20;letter-spacing:1px;font-size:15px}.alphabet-lock{display:block;margin-top:9px;font-size:21px}
+.training-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.training-summary .dashboard-stat{text-align:center}.training-summary .dashboard-stat b{font-size:22px}
+.letter-groups{display:grid;grid-template-columns:1fr 1fr;gap:14px}.letter-group{padding:18px;border-radius:22px;background:#f4f8f5}.letter-group h3{margin:0 0 12px;font-size:16px}.letter-bubbles{display:flex;flex-wrap:wrap;gap:8px}.letter-bubbles span{display:grid;place-items:center;width:42px;height:42px;border-radius:14px;background:#fff;font-size:20px;font-weight:950;box-shadow:0 3px 0 #dce7df}
+.recent-training{display:grid;gap:8px;margin-top:18px}.recent-training-row{display:flex;justify-content:space-between;gap:12px;padding:13px 16px;border-radius:17px;background:#f6f8f7;font-weight:800}.recent-training-row span{color:var(--muted);font-weight:700}
+.wardrobe-grid,.shop-grid,.achievement-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.inventory-card,.shop-card,.achievement-card{position:relative;min-width:0;padding:14px;border:2px solid var(--line);border-radius:24px;background:#f9fbfa;text-align:center}
+.inventory-card.selected{border-color:#65a77e;background:#edf8f1;box-shadow:0 4px 0 #acd3ba}
+.inventory-card .item-preview-stage,.shop-card .item-preview-stage{height:150px}.inventory-card h3,.shop-card h3{margin:9px 0 4px;font-size:16px}.inventory-card p,.shop-card p{margin:0;color:var(--muted);font-size:12px;font-weight:750}
+.card-actions{display:grid;gap:8px;margin-top:12px}.card-actions button{min-height:48px;border-radius:16px;padding:10px;font-size:13px;font-weight:850}.card-actions .try-button{background:#edf1f8;color:#51408e}.card-actions .buy-button{background:var(--green);color:#fff}.card-actions .buy-button:disabled{background:#d8dedb;color:#6d7772}.card-actions .premium-button{background:#eee8fa;color:#5d4690}
+.shop-price{display:inline-flex;align-items:center;gap:4px;margin-top:8px;padding:6px 11px;border-radius:99px;background:#fff1bb;color:#725013;font-weight:950}
+.shop-balance{display:block;margin-top:6px;color:var(--muted);font-size:12px;font-weight:850}.shop-owned-status,.shop-premium-status{display:inline-flex;margin-top:8px;padding:6px 11px;border-radius:99px;font-weight:900}.shop-owned-status{background:#def2e5;color:#17664c}.shop-premium-status{background:#eee8fa;color:#5d4690}
+.shop-card.previewing{border-color:#7961bd;box-shadow:0 4px 0 #c4b8e7}.shop-section+.shop-section{margin-top:24px}.shop-section h3{margin:0 0 12px}
+.achievement-card{min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center}.achievement-card.locked{filter:grayscale(1);opacity:.55}.achievement-icon{font-size:40px}.achievement-card h3{margin:10px 0 6px}.achievement-card p{margin:0;color:var(--muted);font-size:13px}.achievement-reward{margin-top:10px;color:#8a651a;font-weight:900}
+.achievement-celebration{text-align:center}.achievement-celebration .achievement-icon{font-size:70px}.achievement-celebration h2{font-size:34px;margin:8px 0}.achievement-celebration .stars{margin:12px 0;color:#e2aa20}
+.empty-profile-state{padding:34px 15px;border:2px dashed #cfdcd4;border-radius:24px;color:var(--muted);text-align:center;font-weight:800}
+@media(max-width:760px){
+ .student-nav{grid-template-columns:repeat(3,1fr)}.marius-dashboard{grid-template-columns:1fr}.marius-dashboard .character-stage{width:min(58vw,240px)}
+ .alphabet-grid{grid-template-columns:repeat(4,1fr)}.wardrobe-grid,.shop-grid,.achievement-grid{grid-template-columns:repeat(2,1fr)}.training-summary{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:520px){
+ .student-shell{padding-top:0}.student-header{align-items:flex-start}.star-balance{min-width:92px;min-height:48px;padding:8px 12px;font-size:19px}.student-nav{gap:8px}.student-nav button{min-height:72px;font-size:11px}.student-panel{padding:15px;border-radius:25px}
+ .dashboard-stats{gap:8px}.dashboard-stat{padding:12px;min-height:84px}.student-actions{grid-template-columns:1fr}.alphabet-grid{grid-template-columns:repeat(3,1fr);gap:8px}.alphabet-card{min-height:112px}.letter-groups{grid-template-columns:1fr}.wardrobe-grid,.shop-grid,.achievement-grid{grid-template-columns:1fr 1fr;gap:9px}.inventory-card,.shop-card,.achievement-card{padding:10px;border-radius:19px}.inventory-card .item-preview-stage,.shop-card .item-preview-stage{height:122px}.achievement-card{min-height:155px}.recent-training-row{flex-direction:column;gap:3px}
+}
+@media(max-width:350px){.student-nav{grid-template-columns:repeat(2,1fr)}.wardrobe-grid,.shop-grid,.achievement-grid{grid-template-columns:1fr}}

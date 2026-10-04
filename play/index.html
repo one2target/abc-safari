@@ -1455,13 +1455,12 @@ main {
 .outfit-option.locked .outfit-art {opacity:.4;}
 .outfit-art {position:relative;width:100%;height:110px;overflow:hidden;}
 .outfit-art>img {position:absolute;max-width:none;object-fit:contain;}
-/* Preview cards intentionally keep a renderer and geometry independent from
-   the large Marius stack. */
+/* Item cards share the canonical canvas compositor at a smaller size. */
 .jacket-art>img {width:auto;height:190%;left:50%;top:-52%;transform:translateX(-50%);}
 .accessory-art>img {width:auto;height:240%;left:50%;top:-20%;transform:translateX(-80%);}
 .character-art {display:flex;align-items:center;justify-content:center;}
-.item-preview-stage {position:relative;display:block;width:auto;height:100%;max-width:100%;margin:0;aspect-ratio:2/3;overflow:hidden;}
-.item-preview-actor {position:absolute;inset:0;width:100%;height:100%;transform:translate(-3%,0);transform-origin:center center;}
+.item-preview-stage {position:relative;display:flex;align-items:center;justify-content:center;width:auto;height:100%;max-width:100%;margin:0;aspect-ratio:2/3;overflow:hidden;}
+.item-preview-stage .character-item-preview {width:100%;height:100%;margin:0;background:transparent;border-radius:0;box-shadow:none;}
 .item-preview-layer {position:absolute;inset:0;display:block;width:100%;height:100%;max-width:none;max-height:none;object-fit:fill;object-position:0 0;}
 .outfit-name {font-size:13px;font-weight:800;line-height:1.25;margin-top:6px;}
 .outfit-status {font-size:11px;color:var(--muted);line-height:1.3;margin-top:5px;}
@@ -1520,6 +1519,7 @@ main {
 <link rel="stylesheet" href="./balloon-pop-game.css">
 <link rel="stylesheet" href="./river-crossing-game.css?v=river-finale3">
 <link rel="stylesheet" href="./training.css?v=training-layout-v3">
+<link rel="stylesheet" href="./student-profile.css?v=student-profile-v1">
 </head>
 <body>
 <div class="app" id="app">
@@ -1540,6 +1540,7 @@ main {
 <script src="./training-config.js?v=training-v1"></script>
 <script src="./training-state.js?v=training-v1"></script>
 <script src="./training-engine.js?v=training-v1"></script>
+<script src="./student-domain.js?v=student-profile-v1"></script>
 <script>
 'use strict';
 /* DATA — A–Z curriculum. Assets are indexed from the shared registry. */
@@ -1550,6 +1551,8 @@ const DEMO = QUERY_PARAMS.get('demo') === '1';
 const DEMO_LETTER = (QUERY_PARAMS.get('letter')||'').toUpperCase();
 const DEMO_SCREEN = QUERY_PARAMS.get('screen')||'';
 const STORAGE_KEY = DEMO ? 'alfie-abc-demo-v1' : 'alfie-abc-v1';
+const APP_STATE_VERSION=4;
+const storageAdapter=StudentDomain.createStorageAdapter(localStorage,STORAGE_KEY);
 const letters = [
  {letter:'A',lowercase:'a',sound:'æ',name:'ay',word:'Apple',translation:'Яблоко',emoji:'🍎',color:'#c85b33',tint:'#fff0e4',image:null,letterAudio:null,soundAudio:null,wordAudio:null,translationAudio:null,distractors:['M','S']},
  {letter:'B',lowercase:'b',sound:'b',name:'bee',word:'Ball',translation:'Мяч',emoji:'⚽',color:'#426ac1',tint:'#e9efff',image:null,letterAudio:null,soundAudio:null,wordAudio:null,translationAudio:null,distractors:['P','T']},
@@ -1611,18 +1614,25 @@ const SLOT_CONFIG=Object.freeze({
  hand_left:{label:'В левой руке'},hand_right:{label:'В руках'},back:{label:'За спиной'},
  extra:{label:'Дополнительно'},background:{label:'Фон'}
 });
+const CATEGORY_CONFIG=Object.freeze({
+ outfit:{label:'Одежда',icon:'👕'},head:{label:'Головные уборы',icon:'🎩'},face:{label:'Лицо',icon:'👓'},
+ hand_left:{label:'В руки',icon:'🎈'},hand_right:{label:'В руки',icon:'🎈'},back:{label:'Спина',icon:'🎒'},
+ extra:{label:'Аксессуары',icon:'✨'},background:{label:'Фоны',icon:'🌴'}
+});
 const characterConfig={
  width:1024,height:1536,
  backgrounds:{home:'background_home',reward:'background_reward',results:'background_home'},
  baseAsset:'giraffe_base'
 };
 const ITEMS=Object.freeze([
- {id:'jacket_stars',name:'Куртка со звёздами',slot:'outfit',asset:'giraffe_jacket_stars',icon:'reward_icon_jacket_stars',collection:'base'},
- {id:'jacket_racer',name:'Гоночная куртка',slot:'outfit',asset:'giraffe_jacket_racer',icon:'reward_icon_jacket_racer',collection:'base'},
- {id:'accessory_bouquet',name:'Букет',slot:'hand_right',asset:'accessory_bouquet',icon:'accessory_bouquet',collection:'base'},
- {id:'accessory_balloon',name:'Шарик',slot:'hand_right',asset:'accessory_balloon',icon:'accessory_balloon',collection:'base'},
- {id:'hat_straw_bow',name:'Соломенная шляпа',slot:'head',asset:'marius_hat_straw_bow',icon:'marius_hat_straw_bow',collection:'base'},
- {id:'hat_adventure',name:'Шляпа путешественника',slot:'head',asset:'marius_hat_adventure',icon:'marius_hat_adventure',collection:'base'}
+ {id:'jacket_stars',name:'Куртка со звёздами',category:'outfit',slot:'outfit',asset:'giraffe_jacket_stars',icon:'reward_icon_jacket_stars',collection:'base',rarity:'common',priceStars:30,priceMoney:null,currency:'stars',isPremium:false,unlockCondition:'reward_abc'},
+ {id:'jacket_racer',name:'Гоночная куртка',category:'outfit',slot:'outfit',asset:'giraffe_jacket_racer',icon:'reward_icon_jacket_racer',collection:'base',rarity:'common',priceStars:30,priceMoney:null,currency:'stars',isPremium:false,unlockCondition:'reward_abc'},
+ {id:'accessory_bouquet',name:'Букет',category:'hand_right',slot:'hand_right',asset:'accessory_bouquet',icon:'accessory_bouquet',collection:'base',rarity:'common',priceStars:22,priceMoney:null,currency:'stars',isPremium:false,unlockCondition:'reward_def'},
+ {id:'accessory_balloon',name:'Шарик',category:'hand_right',slot:'hand_right',asset:'accessory_balloon',icon:'accessory_balloon',collection:'base',rarity:'common',priceStars:22,priceMoney:null,currency:'stars',isPremium:false,unlockCondition:'reward_def'},
+ {id:'hat_straw_bow',name:'Соломенная шляпа',category:'head',slot:'head',asset:'marius_hat_straw_bow',icon:'marius_hat_straw_bow',collection:'base',rarity:'rare',priceStars:26,priceMoney:null,currency:'stars',isPremium:false,unlockCondition:'reward_ghi'},
+ {id:'hat_adventure',name:'Шляпа путешественника',category:'head',slot:'head',asset:'marius_hat_adventure',icon:'marius_hat_adventure',collection:'base',rarity:'rare',priceStars:26,priceMoney:null,currency:'stars',isPremium:false,unlockCondition:'reward_ghi'},
+ {id:'background_jungle',name:'Домик в джунглях',category:'background',slot:'background',asset:'background_home',icon:'background_home',collection:'backgrounds',rarity:'common',priceStars:18,priceMoney:null,currency:'stars',isPremium:false,unlockCondition:'always'},
+ {id:'background_sunset',name:'Праздничный закат',category:'background',slot:'background',asset:'background_reward',icon:'background_reward',collection:'backgrounds',rarity:'rare',priceStars:28,priceMoney:null,currency:'stars',isPremium:false,unlockCondition:'always'}
 ]);
 const itemCatalog=new Map(ITEMS.map(item=>[item.id,Object.freeze({...item})]));
 const rewardConfig=[
@@ -1692,13 +1702,37 @@ const blankLetterMazeGames=()=>Object.fromEntries(LETTER_MAZE_CONFIGS.map(config
 const blankBalloonPop=()=>BalloonPopGame.initialState(GHI_BALLOON_GAME);
 const blankRiverCrossing=()=>RiverCrossingGame.initialState(JKL_RIVER_GAME);
 /* STATE & STORAGE — keep the v1 key so existing progress survives. */
-const initialState=()=>({version:3,rewardStateVersion:REWARD_STATE_VERSION,characterState:blankCharacter(),findObjectGames:blankFindObjectGames(),mazeGames:blankLetterMazeGames(),balloonPop:blankBalloonPop(),riverCrossing:blankRiverCrossing(),training:TrainingState.initialState(),completedBlocks:[],claimedRewards:[],rewardFlow:null,started:false,completed:false,soundEnabled:true,cursor:{phase:'lesson',index:0,step:0},stats:Object.fromEntries(letters.map(d=>[d.letter,blankStats()])),game:null,question:null,reviews:[],questionSerial:0});
+const initialState=()=>({version:APP_STATE_VERSION,rewardStateVersion:REWARD_STATE_VERSION,student:StudentDomain.initialStudentState(),characterState:blankCharacter(),findObjectGames:blankFindObjectGames(),mazeGames:blankLetterMazeGames(),balloonPop:blankBalloonPop(),riverCrossing:blankRiverCrossing(),training:TrainingState.initialState(),completedBlocks:[],claimedRewards:[],rewardFlow:null,started:false,completed:false,soundEnabled:true,cursor:{phase:'lesson',index:0,step:0},stats:Object.fromEntries(letters.map(d=>[d.letter,blankStats()])),game:null,question:null,reviews:[],questionSerial:0});
+function studentFactsFromState(state,now=Date.now()){
+ const mastery=letters.map(d=>StudentDomain.letterMastery(state.stats[d.letter],state.training.progress[d.letter]));
+ const learnedCount=mastery.filter(value=>value>0).length;
+ const history=state.training.history||[],active=state.training.activeSession;
+ return {
+  learnedCount,
+  abcLearned:letters.slice(0,3).every((_,index)=>mastery[index]>0),
+  bestAnswerStreak:Math.max(0,active?.bestStreak||0,...history.map(item=>item.bestStreak||0)),
+  perfectTrainingCount:history.filter(item=>item.perfect===true).length,
+  activityStreak:StudentDomain.activityStreak(state.student,now),
+  ownedItemCount:state.characterState.ownedItems.length
+ };
+}
+function migrateStudentState(state,saved){
+ state.student=StudentDomain.restoreStudentState(saved.student);
+ for(const d of letters)if(state.stats[d.letter].mastery>=3)StudentDomain.awardStars(state.student,StudentDomain.STAR_REWARDS.letterCompleted,'letter_completed',`letter:${d.letter}`,0);
+ for(const id of state.completedBlocks)StudentDomain.awardStars(state.student,StudentDomain.STAR_REWARDS.blockCompleted,'block_completed',`block:${id}`,0);
+ for(const result of state.training.history||[]){
+  StudentDomain.awardStars(state.student,StudentDomain.STAR_REWARDS.trainingCompleted,'training_completed',`training:${result.id}`,result.completedAt||0);
+  if(result.perfect===true)StudentDomain.awardStars(state.student,StudentDomain.STAR_REWARDS.perfectTraining,'training_perfect',`training-perfect:${result.id}`,result.completedAt||0);
+ }
+ StudentDomain.evaluateAchievements(state.student,studentFactsFromState(state),0);
+ if(!saved.student||saved.version<APP_STATE_VERSION)for(const entry of state.student.achievements.unlocked)StudentDomain.markAchievementNotified(state.student,entry.id);
+}
 let storageAvailable=true;
 function loadProgress(){
  const fresh=initialState();
  try{
-  const raw=localStorage.getItem(STORAGE_KEY);if(!raw)return fresh;
-  const saved=JSON.parse(raw);if(![1,2,3].includes(saved.version))return fresh;
+  const saved=storageAdapter.read();if(!saved)return fresh;
+  if(![1,2,3,4].includes(saved.version))return fresh;
   fresh.soundEnabled=saved.soundEnabled!==false;
   fresh.started=Boolean(saved.started);fresh.completed=Boolean(saved.completed);
   for(const d of letters){const s=saved.stats?.[d.letter];if(!s)continue;const t=fresh.stats[d.letter];
@@ -1746,10 +1780,11 @@ function loadProgress(){
   const formerTerminal=firstUnmastered>=0&&['finalIntro','final','results'].includes(fresh.cursor.phase)&&fresh.cursor.index<firstUnmastered;
   if(firstUnmastered>=0&&(fresh.completed||formerTerminal)){fresh.completed=false;fresh.cursor={phase:'lesson',index:firstUnmastered,step:0};fresh.question=null;fresh.game=null;}
   migrateRewards(fresh,saved);
+  migrateStudentState(fresh,saved);
   return fresh;
  }catch(e){log('Storage unavailable or invalid',e);return fresh;}
 }
-function saveProgress(){if(DEMO_SHORTCUT_ACTIVE)return;try{localStorage.setItem(STORAGE_KEY,JSON.stringify(AppState));storageAvailable=true;}catch(e){storageAvailable=false;log('Progress kept in memory',e);}$('#storage-notice').classList.toggle('hide',storageAvailable);}
+function saveProgress(){if(DEMO_SHORTCUT_ACTIVE)return;try{storageAdapter.write(AppState);storageAvailable=true;}catch(e){storageAvailable=false;log('Progress kept in memory',e);}$('#storage-notice').classList.toggle('hide',storageAvailable);}
 function getItemById(id){return itemCatalog.get(id)||null;}
 function isItemOwned(id,state=AppState){return Boolean(getItemById(id)&&state.characterState.ownedItems.includes(id));}
 function unlockItem(id,state=AppState,persist){
@@ -1830,6 +1865,29 @@ function ensureRewardFlow(state=AppState){
  if(reward)state.rewardFlow={id:reward.id,resume:state.cursor.phase==='miniResult'&&reward.afterLetters.at(-1)===letters[state.cursor.index].letter?'after-mini':'course',selected:null};
 }
 const AppState=loadProgress();
+function awardStars(amount,reason,sourceId,timestamp=Date.now()){
+ const awarded=StudentDomain.awardStars(AppState.student,amount,reason,sourceId,timestamp);if(awarded)saveProgress();return awarded;
+}
+function recordLearningActivity(timestamp=Date.now()){return StudentDomain.recordActivity(AppState.student,timestamp);}
+function evaluateStudentAchievements(timestamp=Date.now()){
+ const unlocked=StudentDomain.evaluateAchievements(AppState.student,studentFactsFromState(AppState,timestamp),timestamp);if(unlocked.length)saveProgress();return unlocked;
+}
+function masteryForLetter(letter){return StudentDomain.letterMastery(AppState.stats[letter]||blankStats(),AppState.training.progress[letter]||{});}
+function shopItemUnlocked(item){return item?.unlockCondition==='always'||AppState.completedBlocks.includes(item?.unlockCondition);}
+function purchaseCatalogItem(id){
+ const item=getItemById(id);if(!item||!shopItemUnlocked(item))return {ok:false,reason:'locked'};
+ const result=StudentDomain.purchaseItem(AppState.student,AppState.characterState,item);
+ if(result.ok){evaluateStudentAchievements();saveProgress();}
+ return result;
+}
+function pendingAchievement(){return AppState.student.achievements.unlocked.find(entry=>!AppState.student.achievements.notified.includes(entry.id))||null;}
+function showPendingAchievementCelebration(){
+ if(!$('#modal-layer').hidden)return false;
+ const pending=pendingAchievement();if(!pending)return false;
+ const achievement=StudentDomain.ACHIEVEMENTS.find(item=>item.id===pending.id);if(!achievement)return false;
+ StudentDomain.markAchievementNotified(AppState.student,pending.id);saveProgress();
+ openModal(`<div class="achievement-celebration"><div class="achievement-icon" aria-hidden="true">${achievement.icon}</div><p class="eyebrow">Новое достижение!</p><h2 id="modal-title">${escapeHTML(achievement.title)}</h2><p>${escapeHTML(achievement.description)}</p><div class="stars">+${achievement.rewardStars} ⭐</div><button class="primary" data-action="close-achievement">Ура!</button></div>`);return true;
+}
 const completedTrainingLetters=(state=AppState)=>letters.filter(d=>state.stats[d.letter].mastery===3).map(d=>d.letter);
 if(DEMO_LETTER_INDEX>=0){AppState.cursor={phase:'lesson',index:DEMO_LETTER_INDEX,step:0};AppState.question=null;AppState.game=null;AppState.rewardFlow=null;}
 if(DEMO_BALLOON_PREVIEW){AppState.cursor={phase:'balloon_ghi',index:GHI_END_INDEX,step:lessonSteps(letters[GHI_END_INDEX]).length-1};AppState.balloonPop=blankBalloonPop();AppState.question=null;AppState.game=null;AppState.rewardFlow=null;}
@@ -1863,7 +1921,7 @@ function courseRiverActive(){return view==='course'&&AppState.cursor.phase==='ri
 function riverContextActive(){return trainingRiverActive()||courseRiverActive();}
 function activeRiverConfig(){return trainingRiverActive()?trainingRiverConfig():JKL_RIVER_GAME;}
 function activeRiverState(){return trainingRiverActive()?ensureTrainingRiverState():riverCrossingState();}
-let view=DEMO_TRAINING_PREVIEW?'training':DEMO_LETTER_INDEX>=0||DEMO_BALLOON_PREVIEW||DEMO_RIVER_PREVIEW?'course':DEMO_REWARD_PREVIEW?'reward':DEMO_INVENTORY_PREVIEW?'progress':AppState.rewardFlow?'reward':'home',lastView='home',answerLocked=false,transitionTimer=null,viewEpoch=0,restoreFocus=null,rewardReady=Boolean(visibleRewardFlow()?.selected);
+let view=DEMO_TRAINING_PREVIEW?'training':DEMO_LETTER_INDEX>=0||DEMO_BALLOON_PREVIEW||DEMO_RIVER_PREVIEW?'course':DEMO_REWARD_PREVIEW?'reward':DEMO_INVENTORY_PREVIEW?'progress':AppState.rewardFlow?'reward':'home',lastView='home',profileSection='marius',shopPreviewItemId=null,answerLocked=false,transitionTimer=null,viewEpoch=0,restoreFocus=null,rewardReady=Boolean(visibleRewardFlow()?.selected);
 const SLIDE_AUDIO_WAITING='waitingForAudio',SLIDE_AUDIO_READY='readyToContinue';
 const completedLessonCardAudioKeys=new Set();
 let lessonCardAudioState={key:null,status:SLIDE_AUDIO_READY},lessonCardAudioRun=0;
@@ -1901,8 +1959,8 @@ function createQuestion(type,d,pool=letters,lesson=false){
  else wrong=shuffle(wrong);
  return {type,letter:d.letter,options:shuffle([d.letter,...wrong.slice(0,2)]),hadMistake:false,serial:AppState.questionSerial};
 }
-function registerMistake(q){const s=AppState.stats[q.letter];s.attempts++;s.mistakes++;s.practiceDebt=Math.min(s.practiceDebt+1,12);q.hadMistake=true;const old=AppState.reviews.find(r=>r.letter===q.letter);if(old)old.due=Math.min(old.due,AppState.questionSerial+2);else AppState.reviews.push({letter:q.letter,due:AppState.questionSerial+2});saveProgress();}
-function registerCorrectAnswer(q){const s=AppState.stats[q.letter],before=s.mastery;s.attempts++;s.correct++;if(!s.skills.includes(q.type)&&CORE_TYPES.includes(q.type))s.skills.push(q.type);s.mastery=s.skills.length;if(!q.hadMistake)s.practiceDebt=Math.max(0,s.practiceDebt-1);AppState.questionSerial++;return before<3&&s.mastery===3;}
+function registerMistake(q){const s=AppState.stats[q.letter];s.attempts++;s.mistakes++;s.practiceDebt=Math.min(s.practiceDebt+1,12);q.hadMistake=true;const old=AppState.reviews.find(r=>r.letter===q.letter);if(old)old.due=Math.min(old.due,AppState.questionSerial+2);else AppState.reviews.push({letter:q.letter,due:AppState.questionSerial+2});recordLearningActivity();evaluateStudentAchievements();saveProgress();}
+function registerCorrectAnswer(q){const s=AppState.stats[q.letter],before=s.mastery;s.attempts++;s.correct++;if(!s.skills.includes(q.type)&&CORE_TYPES.includes(q.type))s.skills.push(q.type);s.mastery=s.skills.length;if(!q.hadMistake)s.practiceDebt=Math.max(0,s.practiceDebt-1);AppState.questionSerial++;recordLearningActivity();return before<3&&s.mastery===3;}
 function gamePool(){
  if(['review','cumulative'].includes(AppState.cursor.phase))return AppState.game.poolLetters.map(letter=>byLetter.get(letter)).filter(Boolean);
  return AppState.cursor.phase==='final'?letters:groups[Math.floor(AppState.cursor.index/GROUP_SIZE)];
@@ -1991,19 +2049,20 @@ function characterAssetSource(assetKey,freshReward=false){
  if(!source)return '';
  return freshReward?`${source.split('?')[0]}?reward=${REWARD_RENDER_TOKEN}`:source;
 }
-function mariusLayerEntries(scene='home'){
+function mariusLayerEntries(scene='home',previewItem=null){
  if(DEMO_REWARD_PREVIEW&&scene==='reward')return [
   {slot:'body',asset:characterConfig.baseAsset},
   {slot:'head',asset:demoRewardHeadAsset},
   {slot:'hand_right',asset:'accessory_bouquet'}
  ];
  return CHARACTER_LAYER_ORDER.map(slot=>{
-  const item=slot==='body'?getEquippedItem('outfit'):getEquippedItem(slot);
+  const targetSlot=slot==='body'?'outfit':slot;
+  const item=previewItem?.slot===targetSlot?previewItem:getEquippedItem(targetSlot);
   return {slot,asset:slot==='body'?(item?.asset||characterConfig.baseAsset):item?.asset};
  }).filter(entry=>entry.asset&&MEDIA_ASSETS.images[entry.asset]);
 }
-function mariusComposition(entries,scene='home'){
- return Object.fromEntries(entries.map(entry=>[entry.slot,characterAssetSource(entry.asset,scene==='reward')]));
+function mariusComposition(entries,scene='home',freshReward=false){
+ return Object.fromEntries(entries.map(entry=>[entry.slot,characterAssetSource(entry.asset,freshReward||scene==='reward')]));
 }
 function setMariusCanvasComposition(canvas,entries,scene='home',loadImage=loadCharacterImage){
  const composition=mariusComposition(entries,scene);
@@ -2017,26 +2076,23 @@ function redrawRewardMarius(canvas=document.querySelector('#character-preview ca
  return setMariusCanvasComposition(canvas,mariusLayerEntries('reward'),'reward',loadImage);
 }
 function renderCharacter(scene='home',options={}){
- const {includeBackground=true,className='',decorative=false}=options;
+ const {includeBackground=true,className='',decorative=false,freshReward=false}=options,previewItem=getItemById(options.previewItem?.id||options.previewItem);
  const equippedFor=slot=>getEquippedItem(slot);
- const outfit=equippedFor('outfit'),backgroundItem=includeBackground?equippedFor('background'):null;
+ const outfit=previewItem?.slot==='outfit'?previewItem:equippedFor('outfit'),backgroundItem=includeBackground?(previewItem?.slot==='background'?previewItem:equippedFor('background')):null;
  const background=backgroundItem?.asset||characterConfig.backgrounds[scene]||characterConfig.backgrounds.home;
  const overlaySlots=CHARACTER_LAYER_ORDER.filter(slot=>slot!=='body');
  const overlays=overlaySlots.map(equippedFor).filter(Boolean);
- const entries=mariusLayerEntries(scene),assetKeys=entries.map(entry=>entry.asset),slots=entries.map(entry=>entry.slot);
- const labels=DEMO_REWARD_PREVIEW&&scene==='reward'?[]:[outfit,...overlays,backgroundItem].filter(Boolean).map(item=>item.name);
+ const entries=mariusLayerEntries(scene,previewItem),assetKeys=entries.map(entry=>entry.asset),slots=entries.map(entry=>entry.slot);
+ const labels=DEMO_REWARD_PREVIEW&&scene==='reward'?[]:[outfit,...overlays,backgroundItem,previewItem].filter(Boolean).map(item=>item.name);
  const accessibility=decorative?'aria-hidden="true"':`role="img" aria-label="Жирафик${labels.length?' — '+escapeHTML(labels.join(', ')):''}"`;
  const backgroundLayer=includeBackground&&MEDIA_ASSETS.images[background]?`<img class="marius-stage-background" src="${escapeHTML(MEDIA_ASSETS.images[background].src)}" width="${characterConfig.width}" height="${characterConfig.height}" data-character-asset="${background}" data-layer="background" data-layer-order="0" data-slot="background" alt="" draggable="false">`:'';
- const composition=mariusComposition(entries,scene),sources=slots.map(slot=>composition[slot]).join('|');
+ const composition=mariusComposition(entries,scene,freshReward),sources=slots.map(slot=>composition[slot]).join('|');
  return `<div class="character-stage character-${escapeHTML(scene)} ${escapeHTML(className)}" data-character-context="${escapeHTML(scene)}" ${accessibility}>${backgroundLayer}<span class="character-fallback" aria-hidden="true">🦒</span><canvas class="marius-composite" width="${characterConfig.width}" height="${characterConfig.height}" data-marius-assets="${escapeHTML(assetKeys.join(','))}" data-marius-slots="${escapeHTML(slots.join(','))}" data-marius-sources="${escapeHTML(sources)}" aria-hidden="true"></canvas></div>`;
 }
-/* Card previews deliberately do not reuse the large-character renderer. */
+/* Every item thumbnail uses the same itemId-aware character compositor as the
+   large preview. Preview never touches owned/equipped RewardState. */
 function renderItemPreview(item,freshReward=false){
- const outfit=getEquippedItem('outfit'),actor=outfit?.asset||characterConfig.baseAsset;
- const equippedFor=slot=>slot===item.slot?item:getEquippedItem(slot);
- const overlays=CHARACTER_LAYER_ORDER.filter(slot=>slot!=='body').map(equippedFor).filter(Boolean);
- const layer=key=>MEDIA_ASSETS.images[key]?`<img class="item-preview-layer" src="${escapeHTML(characterAssetSource(key,freshReward))}" data-character-asset="${key}" alt="" draggable="false">`:'';
- return `<span class="item-preview-stage" aria-hidden="true"><span class="item-preview-actor">${layer(actor)}${overlays.map(entry=>layer(entry.asset)).join('')}</span></span>`;
+ return `<span class="item-preview-stage" aria-hidden="true">${renderCharacter('item-preview',{includeBackground:item.slot==='background',previewItem:item,freshReward,className:'item-preview-character',decorative:true})}</span>`;
 }
 function outfitOptions(reward,action){
  const flow=visibleRewardFlow();
@@ -2063,6 +2119,7 @@ function finishBlock(){
  const reward=rewardConfig.find(r=>r.afterLetters.length===group.length&&r.afterLetters.every(l=>group.includes(l)));
  if(!reward)return;
  if(!AppState.completedBlocks.includes(reward.id))AppState.completedBlocks.push(reward.id);
+ StudentDomain.awardStars(AppState.student,StudentDomain.STAR_REWARDS.blockCompleted,'block_completed',`block:${reward.id}`);
  ensureRewardFlow();log('Reward available',reward.id);
 }
 function renderReward(){
@@ -2109,7 +2166,49 @@ function renderTrainingHomeCard(){
  const unlockLetter=letters[Math.max(0,TRAINING_CONFIG.minCompletedLetters-1)]?.letter||String(TRAINING_CONFIG.minCompletedLetters);
  return `<div class="training-home-card"><button class="primary training-button" data-action="start-training" ${unlocked?'':'disabled'}><span aria-hidden="true">🎯</span><span>${resumable?'Продолжить тренировку':'Тренировка'}</span></button><p>${unlocked?'Повтори изученные буквы':`Откроется после буквы ${escapeHTML(unlockLetter)}`}</p></div>`;
 }
-function renderHome(){return `<section class="screen"><div class="home"><div class="home-copy"><p class="eyebrow">A little adventure in English</p><h1>ABC<br><em>Safari</em></h1><p class="subline">Учим буквы вместе с жирафиком</p><div class="home-actions"><button class="primary" data-action="start">${AppState.started?'Продолжить':'Начать'} ${icons.arrow}</button>${AppState.started?'<button class="text-button" data-action="reset">Начать заново</button>':''}${renderTrainingHomeCard()}</div></div><div class="hero-scene">${renderCharacter("home")}</div></div>${journeyStrip()}</section>`;}
+function renderHome(){return `<section class="screen"><div class="home"><div class="home-copy"><p class="eyebrow">A little adventure in English</p><h1>ABC<br><em>Safari</em></h1><p class="subline">Учим буквы вместе с жирафиком</p><div class="home-actions"><button class="primary" data-action="start">${AppState.started?'Продолжить':'Начать'} ${icons.arrow}</button><button class="primary marius-home-button" data-action="open-profile"><span aria-hidden="true">🦒</span><span>Мой Мариус</span></button>${AppState.started?'<button class="text-button" data-action="reset">Начать заново</button>':''}${renderTrainingHomeCard()}</div></div><div class="hero-scene">${renderCharacter("home")}</div></div>${journeyStrip()}</section>`;}
+const PROFILE_SECTIONS=Object.freeze([
+ {id:'marius',icon:'🏠',label:'Мариус'},{id:'alphabet',icon:'🔤',label:'Моя азбука'},
+ {id:'training',icon:'🎯',label:'Тренировки'},{id:'wardrobe',icon:'🎒',label:'Гардероб'},
+ {id:'achievements',icon:'🏆',label:'Достижения'},{id:'shop',icon:'🛍️',label:'Магазин'}
+]);
+function renderProfileNav(){return `<nav class="student-nav" aria-label="Разделы кабинета">${PROFILE_SECTIONS.map(section=>`<button class="${profileSection===section.id?'active':''}" data-action="profile-section" data-section="${section.id}" aria-current="${profileSection===section.id?'page':'false'}"><span aria-hidden="true">${section.icon}</span>${section.label}</button>`).join('')}</nav>`;}
+function trainingTotals(){return Object.values(AppState.training.progress).reduce((totals,entry)=>({attempts:totals.attempts+(entry.attempts||0),correct:totals.correct+(entry.correct||0),mistakes:totals.mistakes+(entry.mistakes||0)}),{attempts:0,correct:0,mistakes:0});}
+function renderMariusDashboard(){
+ const facts=studentFactsFromState(AppState),level=StudentDomain.levelFor(facts.learnedCount),totals=trainingTotals(),accuracy=totals.attempts?Math.round(totals.correct/totals.attempts*100):0,streak=facts.activityStreak;
+ return `<div class="marius-dashboard"><div>${renderCharacter('home')}<p class="marius-rank">${level.icon} ${escapeHTML(level.title)}</p></div><div><div class="dashboard-stats"><div class="dashboard-stat"><b>🔤 ${facts.learnedCount}</b><span>букв изучено</span></div><div class="dashboard-stat"><b>🎯 ${totals.attempts?accuracy+'%':'—'}</b><span>правильных ответов</span></div><div class="dashboard-stat"><b>🔥 ${streak}</b><span>${streak===1?'день подряд':'дней подряд'}</span></div><div class="dashboard-stat"><b>🎒 ${facts.ownedItemCount}</b><span>предметов в гардеробе</span></div></div><div class="student-progress-copy"><span>Прогресс A–Z</span><span>${facts.learnedCount} / 26</span></div><div class="student-progress" role="progressbar" aria-label="Прогресс алфавита" aria-valuemin="0" aria-valuemax="26" aria-valuenow="${facts.learnedCount}"><i style="width:${Math.round(facts.learnedCount/26*100)}%"></i></div><div class="student-actions"><button class="primary" data-action="profile-course">Продолжить ${icons.arrow}</button><button class="secondary" data-action="start-training" ${trainingUnlocked()?'':'disabled'}>🎯 Тренироваться</button></div></div></div>`;
+}
+function renderAlphabetProfile(){return `<div class="student-panel-heading"><div><h2>Моя азбука</h2><p>Собери все 26 букв</p></div></div><div class="alphabet-grid">${letters.map(d=>{const mastery=masteryForLetter(d.letter),unlocked=mastery>0;return `<button class="alphabet-card ${unlocked?'unlocked':''}" data-action="letter-detail" data-letter="${d.letter}" ${unlocked?'':'disabled'} aria-label="${unlocked?`${d.letter}, ${d.word}, освоение ${mastery} из 3`:`${d.letter}, ещё закрыта`}"><strong>${unlocked?d.letter:'?'}</strong>${unlocked?`<span class="mastery-stars">${'★'.repeat(mastery)}${'☆'.repeat(3-mastery)}</span><small>${escapeHTML(d.word)}</small>`:`<span class="alphabet-lock">🔒</span><small>${d.letter}</small>`}</button>`;}).join('')}</div>`;}
+function renderTrainingProfile(){
+ const totals=trainingTotals(),accuracy=totals.attempts?Math.round(totals.correct/totals.attempts*100):0,history=[...AppState.training.history].reverse(),ranked=letters.map(d=>{const stat=AppState.training.progress[d.letter]||{};return {letter:d.letter,attempts:stat.attempts||0,mistakes:stat.mistakes||0,rate:stat.attempts?(stat.correct||0)/stat.attempts:0};}).filter(item=>item.attempts>0),strong=[...ranked].filter(item=>item.attempts>=2).sort((a,b)=>b.rate-a.rate||b.attempts-a.attempts).slice(0,5),repeat=[...ranked].filter(item=>item.mistakes>0).sort((a,b)=>b.mistakes-a.mistakes||a.rate-b.rate).slice(0,5);
+ return `<div class="student-panel-heading"><div><h2>Тренировки</h2><p>Коротко и по делу</p></div><button class="secondary" data-action="start-training" ${trainingUnlocked()?'':'disabled'}>Играть 🎯</button></div><div class="training-summary"><div class="dashboard-stat"><b>${history.length}</b><span>тренировок</span></div><div class="dashboard-stat"><b>${totals.attempts}</b><span>заданий</span></div><div class="dashboard-stat"><b>${totals.correct}</b><span>правильно</span></div><div class="dashboard-stat"><b>${totals.attempts?accuracy+'%':'—'}</b><span>точность</span></div></div><div class="letter-groups"><section class="letter-group"><h3>🌟 Лучше всего</h3><div class="letter-bubbles">${strong.length?strong.map(item=>`<span>${item.letter}</span>`).join(''):'<p>Начни тренировку!</p>'}</div></section><section class="letter-group"><h3>💪 Потренируем ещё</h3><div class="letter-bubbles">${repeat.length?repeat.map(item=>`<span>${item.letter}</span>`).join(''):'<p>Пока всё отлично!</p>'}</div></section></div>${history.length?`<div class="recent-training"><h3>Последние результаты</h3>${history.slice(0,5).map(item=>`<div class="recent-training-row"><b>${item.perfect?'⭐⭐⭐ Отлично!':'🎯 Хорошая работа!'}</b><span>Правильно: ${item.correct||0} · Ошибок: ${item.mistakes||0}</span></div>`).join('')}</div>`:''}`;
+}
+function renderCatalogArt(item,fresh=false){
+ return renderItemPreview(item,fresh);
+}
+function renderWardrobeProfile(){
+ const owned=ITEMS.filter(item=>isItemOwned(item.id));
+ return `<div class="student-panel-heading"><div><h2>Гардероб</h2><p>Наряди Мариуса</p></div></div>${owned.length?`<div class="marius-dashboard"><div>${renderCharacter('home')}</div><div class="wardrobe-grid">${owned.map(item=>{const selected=getEquippedItem(item.slot)?.id===item.id;return `<article class="inventory-card ${selected?'selected':''}">${renderCatalogArt(item)}<h3>${escapeHTML(item.name)}</h3><p>${CATEGORY_CONFIG[item.category]?.icon||'✨'} ${escapeHTML(CATEGORY_CONFIG[item.category]?.label||'Предмет')}</p><div class="card-actions"><button class="${selected?'try-button':'buy-button'}" data-action="${selected?'unequip':'equip'}" data-item="${item.id}">${selected?'Снять':'Надеть'}</button></div></article>`;}).join('')}</div></div>`:'<div class="empty-profile-state">🎁 Первый предмет появится после блока A–C.</div>'}`;
+}
+function renderAchievementsProfile(){
+ const unlocked=new Set(AppState.student.achievements.unlocked.map(entry=>entry.id));
+ return `<div class="student-panel-heading"><div><h2>Достижения</h2><p>${unlocked.size} из ${StudentDomain.ACHIEVEMENTS.length}</p></div></div><div class="achievement-grid">${StudentDomain.ACHIEVEMENTS.map(item=>`<article class="achievement-card ${unlocked.has(item.id)?'':'locked'}"><div class="achievement-icon" aria-hidden="true">${unlocked.has(item.id)?item.icon:'🔒'}</div><h3>${escapeHTML(item.title)}</h3><p>${escapeHTML(item.description)}</p><span class="achievement-reward">+${item.rewardStars} ⭐</span></article>`).join('')}</div>`;
+}
+function renderShopCard(item){
+ const owned=isItemOwned(item.id),selected=getEquippedItem(item.slot)?.id===item.id,previewing=shopPreviewItemId===item.id;
+ const price=Math.max(0,Number(item.priceStars)||0),shortfall=Math.max(0,price-AppState.student.starBalance),premium=item.isPremium===true&&!owned;
+ const ownedAction=item.slot==='background'?(selected?'Выбран ✓':'Использовать'):(selected?'Надето ✓':'Надеть');
+ const purchaseControl=premium?`<button class="premium-button" data-action="premium-info">🔒 Попроси взрослого</button>`:shortfall?`<button class="buy-button" disabled>🔒 Не хватает ${shortfall} ⭐</button>`:`<button class="buy-button" data-action="buy-item" data-item="${item.id}">Купить за ${price} ⭐</button>`;
+ return `<article class="shop-card ${owned?'owned':''} ${previewing?'previewing':''}">${renderCatalogArt(item)}<h3>${escapeHTML(item.name)}</h3><p>${CATEGORY_CONFIG[item.category]?.icon||'✨'} ${escapeHTML(CATEGORY_CONFIG[item.category]?.label||'Предмет')}</p>${owned?'<span class="shop-owned-status">✓ Уже твоё</span>':premium?'<span class="shop-premium-status">💎 Премиум</span>':`<span class="shop-price">⭐ ${price}</span>${shortfall?`<span class="shop-balance">⭐ ${AppState.student.starBalance} / ${price}</span>`:''}`}<div class="card-actions">${owned?`<button class="buy-button" data-action="equip" data-item="${item.id}" ${selected?'disabled':''}>${ownedAction}</button>`:`<button class="try-button" data-action="try-shop-item" data-item="${item.id}">${previewing?'Примерено ✓':'Примерить'}</button>${purchaseControl}`}</div></article>`;
+}
+function renderShopProfile(){
+ const available=ITEMS.filter(shopItemUnlocked),preview=getItemById(shopPreviewItemId),categories=[...new Set(available.map(item=>item.category))];
+ return `<div class="student-panel-heading"><div><h2>Магазин</h2><p>Зарабатывай звёзды в игре</p></div></div><div class="marius-dashboard"><div>${renderCharacter('home',{previewItem:preview})}${preview?`<p class="marius-rank">Примерка: ${escapeHTML(preview.name)}</p>`:''}</div><div>${categories.map(category=>`<section class="shop-section"><h3>${CATEGORY_CONFIG[category]?.icon||'✨'} ${escapeHTML(CATEGORY_CONFIG[category]?.label||'Предметы')}</h3><div class="shop-grid">${available.filter(item=>item.category===category).map(renderShopCard).join('')}</div></section>`).join('')}<section class="shop-section"><h3>💎 Премиум</h3><div class="shop-card"><div class="achievement-icon">🔒</div><h3>Премиальные предметы</h3><p>Их сможет купить взрослый</p><div class="card-actions"><button class="try-button" data-action="premium-info">Попроси взрослого</button></div></div></section></div></div>`;
+}
+function renderStudentProfile(){
+ const content={marius:renderMariusDashboard,alphabet:renderAlphabetProfile,training:renderTrainingProfile,wardrobe:renderWardrobeProfile,achievements:renderAchievementsProfile,shop:renderShopProfile}[profileSection]?.()||renderMariusDashboard();
+ return `<section class="screen student-shell"><header class="student-header"><div><p class="eyebrow">Личный кабинет</p><h1>Мой Мариус</h1></div><div class="star-balance" aria-label="${AppState.student.starBalance} звёзд">⭐ ${AppState.student.starBalance}</div></header>${renderProfileNav()}<div class="student-panel">${content}</div></section>`;
+}
 function lessonTop(){const c=AppState.cursor,steps=lessonSteps(letters[c.index]);return `<div class="lesson-top"><span class="lesson-label">УЧИМ ${escapeHTML(letters[c.index].letter)}</span><div class="step-track" role="progressbar" aria-label="Lesson steps" aria-valuemin="0" aria-valuemax="${steps.length}" aria-valuenow="${c.step+1}">${steps.map((_,i)=>`<span class="${i<=c.step?'done':''}"></span>`).join('')}</div></div>`;}
 function panelStyle(d){return `style="--accent:${d.color||'#17664c'};--tint:${d.tint||'#dff4e7'}"`;}
 function lessonContinueContent(ready){return `<span class="lesson-continue-icon" aria-hidden="true">${ready?'☝️':'👂'}</span><span>${ready?'ЖМИ!':'Слушай'}</span>`;}
@@ -2189,11 +2288,17 @@ function renderTrainingResults(){
 function renderTraining(){
  const session=trainingSession();if(!session)return `<section class="interlude"><h1>Тренировка</h1><p>Сначала открой три буквы.</p><button class="primary" data-action="training-home">На главную</button></section>`;
  if(session.completed)return renderTrainingResults();
- const activity=trainingActivity();if(!activity){TrainingState.completeSession(AppState.training);saveProgress();return renderTrainingResults();}
+ const activity=trainingActivity();if(!activity){completeTrainingSession(false);return renderTrainingResults();}
  let content;if(activity.kind==='balloon')content=renderTrainingBalloonPop();else if(activity.kind==='river')content=renderTrainingRiverCrossing();else content=renderTrainingQuestion(trainingQuestion(),activity.kind==='blitz');
  return `<div class="screen learning training-shell">${trainingTop()}${content}</div>`;
 }
-function completeTrainingSession(){TrainingState.completeSession(AppState.training);saveProgress();showScreen();return true;}
+function completeTrainingSession(refresh=true){
+ const session=trainingSession();if(!session||session.completed)return false;
+ TrainingState.completeSession(AppState.training);
+ StudentDomain.awardStars(AppState.student,StudentDomain.STAR_REWARDS.trainingCompleted,'training_completed',`training:${session.id}`);
+ if((session.mistakes||0)===0)StudentDomain.awardStars(AppState.student,StudentDomain.STAR_REWARDS.perfectTraining,'training_perfect',`training-perfect:${session.id}`);
+ recordLearningActivity(session.completedAt);evaluateStudentAchievements(session.completedAt);saveProgress();if(refresh)showScreen();return true;
+}
 function advanceTrainingActivity(){
  const session=trainingSession();if(!TrainingEngine.advanceActivity(session))return completeTrainingSession();
  saveProgress();showScreen();return true;
@@ -2205,9 +2310,10 @@ function finishTrainingQuestion(){
 }
 function recordTrainingAttempt(question,correct){
  const session=trainingSession();TrainingState.recordAttempt(AppState.training,question.letter,question.skill,correct);
- if(correct){TrainingEngine.noteCorrect(session,question);if(trainingActivity()?.kind==='blitz')trainingActivity().streak=(trainingActivity().streak||0)+1;}
+ session.answers=(session.answers||0)+1;
+ if(correct){session.correct=(session.correct||0)+1;TrainingEngine.noteCorrect(session,question);if(trainingActivity()?.kind==='blitz')trainingActivity().streak=(trainingActivity().streak||0)+1;}
  else{TrainingEngine.noteMistake(session,question);if(trainingActivity()?.kind==='blitz')trainingActivity().streak=0;TrainingEngine.scheduleRetry(session,question,AppState.training.progress,TRAINING_CONFIG);}
- saveProgress();
+ recordLearningActivity();evaluateStudentAchievements();saveProgress();
 }
 function checkTrainingAnswer(button){
  const q=trainingQuestion();if(answerLocked||!q)return;answerLocked=true;unlockAudio();stopAudio();const correct=button.dataset.trainingAnswer===q.letter;
@@ -2265,6 +2371,7 @@ function selectFindObject(id,gameId){
  const state=findObjectState(config);
  const result=HiddenObjectGame.choose(config,state,id);
  if(result==='ignored')return;
+ recordLearningActivity();evaluateStudentAchievements();
  saveProgress();
  if(result==='game-complete'){go('course');return;}
  const copy=config.copy||{};
@@ -2347,6 +2454,7 @@ function selectLetterMazeCell(id,gameId){
  const config=entry.scene,state=letterMazeState(config),copy=config.copy||{},landedCheckpoint=LetterMazeGame.checkpointAt(config,state,id);
  const segment=LetterMazeGame.pathSegmentTo(config,state,id)||[];
  const result=LetterMazeGame.move(config,state,id);if(result==='ignored')return;
+ recordLearningActivity();evaluateStudentAchievements();
  saveProgress();
  if(result==='wrong-checkpoint'||result==='not-adjacent'){
   updateLetterMazeView(result==='wrong-checkpoint'?copy.wrongCheckpoint:copy.notAdjacent,result,id);AudioManager.play(ru('try_again'));
@@ -2560,6 +2668,7 @@ function trainingBalloonStatQuestion(){
 function tapBalloonPop(letter,button=null){
  if(!balloonContextActive()||activeBalloonState().gameCompleted)return 'ignored';
  const training=trainingBalloonActive(),config=activeBalloonConfig(),state=activeBalloonState(),result=BalloonPopGame.tap(config,state,letter);if(result==='ignored')return result;
+ if(!training){recordLearningActivity();evaluateStudentAchievements();}
  noteBalloonInteraction();document.querySelectorAll('.balloon-pop-balloon.is-hint').forEach(item=>item.classList.remove('is-hint'));
  if(result==='wrong'){
   if(training)recordTrainingAttempt(trainingBalloonStatQuestion(),false);
@@ -2670,6 +2779,7 @@ function repeatRiverInstruction(){
 function tapRiverCrossing(letter,button=null){
  if(riverAnimating||answerLocked||!riverContextActive()||activeRiverState().gameCompleted)return 'ignored';
  const training=trainingRiverActive(),config=activeRiverConfig(),state=activeRiverState(),statQuestion=training?trainingActivity().questions[state.questionIndex]:null,before=RiverCrossingGame.platformIndex(config,state),result=RiverCrossingGame.answer(config,state,letter);if(result==='ignored')return result;
+ if(!training){recordLearningActivity();evaluateStudentAchievements();}
  riverAnimating=true;answerLocked=true;saveProgress();
  if(result==='wrong'){
   if(training)recordTrainingAttempt(statQuestion,false);
@@ -2724,16 +2834,17 @@ function showScreen(){
  document.body.classList.toggle('balloon-active',courseBalloonActive()||trainingBalloonActive());
  document.body.classList.toggle('river-active',courseRiverActive()||trainingRiverActive());
  document.body.classList.toggle('training-active',view==='training');
- $('#main').innerHTML=view==='home'?renderHome():view==='progress'?renderWardrobe():view==='reward'?renderReward():view==='training'?renderTraining():renderCourse();
+ $('#main').innerHTML=view==='home'?renderHome():view==='profile'?renderStudentProfile():view==='progress'?renderWardrobe():view==='reward'?renderReward():view==='training'?renderTraining():renderCourse();
  if(DEMO)$('#main').insertAdjacentHTML('beforeend',`<div class="demo-bar" lang="ru"><span>DEMO · отдельный прогресс · BUILD ${escapeHTML(BUILD_ID)}</span><button data-action="demo-next">Следующий этап →</button></div>`);
  $('#home-button').classList.toggle('hide',view==='home');updateSoundButton();wireMedia();wireFindObjectScene();wireLetterMazeScene();wireBalloonPopGame();wireRiverCrossingGame();
  announceScreen();
  if(view!=='home'){const heading=$('#main h1');heading?.setAttribute('tabindex','-1');heading?.focus({preventScroll:true});}
- window.scrollTo({top:0,behavior:'auto'});log(view,AppState.cursor);
+ window.scrollTo({top:0,behavior:'auto'});log(view,AppState.cursor);showPendingAchievementCelebration();
 }
-function go(next){if(next==='course'){if(AppState.cursor.phase==='miniIntro'&&AppState.cursor.index===2&&!findObjectComplete(ABC_FIND_OBJECT_GAME))AppState.cursor.phase='room';if(AppState.cursor.phase==='miniIntro'&&AppState.cursor.index===5&&!letterMazeComplete(DEF_LETTER_MAZE))AppState.cursor.phase='maze';ensureRewardFlow();if(AppState.rewardFlow)next='reward';}view=next;if(view==='reward')rewardReady=Boolean(AppState.rewardFlow?.selected);saveProgress();showScreen();}
+function go(next){if(view==='profile'&&profileSection==='shop'&&next!=='profile')shopPreviewItemId=null;if(next==='course'){if(AppState.cursor.phase==='miniIntro'&&AppState.cursor.index===2&&!findObjectComplete(ABC_FIND_OBJECT_GAME))AppState.cursor.phase='room';if(AppState.cursor.phase==='miniIntro'&&AppState.cursor.index===5&&!letterMazeComplete(DEF_LETTER_MAZE))AppState.cursor.phase='maze';ensureRewardFlow();if(AppState.rewardFlow)next='reward';}view=next;if(view==='reward')rewardReady=Boolean(AppState.rewardFlow?.selected);saveProgress();showScreen();}
 function announceScreen(){const c=AppState.cursor,d=letters[c.index];
  if(view==='home'){setInstruction([ru('welcome')]);return;}
+ if(view==='profile'){setInstruction([ru('giraffe_happy')]);return;}
  if(view==='progress'){setInstruction([ru('dress_giraffe')]);return;}
  if(view==='reward'){const flow=visibleRewardFlow();setInstruction(flow?.selected?[ru(flow.id==='reward_def'?'new_item':'new_clothes'),ru('giraffe_happy')]:[ru('level_complete'),ru('reward'),ru('choose_reward')]);return;}
  if(view==='training'){
@@ -2779,10 +2890,12 @@ function advanceAfterReview(){
 }
 function completeQuestion(){const c=AppState.cursor,q=AppState.question;
  if(c.phase==='lesson'&&q?.type===TRANSLATION_TYPE)return completeTranslationQuestion();
- registerCorrectAnswer(q);
+ const learnedNow=registerCorrectAnswer(q);
+ if(learnedNow)StudentDomain.awardStars(AppState.student,StudentDomain.STAR_REWARDS.letterCompleted,'letter_completed',`letter:${q.letter}`);
  if(c.phase==='lesson'){if(c.step<lessonSteps(letters[c.index]).length-1)c.step++;else c.phase='letterReward';}
  else{AppState.game.recent.push(q.letter);AppState.game.recent=AppState.game.recent.slice(-3);AppState.game.index++;const length=['review','cumulative'].includes(c.phase)?REVIEW_LENGTH:c.phase==='final'?FINAL_LENGTH:MINI_LENGTH;if(AppState.game.index>=length){if(c.phase==='final'){c.phase='results';AppState.completed=true;}else if(c.phase==='review')c.phase='reviewResult';else if(c.phase==='cumulative')c.phase='cumulativeResult';else{c.phase='miniResult';if(c.index!==GHI_END_INDEX)finishBlock();}AppState.game=null;}}
  AppState.question=null;saveProgress();
+ evaluateStudentAchievements();
 }
 function celebrate(){const box=$('#confetti');box.innerHTML=Array.from({length:15},(_,i)=>`<i style="--x:${Math.round((Math.random()-.5)*430)}px;--y:${Math.round((Math.random()-.55)*400)}px;--r:${Math.round(Math.random()*300)}deg;color:${['#e4ad25','#4d9873','#a98acc','#ed9058'][i%4]}">${i%3?'✦':'★'}</i>`).join('');}
 /* Answer and completion stickers share one selection history, never saved. */
@@ -2861,6 +2974,19 @@ function closeModal(){const layer=$('#modal-layer');layer.hidden=true;layer.repl
 function showReset(){openModal(`<div class="modal-head"><h2 id="modal-title">Начать сначала?</h2></div><p>Все звёзды и подарки будут сброшены. Жирафик снова будет без одежды. Настройка звука сохранится.</p><div class="modal-actions"><button class="secondary" data-action="close-modal">Продолжить игру</button><button class="primary" data-action="confirm-reset">Начать заново</button></div>`);}
 function resetProgress(){const sound=AppState.soundEnabled;stopAudio();EffectsManager.stopAll();clearTimeout(transitionTimer);completedLessonCardAudioKeys.clear();lessonCardAudioRun++;lessonCardAudioState={key:null,status:SLIDE_AUDIO_READY};Object.assign(AppState,initialState(),{soundEnabled:sound});rewardReady=false;AudioManager.setEnabled(sound);EffectsManager.setEnabled(sound);closeModal();go('home');}
 function showParentGate(){openModal(`<div class="modal-head"><h2 id="modal-title">Для родителей</h2><button class="icon-button" data-action="close-modal" aria-label="Закрыть">×</button></div><p>Можно удерживать Parents две секунды или ответить:</p><p style="font-size:32px;font-weight:800;color:var(--ink);margin-top:20px">Сколько будет 7 + 5?</p><div class="modal-actions"><button class="secondary" data-action="gate-retry">10</button><button class="primary" data-action="parent-view">12</button><button class="secondary" data-action="gate-retry">14</button></div><p id="gate-message" role="status" style="min-height:24px;margin-top:15px"></p>`);}
+function showLetterDetail(letter){
+ const d=byLetter.get(letter);if(!d||masteryForLetter(letter)<1)return false;
+ const course=AppState.stats[letter],training=AppState.training.progress[letter]||{},mastery=masteryForLetter(letter);
+ openModal(`<div class="modal-head"><h2 id="modal-title">${d.letter} — ${escapeHTML(d.word)}</h2><button class="icon-button" data-action="close-modal" aria-label="Закрыть">×</button></div><div style="font-size:64px;margin:8px 0" aria-hidden="true">${d.emoji}</div><div class="stars" aria-label="Освоение ${mastery} из 3">${'★'.repeat(mastery)}${'☆'.repeat(3-mastery)}</div><p>Правильно: ${(course.correct||0)+(training.correct||0)}</p><p>Ошибок: ${(course.mistakes||0)+(training.mistakes||0)}</p><div class="modal-actions"><button class="primary" data-action="close-modal">Готово</button></div>`);return true;
+}
+function showPremiumInfo(){openModal(`<div class="achievement-celebration"><div class="achievement-icon" aria-hidden="true">💎</div><h2 id="modal-title">Попроси взрослого</h2><p>Этот предмет сможет купить взрослый. Покупки пока не подключены.</p><button class="primary" data-action="close-modal">Понятно</button></div>`);}
+function tryShopItem(id){const item=getItemById(id);if(!item||!shopItemUnlocked(item)||isItemOwned(id))return false;shopPreviewItemId=shopPreviewItemId===id?null:id;showScreen();return true;}
+function buyShopItem(id){
+ const previewed=shopPreviewItemId===id,result=purchaseCatalogItem(id);
+ if(!result.ok){if(result.reason==='premium')showPremiumInfo();return false;}
+ if(previewed)equipItem(id,AppState,false);
+ shopPreviewItemId=null;saveProgress();celebrate();showScreen();return true;
+}
 function renderParentView(){const totals=Object.values(AppState.stats).reduce((a,s)=>({attempts:a.attempts+s.attempts,correct:a.correct+s.correct,mistakes:a.mistakes+s.mistakes}),{attempts:0,correct:0,mistakes:0});
  openModal(`<div class="modal-head"><h2 id="modal-title">Для родителей</h2><button class="icon-button" data-action="close-modal" aria-label="Закрыть">×</button></div><p>Звезда — три связи: найти букву, выбрать картинку и узнать букву по картинке.</p><div class="stats-totals"><div><b>${totals.attempts}</b>Всего ответов</div><div><b>${totals.correct}</b>Правильных</div><div><b>${totals.mistakes}</b>Ошибок</div></div><table class="stats-table"><thead><tr><th>Буква</th><th>Освоение</th><th>Связи</th><th>Ошибки</th></tr></thead><tbody>${letters.map(d=>{const s=AppState.stats[d.letter],status=s.mastery===3?'★ Освоена':!s.attempts?'Ещё впереди':s.practiceDebt?'Повторяем':'Изучаем';return `<tr><td>${escapeHTML(d.letter)}</td><td class="status-tag">${status}</td><td>${s.mastery} / 3</td><td>${s.mistakes}</td></tr>`;}).join('')}</tbody></table><p>При ошибке буква чаще встречается в играх. Исправленный ответ тоже считается успешной связью.</p><p style="margin-top:12px">Озвучка: готовые записи из audio/. Инструкции — по-русски, буквы, звуки и слова — по-английски. Между репликами пауза 0,5 секунды.</p><p style="margin-top:12px">Прогресс хранится только в этом браузере${DEMO?' (отдельный деморежим)':''}.</p><div class="modal-actions"><button class="secondary" data-action="close-modal">В игру</button><button class="secondary" data-action="reset">Сбросить прогресс</button></div>`);
 }
@@ -2874,6 +3000,14 @@ $('#sound-button').addEventListener('click',toggleSound);$('#home-button').inner
 document.addEventListener('click',event=>{if(event.target.closest('.find-object-scene')&&!event.target.closest('button')){const entry=activeFindObjectEntry();if(entry)findObjectPick(null,entry.scene.id);}});
 /* EVENTS */
 const actions={
+ 'open-profile':()=>{shopPreviewItemId=null;profileSection='marius';go('profile');},
+ 'profile-section':button=>{if(PROFILE_SECTIONS.some(section=>section.id===button.dataset.section)){if(profileSection==='shop'&&button.dataset.section!=='shop')shopPreviewItemId=null;profileSection=button.dataset.section;showScreen();}},
+ 'profile-course':()=>go('course'),
+ 'letter-detail':button=>showLetterDetail(button.dataset.letter),
+ 'try-shop-item':button=>tryShopItem(button.dataset.item),
+ 'buy-item':button=>buyShopItem(button.dataset.item),
+ 'premium-info':showPremiumInfo,
+ 'close-achievement':()=>{closeModal();showPendingAchievementCelebration();},
  'river-answer':button=>tapRiverCrossing(button.dataset.letter,button),
  'river-repeat':repeatRiverInstruction,
  'river-continue':continueRiverCrossingGame,

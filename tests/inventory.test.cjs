@@ -6,8 +6,8 @@ const fresh=createContext();
 
 assert.equal(fresh.run('AppState.rewardStateVersion'),3);
 assert.deepEqual(JSON.parse(fresh.run('JSON.stringify(ITEM_SLOTS)')),slots);
-assert.equal(fresh.run('ITEMS.length'),6);
-assert.equal(fresh.run("ITEMS.every(item=>['id','name','slot','asset','collection'].every(key=>Boolean(item[key])))"),true);
+assert.equal(fresh.run('ITEMS.length'),8);
+assert.equal(fresh.run("ITEMS.every(item=>['id','name','category','slot','asset','collection','rarity','currency','unlockCondition'].every(key=>Boolean(item[key])))"),true);
 assert.equal(fresh.run('rewardConfig.every(reward=>Array.isArray(reward.itemIds)&&!reward.options)'),true);
 assert.equal(fresh.run("getItemById('jacket_stars').slot"),'outfit');
 assert.equal(fresh.run("getItemById('accessory_balloon').slot"),'hand_right');
@@ -52,7 +52,7 @@ const hatWardrobe=hatReward.run("AppState.rewardFlow=null;renderWardrobe()");
 assert.ok(hatWardrobe.includes('data-action="unequip"'));
 assert.ok(hatWardrobe.includes('character-art'));
 assert.equal((hatWardrobe.match(/class="item-preview-stage"/g)||[]).length,2);
-assert.equal((hatWardrobe.match(/data-character-context="item-preview"/g)||[]).length,0);
+assert.equal((hatWardrobe.match(/data-character-context="item-preview"/g)||[]).length,2);
 assert.ok(!hatWardrobe.includes('full-canvas-art'));
 hatReward.run("AppState.rewardFlow=null;unequipItem('hat_straw_bow')");
 const unequippedHatReload=createContext({saved:saved(hatReward)});
@@ -109,7 +109,7 @@ assert.equal(migrated.run('AppState.stats.E.correct'),7);
 
 console.log(JSON.stringify({
  passed:true,
- catalogItems:6,
+ catalogItems:8,
  slots,
  genericUnlockEquipUnequip:true,
  headSlotEquipSwitchUnequip:true,

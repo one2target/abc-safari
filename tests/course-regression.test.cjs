@@ -9,7 +9,7 @@ const choiceA={reward_abc:'jacket_stars',reward_def:'accessory_balloon',reward_g
 const otherA={reward_abc:'jacket_racer',reward_def:'accessory_bouquet',reward_ghi:'hat_adventure'};
 const choiceB={reward_abc:'jacket_racer',reward_def:'accessory_bouquet',reward_ghi:'hat_adventure'};
 (async()=>{
- const a=createContext();assert.equal(a.played.length,0);assert.equal(a.run('AppState.version'),3);assert.equal(a.run('AppState.characterState.ownedItems.length'),0);
+ const a=createContext();assert.equal(a.played.length,0);assert.equal(a.run('AppState.version'),4);assert.equal(a.run('AppState.characterState.ownedItems.length'),0);
  a.run('toggleSound();begin()');let phases=[],answers=0,translationAnswers=0,rewards=[],reviews=[];
  for(let guard=0;guard<520;guard++){
   const c=JSON.parse(a.run('JSON.stringify(AppState.cursor)'));phases.push(c.phase);

@@ -39,7 +39,17 @@ const TrainingState=(()=>{
     if(!saved||typeof saved!=='object')return fresh;
     for(const letter of known)if(saved.progress?.[letter])fresh.progress[letter]=restoreLetter(saved.progress[letter]);
     fresh.lastSignature=typeof saved.lastSignature==='string'?saved.lastSignature:null;
-    fresh.history=Array.isArray(saved.history)?saved.history.filter(item=>item&&typeof item.id==='string').slice(-20):[];
+    fresh.history=Array.isArray(saved.history)?saved.history.filter(item=>item&&typeof item.id==='string').slice(-20).map(item=>({
+      id:item.id,
+      completedAt:Number.isFinite(item.completedAt)?item.completedAt:null,
+      letters:Array.isArray(item.letters)?[...new Set(item.letters.filter(letter=>known.includes(letter)))]:[],
+      bestStreak:integer(item.bestStreak),
+      correct:integer(item.correct),
+      mistakes:integer(item.mistakes),
+      attempts:integer(item.attempts)||integer(item.correct)+integer(item.mistakes),
+      perfect:item.perfect===true,
+      signature:typeof item.signature==='string'?item.signature:null
+    })):[];
     if(validSession(saved.activeSession,known)){
       try{fresh.activeSession=JSON.parse(JSON.stringify(saved.activeSession));}catch(_){fresh.activeSession=null;}
     }
@@ -66,7 +76,9 @@ const TrainingState=(()=>{
     state.lastSignature=session.signature||null;
     state.history.push({
       id:session.id,completedAt:session.completedAt,letters:[...(session.seenLetters||[])],
-      bestStreak:session.bestStreak||0,signature:session.signature||null
+      bestStreak:session.bestStreak||0,correct:integer(session.correct),mistakes:integer(session.mistakes),
+      attempts:integer(session.answers)||integer(session.correct)+integer(session.mistakes),
+      perfect:integer(session.mistakes)===0,signature:session.signature||null
     });
     state.history=state.history.slice(-20);
     return session;

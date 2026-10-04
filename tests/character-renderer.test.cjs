@@ -112,7 +112,8 @@ assert.match(trainerSource,/context\.drawImage\(image,0,0,characterConfig\.width
 assert.match(trainerSource,/equip:button=>\{if\(equipItem\(button\.dataset\.item\)\)showScreen\(\);\}/);
 assert.match(trainerSource,/unequip:button=>\{if\(unequipItem\(button\.dataset\.item\)\)showScreen\(\);\}/);
 assert.match(trainerSource,/function wireMedia\(root=document\)[\s\S]*wireCharacterComposites\(root\);/);
-assert.match(trainerSource,/\.item-preview-stage \{position:relative;display:block;/);
+assert.match(trainerSource,/\.item-preview-stage \{position:relative;display:flex;/);
+assert.match(trainerSource,/function renderItemPreview\(item,freshReward=false\)\{[\s\S]*renderCharacter\('item-preview'/);
 assert.match(trainerSource,/\.accessory-art>img \{width:auto;height:240%;left:50%;top:-20%;transform:translateX\(-80%\);\}/);
 
 const runtimeAssets={
@@ -171,7 +172,6 @@ const gameplayScreens=[
  a.run("renderInterlude('miniResult')"),
  a.run("renderInterlude('finalIntro')"),
  a.run('renderHome()'),
- a.run('renderWardrobe()'),
  a.run('renderResults()')
 ];
 for(const screen of gameplayScreens){
@@ -181,11 +181,20 @@ for(const screen of gameplayScreens){
  assert.ok(screen.includes('marius_hat_straw_bow.png'));
 }
 
-// reward_ghi uses one large canvas; choice cards stay on the preview renderer.
+// The wardrobe keeps one large character and renders item cards through the
+// same compositor, so each card is bound to its own item id and asset.
+const wardrobe=a.run('renderWardrobeProfile()');
+assert.ok((wardrobe.match(/class="marius-composite"/g)||[]).length>1);
+assert.ok(wardrobe.includes('data-character-context="item-preview"'));
+assert.ok(wardrobe.includes('giraffe_jacket_stars.png'));
+assert.ok(wardrobe.includes('giraffe_jacket_racer.png'));
+
+// reward_ghi uses one large canvas plus two shared compositor thumbnails.
 a.run("AppState.completedBlocks=['reward_abc','reward_def','reward_ghi'];AppState.claimedRewards=['reward_abc','reward_def'];AppState.rewardFlow={id:'reward_ghi',resume:'finalIntro',selected:null}");
 const headReward=a.run('renderReward()');
-assert.equal((headReward.match(/class="marius-composite"/g)||[]).length,1);
+assert.equal((headReward.match(/class="marius-composite"/g)||[]).length,3);
 assert.equal((headReward.match(/class="item-preview-stage"/g)||[]).length,2);
+assert.equal((headReward.match(/data-character-context="item-preview"/g)||[]).length,2);
 assert.ok(headReward.includes('marius_hat_straw_bow.png'));
 assert.ok(headReward.includes('marius_hat_adventure.png'));
 const rewardSources=headReward.match(/data-marius-sources="([^"]+)"/)?.[1].split('|')||[];

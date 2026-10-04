@@ -23,6 +23,8 @@
 | `play/training-state.js` | Восстановление и запись отдельной тренировочной статистики внутри существующего AppState. |
 | `play/training-engine.js` | Чистая сборка вариативной сессии, взвешенный выбор, покрытие пула, distractors и отложенный повтор после ошибки. |
 | `play/training.css` | Адаптивные стили CTA на главной, быстрых заданий, блица и итогов тренировки. |
+| `play/student-domain.js` | Чистая доменная логика профиля: звёзды, покупки, mastery, streak, уровни, достижения и storage adapter. |
+| `play/student-profile.css` | Адаптивные стили кабинета «Мой Мариус», A–Z, гардероба, достижений и магазина. |
 | `play/audio-manager.js` | `createAudioManager()`: воспроизведение записей и речевой fallback. Загружается после каталога ресурсов. |
 | `play/manifest.webmanifest` | Название приложения, запуск, область действия, цвета и иконки для установки на домашний экран. |
 | `README.md` | Запуск, пользовательские сценарии и описание сохранений. |
@@ -103,7 +105,7 @@
 - `stats` по каждой букве: `attempts`, `correct`, `mistakes`, `mastery`, `skills`, `practiceDebt`. Итоги для родителей вычисляет `renderParentView()`.
 - `game`, `question`, `reviews`, `questionSerial` сохраняют позицию обычных заданий; `balloonPop` хранит phase/target/score/quickOrder/completion; `riverCrossing` хранит 12 созданных вопросов, текущий индекс, число правильных ответов, ошибки текущего задания и completion; `training` хранит активную сессию, историю и адаптивную статистику `letterName` / `sound` / `word`; `started`, `completed`, `soundEnabled` — общие флаги.
 - Награды: `characterState.ownedItems`, стандартные слоты `characterState.equipped`, `completedBlocks`, `claimedRewards`, `rewardFlow`.
-- `localStorage`: `alfie-abc-v1`; при `?demo=1` — отдельный `alfie-abc-demo-v1`. Общая версия состояния остаётся 3; загрузчик принимает версии 1–3. Для сохранений v1/v2 прежние lesson steps 2–4 сдвигаются на два места. Завершённое A–F продолжает с G, завершённое A–I или сохранение в прежнем финале — с J; статистика, `completedBlocks`, inventory и экипировка сохраняются. Новые `game.poolLetters` / `game.letterOrder` восстанавливают точную позицию review. Инвентарь отдельно мигрирует `migrateRewards()` с `REWARD_STATE_VERSION = 3`.
+- Storage adapter использует прежний ключ `alfie-abc-v1`; при `?demo=1` — отдельный `alfie-abc-demo-v1`. Общая версия состояния — 4; загрузчик принимает версии 1–4. Для сохранений v1/v2 прежние lesson steps 2–4 сдвигаются на два места. Завершённое A–F продолжает с G, завершённое A–I или сохранение в прежнем финале — с J; статистика, `completedBlocks`, inventory и экипировка сохраняются. Новые `game.poolLetters` / `game.letterOrder` восстанавливают точную позицию review. Инвентарь отдельно мигрирует `migrateRewards()` с `REWARD_STATE_VERSION = 3`, профиль — `migrateStudentState()`.
 - При невозможности записи состояние остаётся в памяти вкладки, показывается `#storage-notice`. Сохранение также вызывается при скрытии страницы и `pagehide`. Сброс сохраняет настройку звука.
 - `view`, блокировки, таймеры и история выбора стикеров — временные переменные вне сохранения.
 
@@ -288,9 +290,19 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 - `tests/lesson-continue.test.cjs`: единое состояние card-кнопки `waitingForAudio` → `readyToContinue` для `letter`, `word` и `wordMeaning`, отдельный reset каждого слайда, блокировка перехода до завершения Promise обязательной аудиоочереди, повтор без повторной блокировки, mute/reset, A/B/M/Z и responsive/animation CSS.
 - `tests/alphabet-reviews.test.cjs`: порядок A–Z, конфигурации всех review, шесть разных типов, диапазоны, уникальный cumulative sampling, переходы, restore review и сохранение inventory при A–I → J.
 - `tests/balloon-pop-engine.test.cjs`: цели/дистракторы, обязательный target, score и переходы, persistence, reward gate, demo isolation и responsive CSS.
-- `tests/inventory.test.cjs`: шесть предметов, восемь слотов, ownership/lock новой награды, head equip/unequip, перезагрузка и миграция rewardStateVersion 2 → 3.
+- `tests/inventory.test.cjs`: восемь предметов, восемь слотов, ownership/lock новой награды, head equip/unequip, перезагрузка и миграция rewardStateVersion 2 → 3.
 - `tests/character-assets.test.cjs`: manifest, наличие, Git tracking и SHA-256 семи ключевых character PNG; также автоматически запускается из `tests/character-renderer.test.cjs`.
 - `tests/character-renderer.test.cjs`: Canvas compositor на игровых экранах, порядок draw calls, замена outfit/head/hand_right, снятие, reload и изоляция сюжетных иллюстраций.
+
+## 22. Личный кабинет ученика
+
+- `play/student-domain.js` — чистые конфигурации и операции звёзд, транзакций, покупок, mastery, streak, уровней и достижений; здесь же находится заменяемый storage adapter.
+- `play/student-profile.css` — responsive UI кабинета, навигации, A–Z-коллекции, статистики, гардероба, достижений и магазина.
+- `play/index.html` сохраняет роль composition root: связывает StudentDomain с существующими `AppState`, Training, RewardState и единым `renderCharacter()`.
+- Общая версия AppState — 4. При загрузке v1–v3 сохраняются прежние курс, Training, owned/equipped items и награды; исторически завершённые буквы/блоки получают идемпотентные star-транзакции.
+- Магазин показывает только предметы с выполненным `unlockCondition`. Невыбранная награда появляется после соответствующего `completedBlock`; фоны доступны сразу. Реальные платежи отсутствуют.
+- `tests/student-domain.test.cjs` покрывает экономику, повторные награды, покупки, ограничения equip, достижения, mastery, streak, миграцию и reload.
+- `tests/shop.test.cjs` покрывает раздельные preview/purchase/equip, точный дефицит, outfit/background сценарии, premium и повторную покупку, owned controls, reload и itemId-specific thumbnails общего renderer.
 
 ## 17. Лабиринт D/E/F
 

@@ -1,3 +1,15 @@
+# «Мой Мариус» — 4 октября 2026
+
+Из корня репозитория выполнен полный набор `for test in tests/*.test.cjs; do node "$test" || exit 1; done`, включая `tests/student-domain.test.cjs` и `tests/shop.test.cjs`. Проверены одноразовые star sources, точная отрицательная транзакция `shop_purchase`, атомарная покупка, недостаточный баланс, повторная покупка без списания, premium guard, equip owned/unowned, достижения без повторной награды, mastery, streak, миграция AppState v1–v3 и RewardState, сохранение owned/equipped предметов и полный reload.
+
+`shop.test.cjs` покрывает все 16 запрошенных случаев и дополнительные catalog-wide проверки: preview без ownership и без persistent equip, очистку после выхода/reload, защиту outfit/background, сценарии куртки 10/30 и 35/30, сценарии фона 20/28 и 30/28, owned controls, появление в гардеробе и соответствие thumbnail каждому `itemId`. Обе куртки проверяются по разным `data-marius-assets`, а все восемь предметов — по собственному catalog asset.
+
+Существующие course, Training, room, maze, Balloon Pop, river crossing, inventory, translation, renderer и character asset integrity tests проходят. `git diff --check` и `node --check` для новых JS-модулей проходят; PNG и их SHA-256 manifest не изменялись. Проект остаётся статическим и отдельной build-команды не имеет.
+
+Встроенный браузер проверил `/play/`: вход в «Мой Мариус», магазин при нулевом балансе, точный дефицит, доступную примерку при disabled покупке и очистку preview после перехода в другой раздел. Предыдущая проверка кабинета на 390×844 остаётся актуальной; character PNG и их manifest не менялись.
+
+---
+
 # Переправа Мариуса J/K/L — 29 сентября 2026
 
 Команды из корня репозитория:
@@ -62,7 +74,7 @@
 - `node tests/course-regression.test.cjs`
 - `node tests/balloon-pop-engine.test.cjs`
 
-Все девять проверок проходят. `character-assets.test.cjs` сверяет наличие, Git tracking и SHA-256 семи ключевых PNG с `play/images/character-assets.sha256.json`; он также автоматически вызывается из `character-renderer.test.cjs`. Character renderer: одиннадцать inventory-совместимых экранных контекстов используют один Canvas compositor; проверены обе куртки, bouquet/balloon, обе head-шляпы, замена внутри слота, одновременные outfit + head + hand_right, снятие, reload, reward_ghi, лабиринт и изоляция сюжетных иллюстраций. Regression test проверяет восемь acceptance-комбинаций, intrinsic canvas 1024×1536, `clearRect`, каждый `drawImage(..., 0, 0, 1024, 1536)`, повторную полную отрисовку после смены equipment и отсутствие большого multi-img CSS stack. Preview-карточки остаются отдельной системой.
+Все девять проверок проходят. `character-assets.test.cjs` сверяет наличие, Git tracking и SHA-256 семи ключевых PNG с `play/images/character-assets.sha256.json`; он также автоматически вызывается из `character-renderer.test.cjs`. Character renderer: одиннадцать inventory-совместимых экранных контекстов используют один Canvas compositor; проверены обе куртки, bouquet/balloon, обе head-шляпы, замена внутри слота, одновременные outfit + head + hand_right, снятие, reload, reward_ghi, лабиринт и изоляция сюжетных иллюстраций. Regression test проверяет восемь acceptance-комбинаций, intrinsic canvas 1024×1536, `clearRect`, каждый `drawImage(..., 0, 0, 1024, 1536)`, повторную полную отрисовку после смены equipment и отсутствие большого multi-img CSS stack. В текущей версии item preview-карточки также используют этот compositor в компактном контексте.
 
 Значения слов: для A–I проверены девять русских MP3, все 15 новых Goat/Hat/Iguana записей и пути, `g_goat` / `h_hat` / `i_iguana`, отдельный `i_sound.mp3` для /ɪ/, карточка без видимого русского текста, English → пауза → Russian и repeat, meaning quiz из трёх перемешанных visuals, retry без учебного штрафа, правильная русская запись, mute, отсутствие translation TTS и безопасный сдвиг старых lesson steps.
 
