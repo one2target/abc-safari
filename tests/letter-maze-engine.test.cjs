@@ -7,11 +7,17 @@ const vm=require('node:vm');
 const {createContext}=require('./support/trainer-harness.cjs');
 
 const root=path.resolve(__dirname,'..');
+const pageSource=fs.readFileSync(path.join(root,'play/index.html'),'utf8');
 const source=['play/assets.js','play/letter-maze-scenes.js','play/letter-maze-game.js']
   .map(file=>fs.readFileSync(path.join(root,file),'utf8')).join('\n');
 const context=vm.createContext({});
 vm.runInContext(`${source}\nthis.scene=LETTER_MAZE_SCENES.campDEF;this.engine=LetterMazeGame;`,context);
 const {scene,engine}=context;
+
+const mazeBuild='letter-maze-def3';
+assert.match(pageSource,new RegExp(`<link rel="stylesheet" href="\\./letter-maze-game\\.css\\?v=${mazeBuild}">`));
+assert.match(pageSource,new RegExp(`<script src="\\./letter-maze-scenes\\.js\\?v=${mazeBuild}"></script>`));
+assert.match(pageSource,new RegExp(`<script src="\\./letter-maze-game\\.js\\?v=${mazeBuild}"></script>`));
 
 assert.equal(engine.validate(scene),true);
 assert.equal(scene.title,'Лабиринт букв');
@@ -127,6 +133,15 @@ assert.match(css,/\.letter-maze-label\.is-word img \{[\s\S]*object-fit:contain;p
 assert.match(css,/\.letter-maze-character \*[^{]*\{pointer-events:none!important;\}/);
 assert.match(css,/transition:left \.15s[\s\S]*top \.15s/);
 
+const demo=createContext({search:'?demo=1&screen=maze_def'});
+assert.equal(demo.run('DEMO_MAZE_PREVIEW'),true);
+assert.equal(demo.run('DEMO_SHORTCUT_ACTIVE'),true);
+assert.equal(demo.run('view'),'course');
+assert.equal(demo.run('AppState.cursor.phase'),'maze');
+assert.equal(demo.run('letterMazeState().currentRound'),0);
+assert.equal(demo.run('letterMazeState().currentCell'),'start');
+assert.ok(demo.run('renderLetterMazeGame()').includes('maze-d.png'));
+
 ;(async()=>{
   const audible=createContext();
   audible.run("view='course';AppState.cursor={phase:'maze',index:5,step:4};unlockAudio();AudioManager.stop();selectLetterMazeCell('d01',DEF_LETTER_MAZE.id)");
@@ -170,6 +185,7 @@ assert.match(css,/transition:left \.15s[\s\S]*top \.15s/);
     muteRespected:true,
     maxConcurrentAudio:audible.stats().maxActive,
     russianInterface:true,
+    synchronizedCacheVersion:mazeBuild,
     coordinateHitTest:true,
     sequentialMovement:true,
     completion:true,

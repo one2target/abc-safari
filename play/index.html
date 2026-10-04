@@ -1515,7 +1515,7 @@ main {
 }
 </style>
 <link rel="stylesheet" href="./hidden-object-game.css">
-<link rel="stylesheet" href="./letter-maze-game.css">
+<link rel="stylesheet" href="./letter-maze-game.css?v=letter-maze-def3">
 <link rel="stylesheet" href="./balloon-pop-game.css">
 <link rel="stylesheet" href="./river-crossing-game.css?v=river-finale3">
 <link rel="stylesheet" href="./training.css?v=training-layout-v3">
@@ -1533,8 +1533,8 @@ main {
 <script src="./audio-manager.js?v=river-d868880e"></script>
 <script src="./find-object-scenes.js"></script>
 <script src="./hidden-object-game.js"></script>
-<script src="./letter-maze-scenes.js"></script>
-<script src="./letter-maze-game.js"></script>
+<script src="./letter-maze-scenes.js?v=letter-maze-def3"></script>
+<script src="./letter-maze-game.js?v=letter-maze-def3"></script>
 <script src="./balloon-pop-game.js?v=training-v1"></script>
 <script src="./river-crossing-game.js?v=river-training-v1"></script>
 <script src="./training-config.js?v=training-v1"></script>
@@ -1584,10 +1584,11 @@ const letters = [
 const DEMO_LETTER_INDEX=DEMO?letters.findIndex(item=>item.letter===DEMO_LETTER):-1;
 const DEMO_REWARD_PREVIEW=DEMO&&DEMO_SCREEN==='reward_ghi';
 const DEMO_INVENTORY_PREVIEW=DEMO&&DEMO_SCREEN==='inventory';
+const DEMO_MAZE_PREVIEW=DEMO&&DEMO_SCREEN==='maze_def';
 const DEMO_BALLOON_PREVIEW=DEMO&&DEMO_SCREEN==='balloon_ghi';
 const DEMO_RIVER_PREVIEW=DEMO&&DEMO_SCREEN==='river_jkl';
 const DEMO_TRAINING_PREVIEW=DEMO&&DEMO_SCREEN==='training';
-const DEMO_SHORTCUT_ACTIVE=DEMO&&(DEMO_LETTER_INDEX>=0||DEMO_REWARD_PREVIEW||DEMO_INVENTORY_PREVIEW||DEMO_BALLOON_PREVIEW||DEMO_RIVER_PREVIEW||DEMO_TRAINING_PREVIEW);
+const DEMO_SHORTCUT_ACTIVE=DEMO&&(DEMO_LETTER_INDEX>=0||DEMO_REWARD_PREVIEW||DEMO_INVENTORY_PREVIEW||DEMO_MAZE_PREVIEW||DEMO_BALLOON_PREVIEW||DEMO_RIVER_PREVIEW||DEMO_TRAINING_PREVIEW);
 const REWARD_RENDER_TOKEN=String(Date.now());
 const DEMO_REWARD_FLOW={id:'reward_ghi',resume:'course',selected:null};
 let demoRewardHeadAsset='marius_hat_adventure';
@@ -1890,6 +1891,7 @@ function showPendingAchievementCelebration(){
 }
 const completedTrainingLetters=(state=AppState)=>letters.filter(d=>state.stats[d.letter].mastery===3).map(d=>d.letter);
 if(DEMO_LETTER_INDEX>=0){AppState.cursor={phase:'lesson',index:DEMO_LETTER_INDEX,step:0};AppState.question=null;AppState.game=null;AppState.rewardFlow=null;}
+if(DEMO_MAZE_PREVIEW){AppState.cursor={phase:'maze',index:5,step:lessonSteps(letters[5]).length-1};AppState.mazeGames[DEF_LETTER_MAZE.id]=LetterMazeGame.initialState(DEF_LETTER_MAZE);AppState.question=null;AppState.game=null;AppState.rewardFlow=null;}
 if(DEMO_BALLOON_PREVIEW){AppState.cursor={phase:'balloon_ghi',index:GHI_END_INDEX,step:lessonSteps(letters[GHI_END_INDEX]).length-1};AppState.balloonPop=blankBalloonPop();AppState.question=null;AppState.game=null;AppState.rewardFlow=null;}
 if(DEMO_RIVER_PREVIEW){AppState.cursor={phase:'river_jkl',index:JKL_END_INDEX,step:lessonSteps(letters[JKL_END_INDEX]).length-1};AppState.riverCrossing=blankRiverCrossing();AppState.question=null;AppState.game=null;AppState.rewardFlow=null;}
 if(DEMO_TRAINING_PREVIEW){for(const d of letters.slice(0,8)){AppState.stats[d.letter].skills=[...CORE_TYPES];AppState.stats[d.letter].mastery=CORE_TYPES.length;}AppState.started=true;AppState.rewardFlow=null;AppState.training.activeSession=TrainingEngine.createSession(completedTrainingLetters(),AppState.training.progress,TRAINING_CONFIG,Math.random,AppState.training.lastSignature);}
@@ -1921,7 +1923,7 @@ function courseRiverActive(){return view==='course'&&AppState.cursor.phase==='ri
 function riverContextActive(){return trainingRiverActive()||courseRiverActive();}
 function activeRiverConfig(){return trainingRiverActive()?trainingRiverConfig():JKL_RIVER_GAME;}
 function activeRiverState(){return trainingRiverActive()?ensureTrainingRiverState():riverCrossingState();}
-let view=DEMO_TRAINING_PREVIEW?'training':DEMO_LETTER_INDEX>=0||DEMO_BALLOON_PREVIEW||DEMO_RIVER_PREVIEW?'course':DEMO_REWARD_PREVIEW?'reward':DEMO_INVENTORY_PREVIEW?'progress':AppState.rewardFlow?'reward':'home',lastView='home',profileSection='marius',shopPreviewItemId=null,answerLocked=false,transitionTimer=null,viewEpoch=0,restoreFocus=null,rewardReady=Boolean(visibleRewardFlow()?.selected);
+let view=DEMO_TRAINING_PREVIEW?'training':DEMO_LETTER_INDEX>=0||DEMO_MAZE_PREVIEW||DEMO_BALLOON_PREVIEW||DEMO_RIVER_PREVIEW?'course':DEMO_REWARD_PREVIEW?'reward':DEMO_INVENTORY_PREVIEW?'progress':AppState.rewardFlow?'reward':'home',lastView='home',profileSection='marius',shopPreviewItemId=null,answerLocked=false,transitionTimer=null,viewEpoch=0,restoreFocus=null,rewardReady=Boolean(visibleRewardFlow()?.selected);
 const SLIDE_AUDIO_WAITING='waitingForAudio',SLIDE_AUDIO_READY='readyToContinue';
 const completedLessonCardAudioKeys=new Set();
 let lessonCardAudioState={key:null,status:SLIDE_AUDIO_READY},lessonCardAudioRun=0;
