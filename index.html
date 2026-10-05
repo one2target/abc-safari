@@ -3,9 +3,88 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="description" content="ABC Safari — игровой онлайн-тренажёр английского алфавита для детей вместе с жирафом Мариусом." />
-  <title>ABC Safari — путешествие по английскому алфавиту</title>
+  <meta name="description" content="Игровой онлайн-тренажёр английских букв для детей: слушаем буквы и звуки, учим первые слова, играем и получаем награды вместе с жирафом Мариусом." />
+  <title>Английский алфавит для детей — игровой тренажёр ABC Safari</title>
+  <link rel="canonical" href="https://abcsafari.ru/" />
   <link rel="icon" type="image/png" href="/play/icon-192.png" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="ru_RU" />
+  <meta property="og:site_name" content="ABC Safari" />
+  <meta property="og:title" content="Английский алфавит для детей — игровой тренажёр ABC Safari" />
+  <meta property="og:description" content="Игровой онлайн-тренажёр английских букв для детей: слушаем буквы и звуки, учим первые слова, играем и получаем награды вместе с жирафом Мариусом." />
+  <meta property="og:url" content="https://abcsafari.ru/" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Английский алфавит для детей — игровой тренажёр ABC Safari" />
+  <meta name="twitter:description" content="Игровой онлайн-тренажёр английских букв для детей: слушаем буквы и звуки, учим первые слова, играем и получаем награды вместе с жирафом Мариусом." />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://abcsafari.ru/#website",
+        "name": "ABC Safari",
+        "url": "https://abcsafari.ru/",
+        "inLanguage": "ru"
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://abcsafari.ru/play/#application",
+        "name": "ABC Safari",
+        "url": "https://abcsafari.ru/play/",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Web",
+        "inLanguage": "ru"
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://abcsafari.ru/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "С какого возраста можно учить английские буквы?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Ориентируйтесь не только на возраст, но и на интерес ребёнка. ABC Safari подходит для первого знакомства с буквами, а взрослый может помочь на старте."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Нужно ли ребёнку знать английский перед началом?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Нет. Тренажёр начинает с базовых букв, их названий и простых слов, поэтому предварительная подготовка не требуется."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Чем название английской буквы отличается от её звука?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Название — это то, как букву называют в алфавите, а звук — то, как она может звучать в слове. В заданиях можно услышать и то и другое."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Можно ли заниматься с телефона?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Да. Сайт адаптирован для телефона и планшета; для занятий понадобится включённый звук."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Нужно ли проходить весь алфавит сразу?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Нет. Обучение разбито на небольшие этапы, а к уже изученным буквам можно возвращаться в повторениях и играх."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
   <style>
     :root{
       --bg:#FFF9EE;
@@ -290,6 +369,22 @@
       color:#536058;font-size:14px
     }
 
+    /* Parent guide and FAQ */
+    .guide-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:22px;align-items:start}
+    .guide-card,.faq-card{
+      background:rgba(255,255,255,.9);border:1px solid var(--line);border-radius:var(--radius);
+      padding:34px;box-shadow:var(--shadow-sm)
+    }
+    .guide-card p{font-size:17px;color:var(--muted);margin-bottom:16px}
+    .guide-card p:last-child{margin-bottom:0}
+    .faq-list{display:grid;gap:10px}
+    .faq-list details{border:1px solid var(--line);border-radius:16px;background:#fff;padding:0 18px}
+    .faq-list summary{cursor:pointer;font-weight:900;padding:17px 30px 17px 0;position:relative;list-style:none}
+    .faq-list summary::-webkit-details-marker{display:none}
+    .faq-list summary:after{content:"+";position:absolute;right:0;top:14px;color:var(--green);font-size:23px}
+    .faq-list details[open] summary:after{content:"−"}
+    .faq-list p{color:var(--muted);margin:0;padding:0 0 17px;font-size:15px}
+
     /* CTA */
     .final-cta{padding-top:82px;padding-bottom:82px}
     .cta-box{
@@ -353,7 +448,7 @@
       .mobile-menu.open{display:grid;gap:4px}
       .mobile-menu a{padding:12px 10px;border-radius:12px;font-weight:800}
       .mobile-menu .btn{margin-top:8px}
-      .hero-grid,.reward-panel,.progress-grid,.cta-box{grid-template-columns:1fr}
+      .hero-grid,.reward-panel,.progress-grid,.cta-box,.guide-grid{grid-template-columns:1fr}
       .hero{padding-top:38px}
       .hero-art{min-height:520px}
       .reward-panel{padding:36px}
@@ -446,8 +541,8 @@
       <div class="container hero-grid">
         <div class="hero-copy">
           <div class="eyebrow"><span class="eyebrow-dot"></span> Играем • Учимся • Получаем награды</div>
-          <h1>Отправляемся в&nbsp;путешествие по&nbsp;<span class="accent">английскому алфавиту</span></h1>
-          <p class="lead">ABC Safari помогает ребёнку познакомиться с английскими буквами через короткие игровые задания вместе с жирафом Мариусом.</p>
+          <h1><span class="accent">Английский алфавит</span> для детей — учим буквы через игру</h1>
+          <p class="lead">ABC Safari — игровой тренажёр, в котором ребёнок знакомится с английскими буквами, слушает буквы и звуки и запоминает первые английские слова в коротких заданиях.</p>
           <a class="btn btn-primary btn-big" data-trainer-link href="/play/">
             Начать заниматься
             <span class="btn-icon" aria-hidden="true">▶</span>
@@ -461,7 +556,7 @@
           <div class="float-card float-a" aria-hidden="true">A</div>
           <div class="float-card float-b" aria-hidden="true">B</div>
           <div class="float-card float-c" aria-hidden="true">C</div>
-          <img src="play/images/marius-captain.png" alt="Marius as a ship captain" />
+          <img src="play/images/marius-captain.png" alt="Жираф Мариус изучает английские буквы" />
         </div>
       </div>
     </section>
@@ -498,7 +593,7 @@
       <div class="container">
         <div class="reward-panel reveal">
           <div class="reward-visual">
-            <img src="play/images/marius-traveler.png" loading="lazy" alt="Marius as a traveler" />
+            <img src="play/images/marius-traveler.png" loading="lazy" alt="Жираф Мариус в путешествии" />
             <div class="item-card item-1" aria-label="Куртка">
               <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M17 12 24 8l7 4 7 8-5 5-3-4v18H18V21l-3 4-5-5 7-8Z"/></svg>
               Куртка
@@ -623,11 +718,49 @@
       </div>
     </section>
 
+    <section class="section section--soft" aria-labelledby="parent-guide-title">
+      <div class="container guide-grid">
+        <article class="guide-card reveal">
+          <span class="eyebrow">Спокойный темп обучения</span>
+          <h2 id="parent-guide-title">Как ABC Safari помогает учить английские буквы</h2>
+          <p>ABC Safari — игровой тренажёр английского алфавита, созданный для первых самостоятельных занятий ребёнка. На каждом этапе ребёнок видит английскую букву, слышит её название и отдельный звук, а затем знакомится с простым английским словом. Так буква связывается не только с формой на экране, но и с живым звучанием и понятным примером.</p>
+          <p>После знакомства материал закрепляется в коротких игровых заданиях: нужно узнать букву, выбрать подходящую картинку или вспомнить услышанное. Тренажёр регулярно возвращает уже изученные буквы в повторения и мини-игры, поэтому ребёнку не требуется проходить весь алфавит сразу. Обучение идёт небольшими этапами, прогресс сохраняется в браузере, а награды помогают видеть результат и с интересом переходить к следующей букве. Родитель может быть рядом в начале, а затем позволить ребёнку двигаться в удобном темпе.</p>
+        </article>
+
+        <div class="faq-card reveal" id="faq">
+          <span class="eyebrow">Частые вопросы</span>
+          <h2>Вопросы родителей</h2>
+          <div class="faq-list">
+            <details>
+              <summary>С какого возраста можно учить английские буквы?</summary>
+              <p>Ориентируйтесь не только на возраст, но и на интерес ребёнка. ABC Safari подходит для первого знакомства с буквами, а взрослый может помочь на старте.</p>
+            </details>
+            <details>
+              <summary>Нужно ли ребёнку знать английский перед началом?</summary>
+              <p>Нет. Тренажёр начинает с базовых букв, их названий и простых слов, поэтому предварительная подготовка не требуется.</p>
+            </details>
+            <details>
+              <summary>Чем название английской буквы отличается от её звука?</summary>
+              <p>Название — это то, как букву называют в алфавите, а звук — то, как она может звучать в слове. В заданиях можно услышать и то и другое.</p>
+            </details>
+            <details>
+              <summary>Можно ли заниматься с телефона?</summary>
+              <p>Да. Сайт адаптирован для телефона и планшета; для занятий понадобится включённый звук.</p>
+            </details>
+            <details>
+              <summary>Нужно ли проходить весь алфавит сразу?</summary>
+              <p>Нет. Обучение разбито на небольшие этапы, а к уже изученным буквам можно возвращаться в повторениях и играх.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="section final-cta">
       <div class="container">
         <div class="cta-box reveal">
           <div class="cta-art">
-            <img src="play/images/marius-surfer.png" loading="lazy" alt="Marius as a surfer" />
+            <img src="play/images/marius-surfer.png" loading="lazy" alt="Жираф Мариус отправляется в путешествие по английскому алфавиту" />
           </div>
           <div class="cta-copy">
             <h2>Первая буква уже ждёт!</h2>
@@ -647,11 +780,10 @@
         <div class="copyright" style="margin-top:10px">© ABC Safari</div>
       </div>
       <div class="footer-links">
-        <a href="#">О проекте</a>
+        <a href="/about/">О проекте</a>
         <a href="#parents">Родителям</a>
-        <a href="#">Контакты</a>
-        <a href="#">Политика конфиденциальности</a>
-        <a href="#">Условия использования</a>
+        <a href="/contacts/">Контакты</a>
+        <a href="/privacy/">Политика конфиденциальности</a>
       </div>
     </div>
   </footer>
