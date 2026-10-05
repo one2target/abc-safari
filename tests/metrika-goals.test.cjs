@@ -3,6 +3,7 @@ const {createContext}=require('./support/trainer-harness.cjs');
 
 const learning=createContext();
 learning.run('window.metricCalls=[];window.ym=(...args)=>window.metricCalls.push(args)');
+assert.equal(learning.run('window.metricCalls.length'),0,'opening /play must not emit start_learning');
 learning.run('begin()');
 assert.equal(learning.run('view'),'course');
 assert.equal(learning.run('window.metricCalls.length'),1);
@@ -34,6 +35,10 @@ assert.equal(blocked.run('view'),'course');
 blocked.run("for(const letter of ['A','B','C']){AppState.stats[letter].skills=[...CORE_TYPES];AppState.stats[letter].mastery=3}");
 assert.doesNotThrow(()=>blocked.run('startTraining(false)'));
 assert.equal(blocked.run('view'),'training');
+blocked.run("AppState.cursor={phase:'lesson',index:1,step:lessonSteps(letters[1]).length-1};AppState.stats.B.skills=['find','letterPicture'];AppState.stats.B.mastery=2;AppState.question={type:'pictureLetter',letter:'B',options:['A','B','C'],hadMistake:false,serial:0}");
+assert.doesNotThrow(()=>blocked.run('completeQuestion()'));
+assert.equal(blocked.run('AppState.stats.B.mastery'),3);
+assert.equal(blocked.run('AppState.cursor.phase'),'letterReward');
 
 const unavailable=createContext();
 assert.equal(unavailable.run("sendMetrikaGoal('start_learning')"),false);

@@ -263,6 +263,22 @@ main {
 .home-actions .text-button {
   width:100%;
 }
+.home-settings-button {
+  align-self:center;
+  min-height:48px;
+  margin-top:14px;
+  padding:10px 16px;
+  border-radius:16px;
+  background:transparent;
+  color:#647970;
+  font-size:14px;
+  font-weight:750;
+  letter-spacing:.02em;
+}
+.home-settings-button:hover {
+  background:#edf4ef;
+  color:var(--green);
+}
 .hero-scene {
   position:relative;
   background:var(--mint);
@@ -880,6 +896,39 @@ main {
   min-width:125px;
   min-height:64px;
   font-size:15px;
+}
+.settings-modal {
+  width:min(100%,400px);
+}
+.settings-list {
+  display:grid;
+  gap:8px;
+}
+.settings-reset-button {
+  min-height:54px;
+  border-radius:17px;
+  background:#edf4ef;
+  color:var(--ink);
+  padding:14px 16px;
+  text-align:left;
+  font-size:16px;
+  font-weight:750;
+}
+.settings-reset-button:hover {
+  background:#e3ece6;
+}
+.danger-button {
+  min-height:60px;
+  border-radius:20px;
+  background:#b84b45;
+  color:#fff;
+  padding:15px 25px;
+  font-size:16px;
+  font-weight:800;
+  box-shadow:0 5px 0 #7c302c;
+}
+.danger-button:hover {
+  background:#a63f3a;
 }
 .stats-totals {
   display:grid;
@@ -2206,7 +2255,7 @@ function renderTrainingHomeCard(){
  const unlockLetter=letters[Math.max(0,TRAINING_CONFIG.minCompletedLetters-1)]?.letter||String(TRAINING_CONFIG.minCompletedLetters);
  return `<div class="training-home-card"><button class="primary training-button" data-action="start-training" ${unlocked?'':'disabled'}><span aria-hidden="true">🎯</span><span>${resumable?'Продолжить тренировку':'Тренировка'}</span></button><p>${unlocked?'Повтори изученные буквы':`Откроется после буквы ${escapeHTML(unlockLetter)}`}</p></div>`;
 }
-function renderHome(){return `<section class="screen"><div class="home"><div class="home-copy"><p class="eyebrow">A little adventure in English</p><h1>ABC<br><em>Safari</em></h1><p class="subline">Учим буквы вместе с жирафиком</p><div class="home-actions"><button class="primary" data-action="start">${AppState.started?'Продолжить':'Начать'} ${icons.arrow}</button><button class="primary marius-home-button" data-action="open-profile"><span aria-hidden="true">🦒</span><span>Мой Мариус</span></button>${AppState.started?'<button class="text-button" data-action="reset">Начать заново</button>':''}${renderTrainingHomeCard()}</div></div><div class="hero-scene">${renderCharacter("home")}</div></div>${journeyStrip()}</section>`;}
+function renderHome(){return `<section class="screen"><div class="home"><div class="home-copy"><p class="eyebrow">A little adventure in English</p><h1>ABC<br><em>Safari</em></h1><p class="subline">Учим буквы вместе с жирафиком</p><div class="home-actions"><button class="primary" data-action="start">${AppState.started?'Продолжить':'Начать'} ${icons.arrow}</button><button class="primary marius-home-button" data-action="open-profile"><span aria-hidden="true">🦒</span><span>Мой Мариус</span></button>${renderTrainingHomeCard()}<button class="home-settings-button" data-action="settings">⚙ Настройки</button></div></div><div class="hero-scene">${renderCharacter("home")}</div></div>${journeyStrip()}</section>`;}
 const PROFILE_SECTIONS=Object.freeze([
  {id:'marius',icon:'🏠',label:'Мариус'},{id:'alphabet',icon:'🔤',label:'Моя азбука'},
  {id:'training',icon:'🎯',label:'Тренировки'},{id:'wardrobe',icon:'🎒',label:'Гардероб'},
@@ -3010,9 +3059,10 @@ function toggleSound(){
 }
 function openProgress(){if(view==='progress'){go(lastView);return;}lastView=view;go('progress');}
 /* Dialogs trap focus, support Escape, and always confirm an explicit reset. */
-function openModal(html){if(answerLocked)go('course');stopAudio();const layer=$('#modal-layer');if(layer.hidden)restoreFocus=document.activeElement;layer.innerHTML=`<section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" lang="ru">${html}</section>`;layer.hidden=false;$('#app').inert=true;layer.querySelector('button')?.focus();wireMedia();}
+function openModal(html,modalClass=''){if(answerLocked)go('course');stopAudio();const layer=$('#modal-layer'),classes=`modal${modalClass?` ${modalClass}`:''}`;if(layer.hidden)restoreFocus=document.activeElement;layer.innerHTML=`<section class="${classes}" role="dialog" aria-modal="true" aria-labelledby="modal-title" lang="ru">${html}</section>`;layer.hidden=false;$('#app').inert=true;layer.querySelector('button')?.focus();wireMedia();}
 function closeModal(){const layer=$('#modal-layer');layer.hidden=true;layer.replaceChildren();$('#app').inert=false;if(restoreFocus?.isConnected)restoreFocus.focus();}
-function showReset(){openModal(`<div class="modal-head"><h2 id="modal-title">Начать сначала?</h2></div><p>Все звёзды и подарки будут сброшены. Жирафик снова будет без одежды. Настройка звука сохранится.</p><div class="modal-actions"><button class="secondary" data-action="close-modal">Продолжить игру</button><button class="primary" data-action="confirm-reset">Начать заново</button></div>`);}
+function showSettings(){openModal(`<div class="modal-head"><h2 id="modal-title">Настройки</h2><button class="icon-button" data-action="close-modal" aria-label="Закрыть">×</button></div><div class="settings-list"><button class="settings-reset-button" data-action="reset">Сбросить прогресс</button></div>`,'settings-modal');}
+function showReset(){openModal(`<div class="modal-head"><h2 id="modal-title">Сбросить весь прогресс?</h2></div><p>Изученные буквы, награды и прогресс обучения будут удалены.</p><div class="modal-actions"><button class="secondary" data-action="close-modal">Отмена</button><button class="danger-button" data-action="confirm-reset">Сбросить</button></div>`,'settings-modal');}
 function resetProgress(){const sound=AppState.soundEnabled;stopAudio();EffectsManager.stopAll();clearTimeout(transitionTimer);completedLessonCardAudioKeys.clear();lessonCardAudioRun++;lessonCardAudioState={key:null,status:SLIDE_AUDIO_READY};Object.assign(AppState,initialState(),{soundEnabled:sound});rewardReady=false;AudioManager.setEnabled(sound);EffectsManager.setEnabled(sound);closeModal();go('home');}
 function showParentGate(){openModal(`<div class="modal-head"><h2 id="modal-title">Для родителей</h2><button class="icon-button" data-action="close-modal" aria-label="Закрыть">×</button></div><p>Можно удерживать Parents две секунды или ответить:</p><p style="font-size:32px;font-weight:800;color:var(--ink);margin-top:20px">Сколько будет 7 + 5?</p><div class="modal-actions"><button class="secondary" data-action="gate-retry">10</button><button class="primary" data-action="parent-view">12</button><button class="secondary" data-action="gate-retry">14</button></div><p id="gate-message" role="status" style="min-height:24px;margin-top:15px"></p>`);}
 function showLetterDetail(letter){
@@ -3077,6 +3127,7 @@ const actions={
  unequip:button=>{if(unequipItem(button.dataset.item))showScreen();},
  'parent-view':renderParentView,
  'gate-retry':()=>{$('#gate-message').textContent='Попробуйте ещё раз.';},
+ settings:showSettings,
  start:begin,
  next:nextLessonStep,
  repeat:()=>{unlockAudio();const focus=$('#audio-focus');if(focus){focus.classList.remove('pulsing');void focus.offsetWidth;focus.classList.add('pulsing');}repeatInstruction();},
