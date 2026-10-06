@@ -24,6 +24,23 @@
     });
 </script>
 <!-- /Yandex.Metrika counter -->
+<!-- Top.Mail.Ru counter -->
+<script type="text/javascript">
+var _tmr = window._tmr || (window._tmr = []);
+_tmr.push({id: "3799663", type: "pageView", start: (new Date()).getTime()});
+(function (d, w, id) {
+  if (d.getElementById(id)) return;
+  var ts = d.createElement("script"); ts.type = "text/javascript"; ts.async = true; ts.id = id;
+  ts.src = "https://top-fwz1.mail.ru/js/code.js";
+  var f = function () {var s = d.getElementsByTagName("script")[0]; s.parentNode.insertBefore(ts, s);};
+  if (w.opera == "[object Opera]") {
+    d.addEventListener("DOMContentLoaded", f, false);
+  } else {
+    f();
+  }
+})(document, window, "tmr-code");
+</script>
+<!-- /Top.Mail.Ru counter -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#f7faf8">
@@ -1600,6 +1617,13 @@ main {
              alt="" />
     </div>
 </noscript>
+<noscript>
+    <div>
+        <img src="https://top-fwz1.mail.ru/counter?id=3799663;js=na"
+             style="position:absolute;left:-9999px;"
+             alt="Top.Mail.Ru" />
+    </div>
+</noscript>
 <div class="app" id="app">
 <header class="topbar"><div class="brand" aria-label="ABC Safari"><span class="brand-mark" aria-hidden="true">A</span><div>ABC <span>Safari</span></div></div><nav class="tools" aria-label="App controls"><button class="icon-button small-icon hide" id="home-button" aria-label="Home"></button><button class="icon-button small-icon" id="progress-button" aria-label="Жирафик — гардероб">👕</button><button class="icon-button" id="sound-button" aria-label="Turn sound off" aria-pressed="false">🔊</button></nav></header>
 <div id="storage-notice" class="storage-notice hide" lang="ru">Браузер не разрешает сохранять прогресс. Игра работает, пока открыта эта вкладка.</div>
@@ -1761,6 +1785,7 @@ const $=selector=>document.querySelector(selector);
 const escapeHTML=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const log=(...args)=>{if(DEBUG)console.log('[Alfie]',...args);};
 const METRIKA_COUNTER_ID=113436900;
+const VK_COUNTER_ID=3799663;
 function sendMetrikaGoal(goal,params){
  try{
   if(typeof window==='undefined'||typeof window.ym!=='function')return false;
@@ -1768,6 +1793,14 @@ function sendMetrikaGoal(goal,params){
   else window.ym(METRIKA_COUNTER_ID,'reachGoal',goal,params);
   return true;
  }catch(error){log('Metrika goal failed',goal,error);return false;}
+}
+function sendVkGoal(goal){
+ try{
+  if(typeof window==='undefined')return false;
+  const queue=window._tmr||(window._tmr=[]);
+  queue.push({id:VK_COUNTER_ID,type:'reachGoal',goal});
+  return true;
+ }catch(error){log('VK goal failed',goal,error);return false;}
 }
 const icons={arrow:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>',speaker:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m11 5-6 4H2v6h3l6 4V5Z"/><path d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></svg>',home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10H3V10Z"/><path d="M9 20v-7h6v7"/></svg>'};
 const blankStats=()=>({attempts:0,correct:0,mistakes:0,mastery:0,skills:[],practiceDebt:0});
@@ -2342,7 +2375,7 @@ function startTraining(forceNew=false){
   session=TrainingEngine.createSession(completedTrainingLetters(),AppState.training.progress,TRAINING_CONFIG,Math.random,AppState.training.lastSignature);
   TrainingState.startSession(AppState.training,session);
  }
- preloadFeedbackStickers();view='training';saveProgress();showScreen();sendMetrikaGoal('start_training');return true;
+ preloadFeedbackStickers();view='training';saveProgress();showScreen();sendMetrikaGoal('start_training');sendVkGoal('startTraining');return true;
 }
 function trainingTop(){
  const session=trainingSession(),value=Math.min(session.activities.length,session.activityIndex),percent=Math.round(value/session.activities.length*100);
@@ -2965,7 +2998,7 @@ function announceScreen(){const c=AppState.cursor,d=letters[c.index];
   setInstruction([ru(command),cue]);
  }else setInstruction(c.phase==='results'?[ru('all_done'),ru('giraffe_happy')]:c.phase==='letterReward'?[ru('well_done'),enName(d)]:['miniResult','reviewResult','cumulativeResult'].includes(c.phase)?[ru('level_complete')]:[ru(['reviewIntro','cumulativeIntro'].includes(c.phase)?'repeat_letters':c.phase==='finalIntro'?'final_challenge':'challenge')]);
 }
-function begin(){unlockAudio();AppState.started=true;go('course');sendMetrikaGoal('start_learning');preloadFeedbackStickers();}
+function begin(){unlockAudio();AppState.started=true;go('course');sendMetrikaGoal('start_learning');sendVkGoal('startLearning');preloadFeedbackStickers();}
 function nextLessonStep(){if(answerLocked||lessonCardAudioIsWaiting())return false;AppState.cursor.step++;AppState.question=null;go('course');return true;}
 function completeTranslationQuestion(){const c=AppState.cursor;if(c.phase!=='lesson'||currentLessonStep(c)?.type!==TRANSLATION_TYPE)return false;c.step++;AppState.question=null;saveProgress();return true;}
 function advanceAfterLetter(){const c=AppState.cursor;if(c.index===JKL_END_INDEX&&!riverCrossingState().gameCompleted)c.phase='river_jkl';else if(c.index<=GHI_END_INDEX&&((c.index+1)%GROUP_SIZE===0||c.index===GHI_END_INDEX))c.phase=c.index===2&&!findObjectComplete(ABC_FIND_OBJECT_GAME)?'room':c.index===5?'maze':'miniIntro';else if(localReviewAt(c.index))c.phase='reviewIntro';else{c.index++;c.phase='lesson';c.step=0;}AppState.question=null;go('course');}
@@ -2985,7 +3018,7 @@ function completeQuestion(){const c=AppState.cursor,q=AppState.question;
  else{AppState.game.recent.push(q.letter);AppState.game.recent=AppState.game.recent.slice(-3);AppState.game.index++;const length=['review','cumulative'].includes(c.phase)?REVIEW_LENGTH:c.phase==='final'?FINAL_LENGTH:MINI_LENGTH;if(AppState.game.index>=length){if(c.phase==='final'){c.phase='results';AppState.completed=true;}else if(c.phase==='review')c.phase='reviewResult';else if(c.phase==='cumulative')c.phase='cumulativeResult';else{c.phase='miniResult';if(c.index!==GHI_END_INDEX)finishBlock();}AppState.game=null;}}
  AppState.question=null;saveProgress();
  evaluateStudentAchievements();
- if(learnedNow)sendMetrikaGoal('complete_letter',{letter:q.letter});
+ if(learnedNow){sendMetrikaGoal('complete_letter',{letter:q.letter});sendVkGoal('completeLetter');}
 }
 function celebrate(){const box=$('#confetti');box.innerHTML=Array.from({length:15},(_,i)=>`<i style="--x:${Math.round((Math.random()-.5)*430)}px;--y:${Math.round((Math.random()-.55)*400)}px;--r:${Math.round(Math.random()*300)}deg;color:${['#e4ad25','#4d9873','#a98acc','#ed9058'][i%4]}">${i%3?'✦':'★'}</i>`).join('');}
 /* Answer and completion stickers share one selection history, never saved. */
