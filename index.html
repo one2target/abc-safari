@@ -419,6 +419,13 @@
     }
     .guide-card p{font-size:17px;color:var(--muted);margin-bottom:16px}
     .guide-card p:last-child{margin-bottom:0}
+    .resource-card{
+      display:grid;grid-template-columns:minmax(0,1fr) auto;gap:36px;align-items:center;
+      padding:42px 46px;border:1px solid var(--line);border-radius:32px;
+      background:rgba(255,255,255,.9);box-shadow:var(--shadow-sm)
+    }
+    .resource-card h2{margin-bottom:12px;font-size:clamp(30px,4vw,44px)}
+    .resource-card p{max-width:720px;margin-bottom:0;color:var(--muted);font-size:18px}
     .faq-list{display:grid;gap:10px}
     .faq-list details{border:1px solid var(--line);border-radius:16px;background:#fff;padding:0 18px}
     .faq-list summary{cursor:pointer;font-weight:900;padding:17px 30px 17px 0;position:relative;list-style:none}
@@ -490,7 +497,7 @@
       .mobile-menu.open{display:grid;gap:4px}
       .mobile-menu a{padding:12px 10px;border-radius:12px;font-weight:800}
       .mobile-menu .btn{margin-top:8px}
-      .hero-grid,.reward-panel,.progress-grid,.cta-box,.guide-grid{grid-template-columns:1fr}
+      .hero-grid,.reward-panel,.progress-grid,.cta-box,.guide-grid,.resource-card{grid-template-columns:1fr}
       .hero{padding-top:38px}
       .hero-art{min-height:520px}
       .reward-panel{padding:36px}
@@ -534,6 +541,8 @@
       .progress-mock{padding:22px;border-radius:28px;transform:none}
       .benefits{grid-template-columns:1fr}
       .benefit{min-height:auto}
+      .resource-card{padding:30px 24px;border-radius:26px}
+      .resource-card .btn{width:100%}
       .cta-box{border-radius:30px}
       .cta-copy{padding:42px 26px 8px}
       .cta-copy .btn{width:100%}
@@ -808,6 +817,19 @@
               <p>Нет. Обучение разбито на небольшие этапы, а к уже изученным буквам можно возвращаться в повторениях и играх.</p>
             </details>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="useful-title">
+      <div class="container">
+        <div class="resource-card reveal">
+          <div>
+            <span class="eyebrow">Полезное родителям</span>
+            <h2 id="useful-title">Как знакомить ребёнка с английским алфавитом без зубрёжки</h2>
+            <p>Разбираем названия букв, звуки, первые слова и простые игровые занятия для детей 5–7 лет.</p>
+          </div>
+          <a class="btn btn-primary" href="/articles/angliyskiy-alfavit-dlya-detey/">Читать статью <span aria-hidden="true">→</span></a>
         </div>
       </div>
     </section>

@@ -4,7 +4,7 @@ const path=require('node:path');
 const vm=require('node:vm');
 
 const root=path.resolve(__dirname,'..');
-const pages=['index.html','play/index.html','about/index.html','contacts/index.html','privacy/index.html'];
+const pages=['index.html','play/index.html','about/index.html','contacts/index.html','privacy/index.html','articles/angliyskiy-alfavit-dlya-detey/index.html'];
 const count=(text,pattern)=>(text.match(pattern)||[]).length;
 
 for(const page of pages){
