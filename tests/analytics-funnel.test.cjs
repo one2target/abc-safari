@@ -43,6 +43,12 @@ assertJSON(reward.analyticsEvents,[{event:'reward_received',params:{reward:'jack
 assert.equal(reward.run("chooseReward('jacket_racer')"),false);
 assert.equal(reward.analyticsEvents.length,1,'a claimed reward must not emit twice');
 
+const deniedTrainer=createContext({analyticsStatus:'denied'});
+assert.doesNotThrow(()=>deniedTrainer.run('begin()'));
+assert.equal(deniedTrainer.run('view'),'course');
+assert.equal(deniedTrainer.analyticsEvents.length,0,'denied analytics must not affect trainer flow');
+assert.equal(JSON.parse(deniedTrainer.store.get('alfie-abc-v1')).started,true,'progress must still be saved while analytics is denied');
+
 console.log(JSON.stringify({
  passed:true,
  mazeStarted:true,
@@ -50,5 +56,6 @@ console.log(JSON.stringify({
  mazeMistakesBucket:'3_5',
  mazeHintsUsed:true,
  abandonedActivityHasNoCompletion:true,
- rewardReceivedOnce:true
+ rewardReceivedOnce:true,
+ trainerWorksWhenDenied:true
 },null,2));

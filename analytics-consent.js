@@ -2,6 +2,7 @@
   'use strict';
 
   const CONSENT_KEY='abc-safari-analytics-consent-v1';
+  const CONSENT_VERSION='1';
   const STATUS=Object.freeze({UNKNOWN:'unknown',ALLOWED:'allowed',DENIED:'denied'});
   const EVENTS=Object.freeze({
     START_LEARNING:'start_learning',
@@ -56,17 +57,38 @@
   const queue=[];
   const sentOnce=new Set();
   let trackersStarted=false;
-  let status=readConsent();
+  const storedConsent=readConsent();
+  let consentRecord=storedConsent.record;
+  let status=consentRecord.status;
 
   function readConsent(){
     try{
       const saved=window.localStorage?.getItem(CONSENT_KEY);
-      return saved===STATUS.ALLOWED||saved===STATUS.DENIED?saved:STATUS.UNKNOWN;
-    }catch(_){return STATUS.UNKNOWN;}
+      if(saved===STATUS.ALLOWED||saved===STATUS.DENIED){
+        return {record:createConsentRecord(saved),needsMigration:true};
+      }
+      const parsed=JSON.parse(saved);
+      const validStatus=parsed?.status===STATUS.ALLOWED||parsed?.status===STATUS.DENIED;
+      const validDate=typeof parsed?.decidedAt==='string'&&!Number.isNaN(Date.parse(parsed.decidedAt));
+      if(validStatus&&parsed.version===CONSENT_VERSION&&validDate){
+        return {record:{status:parsed.status,version:parsed.version,decidedAt:parsed.decidedAt},needsMigration:false};
+      }
+    }catch(_){/* Missing, blocked or unsupported consent is treated as unknown. */}
+    return {record:{status:STATUS.UNKNOWN,version:CONSENT_VERSION,decidedAt:null},needsMigration:false};
   }
 
-  function writeConsent(value){
-    try{window.localStorage?.setItem(CONSENT_KEY,value);}catch(_){/* The choice still applies for this page view. */}
+  function createConsentRecord(value,decidedAt=new Date().toISOString()){
+    return {status:value,version:CONSENT_VERSION,decidedAt};
+  }
+
+  function persistConsent(record){
+    try{window.localStorage?.setItem(CONSENT_KEY,JSON.stringify(record));}catch(_){/* The choice still applies for this page view. */}
+  }
+
+  function updateConsent(value){
+    status=value;consentRecord=createConsentRecord(value);persistConsent(consentRecord);
+    // This record/API is the future synchronization boundary for a parent account backend.
+    return status;
   }
 
   function debugEnabled(){
@@ -164,33 +186,51 @@
   function removeBanner(){document.getElementById('analytics-consent')?.remove();}
 
   function allow(){
-    status=STATUS.ALLOWED;writeConsent(status);removeBanner();startTrackers();
+    updateConsent(STATUS.ALLOWED);removeBanner();startTrackers();
     queue.splice(0).forEach(item=>dispatch(item.event,item.params));
     return status;
   }
 
   function deny(){
-    status=STATUS.DENIED;writeConsent(status);queue.length=0;removeBanner();
+    updateConsent(STATUS.DENIED);queue.length=0;removeBanner();
     return status;
   }
 
-  function renderBanner(){
-    if(status!==STATUS.UNKNOWN||document.getElementById('analytics-consent')||!document.body)return;
+  function renderBanner(force=false){
+    const existing=document.getElementById('analytics-consent');
+    if(existing){(existing.querySelector('.is-current')||existing.querySelector('.analytics-consent__allow'))?.focus?.();return true;}
+    if((status!==STATUS.UNKNOWN&&!force)||!document.body)return false;
+    const allowed=status===STATUS.ALLOWED,denied=status===STATUS.DENIED;
+    const current=allowed?'Разрешена аналитика':denied?'Только необходимые':'';
     const banner=document.createElement('aside');banner.id='analytics-consent';banner.className='analytics-consent';
     banner.setAttribute('role','region');banner.setAttribute('aria-label','Настройки аналитики');
-    banner.innerHTML='<div class="analytics-consent__copy"><strong>Для взрослого</strong><p>ABC Safari использует аналитику, чтобы понимать, где детям удобно, а где нужна доработка. Без разрешения аналитика не запускается. <a href="/privacy/">Подробнее</a></p></div><div class="analytics-consent__actions"><button type="button" class="analytics-consent__allow">Разрешить аналитику</button><button type="button" class="analytics-consent__deny">Только необходимые</button></div>';
+    banner.innerHTML=`<div class="analytics-consent__copy"><strong>Для взрослого</strong><p>ABC Safari использует аналитику, чтобы понимать, где детям удобно, а где нужна доработка. Без разрешения аналитика не запускается. <a href="/privacy/">Подробнее</a></p>${current?`<p class="analytics-consent__current">Текущий выбор: <b>${current}</b></p>`:''}</div><div class="analytics-consent__actions"><button type="button" class="analytics-consent__allow${allowed?' is-current':''}" aria-pressed="${allowed}">Разрешить аналитику</button><button type="button" class="analytics-consent__deny${denied?' is-current':''}" aria-pressed="${denied}">Только необходимые</button></div>`;
     banner.querySelector('.analytics-consent__allow').addEventListener('click',allow);
     banner.querySelector('.analytics-consent__deny').addEventListener('click',deny);
     document.body.appendChild(banner);
+    if(force)(banner.querySelector('.is-current')||banner.querySelector('.analytics-consent__allow'))?.focus?.();
+    return true;
   }
 
-  const api=Object.freeze({CONSENT_KEY,STATUS,EVENTS,ACTIVITIES,REWARDS,trackEvent,allow,deny,getStatus:()=>status,getQueuedEventCount:()=>queue.length,mistakesBucket(value){const count=Math.max(0,Number(value)||0);return count===0?'0':count<=2?'1_2':count<=5?'3_5':count<=10?'6_10':'10_plus';}});
+  function openAnalyticsSettings(){
+    if(!document.body){document.addEventListener('DOMContentLoaded',()=>renderBanner(true),{once:true});return true;}
+    return renderBanner(true);
+  }
+
+  const api=Object.freeze({CONSENT_KEY,CONSENT_VERSION,STATUS,EVENTS,ACTIVITIES,REWARDS,trackEvent,allow,deny,openAnalyticsSettings,getStatus:()=>status,getConsentRecord:()=>({...consentRecord}),getQueuedEventCount:()=>queue.length,mistakesBucket(value){const count=Math.max(0,Number(value)||0);return count===0?'0':count<=2?'1_2':count<=5?'3_5':count<=10?'6_10':'10_plus';}});
   window.ABCAnalytics=api;
   window.trackEvent=trackEvent;
+  window.openAnalyticsSettings=openAnalyticsSettings;
 
+  document.addEventListener('click',event=>{
+    if(!event.target?.closest?.('[data-analytics-settings]'))return;
+    event.preventDefault();openAnalyticsSettings();
+  });
+
+  if(storedConsent.needsMigration)persistConsent(consentRecord);
   if(status===STATUS.ALLOWED)startTrackers();
   else if(status===STATUS.UNKNOWN){
-    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',renderBanner,{once:true});
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>renderBanner(),{once:true});
     else renderBanner();
   }
 })(window,document);

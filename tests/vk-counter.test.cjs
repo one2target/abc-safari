@@ -8,8 +8,8 @@ const count=(text,pattern)=>(text.match(pattern)||[]).length;
 
 for(const page of pages){
  const html=fs.readFileSync(path.join(root,page),'utf8');
- assert.equal(count(html,/\/analytics-consent\.js\?v=consent-v1/g),1,`${page} must load the shared consent module once`);
- assert.equal(count(html,/\/analytics-consent\.css\?v=consent-v1/g),1,`${page} must load the shared consent styles once`);
+ assert.equal(count(html,/\/analytics-consent\.js\?v=consent-v2/g),1,`${page} must load the shared consent module once`);
+ assert.equal(count(html,/\/analytics-consent\.css\?v=consent-v2/g),1,`${page} must load the shared consent styles once`);
  assert.equal(count(html,/mc\.yandex\.ru|top-fwz1\.mail\.ru/g),0,`${page} must not load optional trackers before consent`);
  assert.equal(count(html,/type:\s*["']pageView["']/g),0,`${page} must not enqueue pageView inline`);
 }

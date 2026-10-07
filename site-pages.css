@@ -37,6 +37,7 @@ h1{max-width:760px;margin:22px 0 18px;font-size:clamp(40px,7vw,68px);line-height
 .content-card p,.content-card li{color:var(--muted);font-size:17px}
 .content-card a{font-weight:800}
 .action{display:inline-flex;margin-top:16px;padding:14px 20px;border-radius:14px;background:var(--green);color:#fff;text-decoration:none;font-weight:900}
+.action-button{border:0;font:inherit;cursor:pointer}
 footer{border-top:1px solid var(--line);padding:28px 0 36px}
 .footer-row{width:min(1120px,calc(100% - 40px));margin:auto;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;color:var(--muted);font-size:14px}
 .footer-row a{font-weight:800;text-decoration:none}
