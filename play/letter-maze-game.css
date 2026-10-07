@@ -37,6 +37,7 @@
 .letter-maze-cell:focus-visible {outline:3px solid #fff;outline-offset:1px;box-shadow:0 0 0 6px var(--purple);}
 .letter-maze-label.is-visited {opacity:.62;}
 .letter-maze-label.is-correct {animation:letter-maze-correct .42s ease-out;}
+.letter-maze-label.is-hint {color:#6f48a8;filter:drop-shadow(0 0 6px #fff);animation:letter-maze-hint .85s ease-in-out infinite alternate;}
 .letter-maze-label.is-wrong {color:#b84d27;text-shadow:0 1px 0 #fff;animation:letter-maze-wrong .38s ease;}
 .letter-maze-label.is-blocked {animation:letter-maze-wrong .38s ease;}
 .letter-maze-character {
@@ -69,6 +70,7 @@
 .maze-active .brand-mark {width:40px;height:40px;border-radius:14px;}
 .maze-active .tools .icon-button {width:44px;height:44px;border-radius:15px;}
 @keyframes letter-maze-correct {0%{transform:translate(-50%,-50%) scale(.7)}55%{transform:translate(-50%,-50%) scale(1.15)}100%{transform:translate(-50%,-50%) scale(.82)}}
+@keyframes letter-maze-hint {from{transform:translate(-50%,-50%) scale(1)}to{transform:translate(-50%,-50%) scale(1.16)}}
 @keyframes letter-maze-wrong {0%,100%{transform:translate(-50%,-50%)}30%{transform:translate(calc(-50% - 4px),-50%)}70%{transform:translate(calc(-50% + 4px),-50%)}}
 @media(max-width:350px) {
   .letter-maze-scene {border-radius:18px;}
