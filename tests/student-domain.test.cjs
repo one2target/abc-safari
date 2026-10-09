@@ -68,7 +68,7 @@ legacySeed.run("unlockItem('jacket_racer');equipItem('jacket_racer');AppState.co
 const legacy=JSON.parse(legacySeed.store.get('alfie-abc-v1'));
 legacy.version=3;delete legacy.student;
 const migrated=createContext({saved:{'alfie-abc-v1':JSON.stringify(legacy)}});
-assert.equal(migrated.run('AppState.version'),4);
+assert.equal(migrated.run('AppState.version'),5);
 assert.equal(migrated.run("isItemOwned('jacket_racer')"),true);
 assert.equal(migrated.run("getEquippedItem('outfit').id"),'jacket_racer');
 assert.equal(migrated.run("AppState.student.starTransactions.some(item=>item.sourceId==='letter:A')"),true);
