@@ -70,6 +70,7 @@ for(const [index,phase,next] of [
  [11,'reviewResult',{phase:'lesson',index:12,step:0}],
  [14,'reviewResult',{phase:'fruit_rain',index:14,step:0}],
  [14,'cumulativeResult',{phase:'lesson',index:15,step:0}],
+ [17,'reviewResult',{phase:'bubble_cannon',index:17,step:0}],
  [20,'reviewResult',{phase:'cumulativeIntro',index:20,step:0}],
  [20,'cumulativeResult',{phase:'lesson',index:21,step:0}],
  [23,'reviewResult',{phase:'lesson',index:24,step:0}],

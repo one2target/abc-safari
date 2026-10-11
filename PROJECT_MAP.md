@@ -105,7 +105,7 @@
 - `stats` по каждой букве: `attempts`, `correct`, `mistakes`, `mastery`, `skills`, `practiceDebt`. Итоги для родителей вычисляет `renderParentView()`.
 - `game`, `question`, `reviews`, `questionSerial` сохраняют позицию обычных заданий; `balloonPop` хранит phase/target/score/quickOrder/completion; `riverCrossing` хранит 12 созданных вопросов, текущий индекс, число правильных ответов, ошибки текущего задания и completion; `training` хранит активную сессию, историю и адаптивную статистику `letterName` / `sound` / `word`; `started`, `completed`, `soundEnabled` — общие флаги.
 - Награды: `characterState.ownedItems`, стандартные слоты `characterState.equipped`, `completedBlocks`, `claimedRewards`, `rewardFlow`.
-- Storage adapter использует прежний ключ `alfie-abc-v1`; при `?demo=1` — отдельный `alfie-abc-demo-v1`. Общая версия состояния — 4; загрузчик принимает версии 1–4. Для сохранений v1/v2 прежние lesson steps 2–4 сдвигаются на два места. Завершённое A–F продолжает с G, завершённое A–I или сохранение в прежнем финале — с J; статистика, `completedBlocks`, inventory и экипировка сохраняются. Новые `game.poolLetters` / `game.letterOrder` восстанавливают точную позицию review. Инвентарь отдельно мигрирует `migrateRewards()` с `REWARD_STATE_VERSION = 3`, профиль — `migrateStudentState()`.
+- Storage adapter использует прежний ключ `alfie-abc-v1`; при `?demo=1` — отдельный `alfie-abc-demo-v1`. Общая версия состояния — 6; загрузчик принимает версии 1–6. Для сохранений v1/v2 прежние lesson steps 2–4 сдвигаются на два места. Завершённое A–F продолжает с G, завершённое A–I или сохранение в прежнем финале — с J; статистика, `completedBlocks`, inventory и экипировка сохраняются. `fruitRain` и `bubbleCannon` восстанавливают логический прогресс мини-игр, а `game.poolLetters` / `game.letterOrder` — точную позицию review. Инвентарь отдельно мигрирует `migrateRewards()` с `REWARD_STATE_VERSION = 3`, профиль — `migrateStudentState()`.
 - При невозможности записи состояние остаётся в памяти вкладки, показывается `#storage-notice`. Сохранение также вызывается при скрытии страницы и `pagehide`. Сброс сохраняет настройку звука.
 - `view`, блокировки, таймеры и история выбора стикеров — временные переменные вне сохранения.
 
@@ -299,7 +299,7 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 - `play/student-domain.js` — чистые конфигурации и операции звёзд, транзакций, покупок, mastery, streak, уровней и достижений; здесь же находится заменяемый storage adapter.
 - `play/student-profile.css` — responsive UI кабинета, навигации, A–Z-коллекции, статистики, гардероба, достижений и магазина.
 - `play/index.html` сохраняет роль composition root: связывает StudentDomain с существующими `AppState`, Training, RewardState и единым `renderCharacter()`.
-- Общая версия AppState — 4. При загрузке v1–v3 сохраняются прежние курс, Training, owned/equipped items и награды; исторически завершённые буквы/блоки получают идемпотентные star-транзакции.
+- Общая версия AppState — 6. При загрузке v1–v5 сохраняются прежние курс, Training, owned/equipped items и награды; исторически завершённые буквы/блоки получают идемпотентные star-транзакции.
 - Магазин показывает только предметы с выполненным `unlockCondition`. Невыбранная награда появляется после соответствующего `completedBlock`; фоны доступны сразу. Реальные платежи отсутствуют.
 - `tests/student-domain.test.cjs` покрывает экономику, повторные награды, покупки, ограничения equip, достижения, mastery, streak, миграцию и reload.
 - `tests/shop.test.cjs` покрывает раздельные preview/purchase/equip, точный дефицит, outfit/background сценарии, premium и повторную покупку, owned controls, reload и itemId-specific thumbnails общего renderer.
@@ -341,7 +341,7 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 
 ## 20. Буквы J–Z и повторение
 
-Полный новый поток после награды GHI: J → K → L → `river_jkl` → `review_JKL` → M → N → O → `review_MNO` → `cumulative_review_AO` → P → Q → R → `review_PQR` → S → T → U → `review_STU` → `cumulative_review_AU` → V → W → X → `review_VWX` → Y → Z → `review_YZ` → `cumulative_review_AZ` → `results`.
+Полный новый поток после награды GHI: J → K → L → `river_jkl` → `review_JKL` → M → N → O → `review_MNO` → `fruit_rain` → `cumulative_review_AO` → P → Q → R → `review_PQR` → `bubble_cannon` → S → T → U → `review_STU` → `cumulative_review_AU` → V → W → X → `review_VWX` → Y → Z → `review_YZ` → `cumulative_review_AZ` → `results`.
 
 - Уроки J–Z создаёт прежний `lessonSteps()` из `letters[]`; отдельная переправа J/K/L не добавляет reward screen или предмет.
 - Local review использует только буквы своего блока. Все шесть `REVIEW_TYPES` появляются ровно по одному разу; буквы перемешиваются и равномерно повторяются.
