@@ -73,12 +73,14 @@ for(const [index,phase,next] of [
  [17,'reviewResult',{phase:'bubble_cannon',index:17,step:0}],
  [20,'reviewResult',{phase:'treehouse_stu',index:20,step:0}],
  [20,'cumulativeResult',{phase:'lesson',index:21,step:0}],
- [23,'reviewResult',{phase:'lesson',index:24,step:0}],
+ [23,'reviewResult',{phase:'railway_vwx',index:23,step:0}],
  [25,'reviewResult',{phase:'cumulativeIntro',index:25,step:0}]
 ]){
  transitions.run(`AppState.cursor={phase:'${phase}',index:${index},step:0};AppState.game=null;AppState.question=null;advanceAfterReview()`);
  assert.deepEqual(JSON.parse(transitions.run('JSON.stringify(AppState.cursor)')),next);
 }
+transitions.run("AppState.cursor={phase:'railway_vwx',index:23,step:0};exitRailway()");
+assert.deepEqual(JSON.parse(transitions.run('JSON.stringify(AppState.cursor)')),{phase:'railway_vwx',index:23,step:0});assert.equal(transitions.run('view'),'home');
 const treehouseTransition=createContext();
 treehouseTransition.run("AppState.cursor={phase:'reviewResult',index:20,step:0};advanceAfterReview();while(!treehouseState().gameCompleted){const task=TreehouseSTUGame.currentTask(STU_TREEHOUSE_GAME,treehouseState());TreehouseSTUGame.deliver(STU_TREEHOUSE_GAME,treehouseState(),task.letter)};continueTreehouse()");
 assert.deepEqual(JSON.parse(treehouseTransition.run('JSON.stringify(AppState.cursor)')),{phase:'cumulativeIntro',index:20,step:0});

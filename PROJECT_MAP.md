@@ -19,6 +19,8 @@
 | `play/balloon-pop-game.css` | Mobile-first игровое поле, движение, pop/shake/hint, частицы и short-height layout. |
 | `play/river-crossing-game.js` | Чистые правила 12 заданий J/K/L, четыре этапа, restore, пороги переправы и HTML «Переправы Мариуса». |
 | `play/river-crossing-game.css` | Вертикальная mobile-first сцена, пять платформ, три крупные кнопки, прыжок, посадка, сундук и landscape layout. |
+| `play/railway-vwx-game.js` | Обучающая железная дорога VWX: state engine 12 заданий, три SVG-траектории 941×1672, движение по длине пути, единые station markers, рычаг с реальным шарниром PNG, fade-reset без обратной поездки, Pointer Events и runtime controller. |
+| `play/railway-vwx-game.css` | Пиксельно совмещённые фон/рельсы, карточки букв/картинок, подсветка, выгрузка, пар/исчезновение состава, раздельный праздничный декор, адаптивный рычаг и debug-overlay. |
 | `play/training-config.js` | Единые параметры разблокировки, длины сессии, smart random, шариков, переправы и блица. |
 | `play/training-state.js` | Восстановление и запись отдельной тренировочной статистики внутри существующего AppState. |
 | `play/training-engine.js` | Чистая сборка вариативной сессии, взвешенный выбор, покрытие пула, distractors и отложенный повтор после ошибки. |
@@ -48,6 +50,8 @@
 │   ├── balloon-pop-game.css
 │   ├── river-crossing-game.js
 │   ├── river-crossing-game.css
+│   ├── railway-vwx-game.js
+│   ├── railway-vwx-game.css
 │   ├── training-config.js
 │   ├── training-state.js
 │   ├── training-engine.js
@@ -103,9 +107,9 @@
 
 - `cursor` хранит `phase`, индекс буквы и шаг. К прежним фазам добавлены `reviewIntro`, `review`, `reviewResult`, `cumulativeIntro`, `cumulative`, `cumulativeResult`; `results` теперь открывается после `cumulative_review_AZ`.
 - `stats` по каждой букве: `attempts`, `correct`, `mistakes`, `mastery`, `skills`, `practiceDebt`. Итоги для родителей вычисляет `renderParentView()`.
-- `game`, `question`, `reviews`, `questionSerial` сохраняют позицию обычных заданий; `balloonPop` хранит phase/target/score/quickOrder/completion; `riverCrossing` хранит 12 созданных вопросов, текущий индекс, число правильных ответов, ошибки текущего задания и completion; `training` хранит активную сессию, историю и адаптивную статистику `letterName` / `sound` / `word`; `started`, `completed`, `soundEnabled` — общие флаги.
+- `game`, `question`, `reviews`, `questionSerial` сохраняют позицию обычных заданий; `balloonPop` хранит phase/target/score/quickOrder/completion; `riverCrossing` хранит 12 созданных вопросов, текущий индекс, число правильных ответов, ошибки текущего задания и completion; `railway` хранит порядок 12 заданий, прогресс, completedTasks, ошибки текущего задания и completion; `training` хранит активную сессию, историю и адаптивную статистику `letterName` / `sound` / `word`; `started`, `completed`, `soundEnabled` — общие флаги.
 - Награды: `characterState.ownedItems`, стандартные слоты `characterState.equipped`, `completedBlocks`, `claimedRewards`, `rewardFlow`.
-- Storage adapter использует прежний ключ `alfie-abc-v1`; при `?demo=1` — отдельный `alfie-abc-demo-v1`. Общая версия состояния — 6; загрузчик принимает версии 1–6. Для сохранений v1/v2 прежние lesson steps 2–4 сдвигаются на два места. Завершённое A–F продолжает с G, завершённое A–I или сохранение в прежнем финале — с J; статистика, `completedBlocks`, inventory и экипировка сохраняются. `fruitRain` и `bubbleCannon` восстанавливают логический прогресс мини-игр, а `game.poolLetters` / `game.letterOrder` — точную позицию review. Инвентарь отдельно мигрирует `migrateRewards()` с `REWARD_STATE_VERSION = 3`, профиль — `migrateStudentState()`.
+- Storage adapter использует прежний ключ `alfie-abc-v1`; при `?demo=1` — отдельный `alfie-abc-demo-v1`. Общая версия состояния — 8; загрузчик принимает версии 1–8. Для сохранений v1/v2 прежние lesson steps 2–4 сдвигаются на два места. Завершённое A–F продолжает с G, завершённое A–I или сохранение в прежнем финале — с J; статистика, `completedBlocks`, inventory и экипировка сохраняются. `fruitRain`, `bubbleCannon` и `railway` восстанавливают логический прогресс мини-игр, а `game.poolLetters` / `game.letterOrder` — точную позицию review. Инвентарь отдельно мигрирует `migrateRewards()` с `REWARD_STATE_VERSION = 3`, профиль — `migrateStudentState()`.
 - При невозможности записи состояние остаётся в памяти вкладки, показывается `#storage-notice`. Сохранение также вызывается при скрытии страницы и `pagehide`. Сброс сохраняет настройку звука.
 - `view`, блокировки, таймеры и история выбора стикеров — временные переменные вне сохранения.
 
@@ -299,7 +303,7 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 - `play/student-domain.js` — чистые конфигурации и операции звёзд, транзакций, покупок, mastery, streak, уровней и достижений; здесь же находится заменяемый storage adapter.
 - `play/student-profile.css` — responsive UI кабинета, навигации, A–Z-коллекции, статистики, гардероба, достижений и магазина.
 - `play/index.html` сохраняет роль composition root: связывает StudentDomain с существующими `AppState`, Training, RewardState и единым `renderCharacter()`.
-- Общая версия AppState — 6. При загрузке v1–v5 сохраняются прежние курс, Training, owned/equipped items и награды; исторически завершённые буквы/блоки получают идемпотентные star-транзакции.
+- Общая версия AppState — 8. При загрузке v1–v7 сохраняются прежние курс, Training, owned/equipped items и награды; исторически завершённые буквы/блоки получают идемпотентные star-транзакции.
 - Магазин показывает только предметы с выполненным `unlockCondition`. Невыбранная награда появляется после соответствующего `completedBlock`; фоны доступны сразу. Реальные платежи отсутствуют.
 - `tests/student-domain.test.cjs` покрывает экономику, повторные награды, покупки, ограничения equip, достижения, mastery, streak, миграцию и reload.
 - `tests/shop.test.cjs` покрывает раздельные preview/purchase/equip, точный дефицит, outfit/background сценарии, premium и повторную покупку, owned controls, reload и itemId-specific thumbnails общего renderer.
@@ -341,9 +345,10 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 
 ## 20. Буквы J–Z и повторение
 
-Полный новый поток после награды GHI: J → K → L → `river_jkl` → `review_JKL` → M → N → O → `review_MNO` → `fruit_rain` → `cumulative_review_AO` → P → Q → R → `review_PQR` → `bubble_cannon` → S → T → U → `review_STU` → `cumulative_review_AU` → V → W → X → `review_VWX` → Y → Z → `review_YZ` → `cumulative_review_AZ` → `results`.
+Полный новый поток после награды GHI: J → K → L → `river_jkl` → `review_JKL` → M → N → O → `review_MNO` → `fruit_rain` → `cumulative_review_AO` → P → Q → R → `review_PQR` → `bubble_cannon` → S → T → U → `review_STU` → `cumulative_review_AU` → V → W → X → `review_VWX` → `railway_vwx` → Y → Z → `review_YZ` → `cumulative_review_AZ` → `results`.
 
 - Уроки J–Z создаёт прежний `lessonSteps()` из `letters[]`; отдельная переправа J/K/L не добавляет reward screen или предмет.
+- После `review_VWX` железная дорога даёт 3 задания на имена букв, 3 на звуки и 6 на Van/Whale/Fox. Неверная станция не меняет прогресс; после любого нефинального прибытия состав исчезает и переносится в депо без обратной анимации; 12-й успех сразу запускает финал.
 - Local review использует только буквы своего блока. Все шесть `REVIEW_TYPES` появляются ровно по одному разу; буквы перемешиваются и равномерно повторяются.
 - Cumulative review хранит полный доступный range в `game.poolLetters`, а шесть уникальных целей — в `game.letterOrder`. Две цели берутся из только что изученного блока, четыре — из более ранних букв; оба набора и общий порядок перемешиваются при новом прохождении.
 - `completeQuestion()` переводит review в result-фазу после шестого ответа; `advanceAfterReview()` открывает следующий урок, cumulative block либо итоговый A–Z экран.
