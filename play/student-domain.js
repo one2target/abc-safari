@@ -25,7 +25,8 @@ const StudentDomain=(()=>{
     Object.freeze({id:'great_memory',title:'Отличная память',description:'Тренировка без ошибок.',icon:'🧠',condition:'perfectTrainingCount',threshold:1,rewardStars:2,rewardItemId:null,isSecret:false}),
     Object.freeze({id:'unstoppable',title:'Не остановить!',description:'Серия занятий 5 дней.',icon:'🔥',condition:'activityStreak',threshold:5,rewardStars:5,rewardItemId:null,isSecret:false}),
     Object.freeze({id:'marius_friend',title:'Друг Мариуса',description:'Получено 10 предметов.',icon:'🦒',condition:'ownedItemCount',threshold:10,rewardStars:5,rewardItemId:null,isSecret:false}),
-    Object.freeze({id:'alphabet_expert',title:'Знаток алфавита',description:'Изучены все 26 букв.',icon:'🏆',condition:'learnedCount',threshold:26,rewardStars:10,rewardItemId:null,futureRewardItemId:'golden_crown',isSecret:false})
+    Object.freeze({id:'alphabet_expert',title:'Знаток алфавита',description:'Изучены все 26 букв.',icon:'🏆',condition:'learnedCount',threshold:26,rewardStars:10,rewardItemId:null,futureRewardItemId:'golden_crown',isSecret:false}),
+    Object.freeze({id:'alphabet_conqueror',title:'Покоритель алфавита',description:'Завершена воздушная экспедиция от A до Z.',icon:'🏅',condition:'flightYZCompleted',threshold:true,rewardStars:0,rewardItemId:null,isSecret:false})
   ]);
 
   const integer=value=>Number.isFinite(value)?Math.max(0,Math.floor(value)):0;

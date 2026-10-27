@@ -85,8 +85,10 @@ const treehouseTransition=createContext();
 treehouseTransition.run("AppState.cursor={phase:'reviewResult',index:20,step:0};advanceAfterReview();while(!treehouseState().gameCompleted){const task=TreehouseSTUGame.currentTask(STU_TREEHOUSE_GAME,treehouseState());TreehouseSTUGame.deliver(STU_TREEHOUSE_GAME,treehouseState(),task.letter)};continueTreehouse()");
 assert.deepEqual(JSON.parse(treehouseTransition.run('JSON.stringify(AppState.cursor)')),{phase:'cumulativeIntro',index:20,step:0});
 transitions.run("AppState.cursor={phase:'cumulativeResult',index:25,step:0};advanceAfterReview()");
-assert.equal(transitions.run('AppState.cursor.phase'),'results');
-assert.equal(transitions.run('AppState.completed'),true);
+assert.equal(transitions.run('AppState.cursor.phase'),'flight_yz');
+assert.equal(transitions.run('AppState.completed'),false);
+transitions.run("var routeFinal=FlightYZGame.LearningEngine.initialState();FlightYZGame.LearningEngine.start(routeFinal);FlightYZGame.LearningEngine.skipToFinalTask(routeFinal);var routeFinalIsland=Object.keys(routeFinal.assignment).find(id=>routeFinal.assignment[id]===routeFinal.target);FlightYZGame.LearningEngine.land(routeFinal,routeFinalIsland);completeFlightYZ(routeFinal,1);exitFlightYZ()");
+assert.equal(transitions.run('AppState.cursor.phase'),'results');assert.equal(transitions.run('AppState.completed'),true);
 
 const midReview=createContext();
 midReview.run("AppState.started=true;AppState.cursor={phase:'reviewIntro',index:11,step:0};startReview(false);ensureQuestion();saveProgress()");
