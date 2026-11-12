@@ -600,7 +600,7 @@ const MEDIA_ASSETS = {
       "height": 1536
     },
     "background_home": {
-      "src": "./images/background_home.png?v=character-canvas4",
+      "src": "./images/background_home.webp?v=perf-media1",
       "width": 1024,
       "height": 1536
     },
@@ -613,6 +613,11 @@ const MEDIA_ASSETS = {
       "src": "./images/giraffe_base.png?v=character-canvas4",
       "width": 1024,
       "height": 1536
+    },
+    "giraffe_home": {
+      "src": "./images/giraffe_home.webp?v=home-hero1",
+      "width": 768,
+      "height": 1152
     },
     "giraffe_jacket_racer": {
       "src": "./images/giraffe_jacket_racer.png?v=character-canvas4",
@@ -643,6 +648,146 @@ const MEDIA_ASSETS = {
       "src": "./images/marius_hat_adventure.png?v=character-canvas4",
       "width": 1024,
       "height": 1536
+    },
+    "marius_wardrobe_source_base": {
+      "src": "./images/marius-wardrobe/source-base.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_bottom_sport_red": {
+      "src": "./images/marius-wardrobe/bottom-sport-red.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_bottom_sport_brown": {
+      "src": "./images/marius-wardrobe/bottom-sport-brown.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_bottom_denim": {
+      "src": "./images/marius-wardrobe/bottom-denim.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_top_crop_blue": {
+      "src": "./images/marius-wardrobe/top-crop-blue.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_top_sport_white": {
+      "src": "./images/marius-wardrobe/top-sport-white.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_top_plaid_shirt": {
+      "src": "./images/marius-wardrobe/top-plaid-shirt.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_vest_harvest": {
+      "src": "./images/marius-wardrobe/vest-harvest.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_outerwear_raincoat": {
+      "src": "./images/marius-wardrobe/outerwear-raincoat.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_outerwear_field_jacket": {
+      "src": "./images/marius-wardrobe/outerwear-field-jacket.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_neck_striped_scarf": {
+      "src": "./images/marius-wardrobe/neck-striped-scarf.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_neck_leaf_scarf": {
+      "src": "./images/marius-wardrobe/neck-leaf-scarf.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_neck_plaid_tie": {
+      "src": "./images/marius-wardrobe/neck-plaid-tie.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_head_cap_blue": {
+      "src": "./images/marius-wardrobe/head-cap-blue.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_head_cap_brown": {
+      "src": "./images/marius-wardrobe/head-cap-brown.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_head_rain_hat": {
+      "src": "./images/marius-wardrobe/head-rain-hat.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_head_harvest_hat": {
+      "src": "./images/marius-wardrobe/head-harvest-hat.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_head_forest_hat": {
+      "src": "./images/marius-wardrobe/head-forest-hat.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_hand_umbrella": {
+      "src": "./images/marius-wardrobe/hand-umbrella.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_hand_harvest_basket": {
+      "src": "./images/marius-wardrobe/hand-harvest-basket.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_hand_lantern": {
+      "src": "./images/marius-wardrobe/hand-lantern.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_hand_satchel": {
+      "src": "./images/marius-wardrobe/hand-satchel.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_hand_fish_keepnet": {
+      "src": "./images/marius-wardrobe/hand-fish-keepnet.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_hand_fishing_rod": {
+      "src": "./images/marius-wardrobe/hand-fishing-rod.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_reference_rain": {
+      "src": "./images/marius-wardrobe/reference-rain.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_reference_harvest": {
+      "src": "./images/marius-wardrobe/reference-harvest.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_reference_forest": {
+      "src": "./images/marius-wardrobe/reference-forest.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
+    },
+    "marius_wardrobe_reference_fishing": {
+      "src": "./images/marius-wardrobe/reference-fishing.png?v=marius-wardrobe1",
+      "width": 794,
+      "height": 1191
     }
   }
 };

@@ -10,28 +10,27 @@ function playBubbleCannon(a){a.run(`while(!bubbleCannonState().gameCompleted){co
 function playTreehouse(a){a.run(`while(!treehouseState().gameCompleted){const task=TreehouseSTUGame.currentTask(STU_TREEHOUSE_GAME,treehouseState());TreehouseSTUGame.deliver(STU_TREEHOUSE_GAME,treehouseState(),task.letter);}awardStars(StudentDomain.STAR_REWARDS.blockCompleted,'minigame_completed',STU_TREEHOUSE_GAME.rewardSourceId);saveProgress();continueTreehouse();`);}
 function playRailway(a){a.run(`while(!railwayState().gameCompleted){const task=RailwayVWXGame.currentTask(VWX_RAILWAY_GAME,railwayState());RailwayVWXGame.answer(VWX_RAILWAY_GAME,railwayState(),task.routeId);}awardStars(StudentDomain.STAR_REWARDS.blockCompleted,'minigame_completed',VWX_RAILWAY_GAME.rewardSourceId);saveProgress();continueRailway();`);}
 function playFlight(a){a.run(`var courseFlight=FlightYZGame.LearningEngine.initialState(FlightYZGame.EDUCATION,()=>.999);FlightYZGame.LearningEngine.start(courseFlight);while(courseFlight.totalProgress<FlightYZGame.EDUCATION.totalTasks){var courseIsland=Object.keys(courseFlight.assignment).find(id=>courseFlight.assignment[id]===courseFlight.target);FlightYZGame.LearningEngine.land(courseFlight,courseIsland);var courseResult=FlightYZGame.LearningEngine.resolveLanding(courseFlight,FlightYZGame.EDUCATION);if(courseResult.outcome==='delivery')FlightYZGame.LearningEngine.finishDelivery(courseFlight);if(courseResult.outcome==='final-flight')break;if(courseFlight.status==='respawning'){var courseNext=FlightYZGame.LearningEngine.finishRespawn(courseFlight,FlightYZGame.EDUCATION,()=>.999);if(courseNext.outcome==='stage-transition')FlightYZGame.LearningEngine.finishTransition(courseFlight);}}completeFlightYZ(courseFlight,1000);exitFlightYZ();`);}
-const choiceA={reward_abc:'jacket_stars',reward_def:'accessory_balloon',reward_ghi:'hat_straw_bow'};
-const otherA={reward_abc:'jacket_racer',reward_def:'accessory_bouquet',reward_ghi:'hat_adventure'};
-const choiceB={reward_abc:'jacket_racer',reward_def:'accessory_bouquet',reward_ghi:'hat_adventure'};
+const choiceA={reward_abc:'jacket_stars',reward_def:'accessory_balloon',reward_ghi:'hat_straw_bow',reward_jkl:'marius_hand_fishing_rod',reward_mno:'marius_hand_harvest_basket',reward_pqr:'marius_head_cap_blue',reward_stu:'marius_top_plaid_shirt',reward_vwx:'marius_outerwear_raincoat',reward_yz:'marius_hand_umbrella'};
+const otherA={reward_abc:'jacket_racer',reward_def:'accessory_bouquet',reward_ghi:'hat_adventure',reward_jkl:'marius_hand_satchel',reward_mno:'marius_head_harvest_hat',reward_pqr:'marius_bottom_denim',reward_stu:'marius_vest_harvest',reward_vwx:'marius_outerwear_field_jacket',reward_yz:'marius_hand_lantern'};
+const choiceB={reward_abc:'jacket_racer',reward_def:'accessory_bouquet',reward_ghi:'hat_adventure',reward_jkl:'marius_hand_satchel',reward_mno:'marius_head_harvest_hat',reward_pqr:'marius_bottom_denim',reward_stu:'marius_vest_harvest',reward_vwx:'marius_outerwear_field_jacket',reward_yz:'marius_hand_lantern'};
 (async()=>{
- const a=createContext();assert.equal(a.played.length,0);assert.equal(a.run('AppState.version'),9);assert.equal(a.run('AppState.characterState.ownedItems.length'),0);
- a.run('toggleSound();begin()');let phases=[],answers=0,translationAnswers=0,rewards=[],reviews=[];
+ const a=createContext();assert.equal(a.played.length,0);assert.equal(a.run('AppState.version'),11);assert.equal(a.run('AppState.characterState.ownedItems.length'),0);
+ a.run('toggleSound();begin()');let phases=[],answers=0,translationAnswers=0,rewards=[],rewardBalances=[],reviews=[];
  for(let guard=0;guard<520;guard++){
   const c=JSON.parse(a.run('JSON.stringify(AppState.cursor)'));phases.push(c.phase);
   if(a.run('Boolean(AppState.rewardFlow)')){
-   const id=a.run('AppState.rewardFlow.id');rewards.push(id);
+   const id=a.run('AppState.rewardFlow.id');rewards.push(id);rewardBalances.push({id,balance:a.run('AppState.student.starBalance')});
    const pending=createContext({saved:saved(a)});assert.equal(pending.run('view'),'reward');assert.equal(pending.run('AppState.rewardFlow.id'),id);
-   if(id==='reward_abc')assert.equal(a.run('AppState.characterState.ownedItems.length'),0);
-   else if(id==='reward_def')assert.equal(a.run('AppState.characterState.equipped.outfit'),'jacket_stars');
-   else assert.equal(a.run('AppState.characterState.equipped.hand_right'),'accessory_balloon');
+   assert.equal(a.run('AppState.characterState.ownedItems.length'),rewards.length-1);
    a.run(`chooseReward('${choiceA[id]}')`);
    assert.equal(a.run('rewardReady'),false);const chosen=a.run('AppState.rewardFlow.selected');assert.equal(a.run(`chooseReward('${otherA[id]}')`),false);assert.equal(a.run('AppState.rewardFlow.selected'),chosen);a.run('continueReward()');assert.equal(a.run('Boolean(AppState.rewardFlow)'),true);
    const selected=createContext({saved:saved(a)});assert.equal(selected.run('view'),'reward');assert.equal(selected.run('rewardReady'),true);
    await a.tick(1000);a.run('continueReward()');
    const next=JSON.parse(a.run('JSON.stringify(AppState.cursor)'));
-   if(id==='reward_abc')assert.deepEqual(next,{phase:'lesson',index:3,step:0});
-   else if(id==='reward_def')assert.deepEqual(next,{phase:'lesson',index:6,step:0});
-   else assert.deepEqual(next,{phase:'lesson',index:9,step:0});
+   const rewardIndex=['reward_abc','reward_def','reward_ghi','reward_jkl','reward_mno','reward_pqr','reward_stu','reward_vwx','reward_yz'].indexOf(id);
+   assert.equal(next.index,Math.min(25,(rewardIndex+1)*3));
+   assert.equal(next.phase,id==='reward_yz'?'results':'lesson');
+   if(id!=='reward_yz')assert.equal(next.step,0);
    continue;
   }
   if(c.phase==='results')break;
@@ -42,16 +41,16 @@ const choiceB={reward_abc:'jacket_racer',reward_def:'accessory_bouquet',reward_g
    a.run('completeQuestion();go("course")');if(q.type==='translationPicture')translationAnswers++;else answers++;
   }else if(c.phase==='letterReward')a.run('advanceAfterLetter()');else if(c.phase==='room')playRoom(a);else if(c.phase==='maze')playMaze(a);else if(c.phase==='miniIntro')a.run('startGame(false)');else if(c.phase==='miniResult')a.run('advanceAfterMini()');else if(c.phase==='balloon_ghi')playBalloon(a);else if(c.phase==='river_jkl')playRiver(a);else if(c.phase==='fruit_rain')playFruitRain(a);else if(c.phase==='bubble_cannon')playBubbleCannon(a);else if(c.phase==='treehouse_stu')playTreehouse(a);else if(c.phase==='railway_vwx')playRailway(a);else if(c.phase==='flight_yz')playFlight(a);else if(c.phase==='reviewIntro'){reviews.push(a.run('localReviewAt(AppState.cursor.index).id'));a.run('startReview(false)');}else if(c.phase==='cumulativeIntro'){reviews.push(a.run('cumulativeReviewAt(AppState.cursor.index).id'));a.run('startReview(true)');}else if(['reviewResult','cumulativeResult'].includes(c.phase))a.run('advanceAfterReview()');else if(c.phase==='finalIntro')a.run('startGame(true)');else throw Error(c.phase);
  }
- assert.equal(answers,142);assert.equal(translationAnswers,26);assert.deepEqual(rewards,['reward_abc','reward_def','reward_ghi']);assert.deepEqual(reviews,['review_JKL','review_MNO','cumulative_review_AO','review_PQR','review_STU','cumulative_review_AU','review_VWX','review_YZ','cumulative_review_AZ']);assert.ok(phases.includes('river_jkl'));assert.ok(phases.includes('fruit_rain'));assert.ok(phases.includes('bubble_cannon'));assert.ok(phases.includes('treehouse_stu'));assert.ok(phases.includes('railway_vwx'));assert.ok(phases.includes('flight_yz'));assert.equal(a.run('fruitRainState().completedTasks.length'),9);assert.equal(a.run('bubbleCannonState().successfulHits'),12);assert.equal(a.run('treehouseState().completedDeliveries'),12);assert.equal(a.run('railwayState().completedDeliveries'),12);assert.equal(a.run('AppState.flightYZ.permanent.completed'),true);assert.equal(a.run("AppState.student.starTransactions.filter(item=>item.sourceId===MNO_FRUIT_RAIN_GAME.rewardSourceId).length"),1);assert.equal(a.run("AppState.student.starTransactions.filter(item=>item.sourceId===PQR_BUBBLE_CANNON_GAME.rewardSourceId).length"),1);assert.equal(a.run("AppState.student.starTransactions.filter(item=>item.sourceId===STU_TREEHOUSE_GAME.rewardSourceId).length"),1);assert.equal(a.run("AppState.student.starTransactions.filter(item=>item.sourceId===VWX_RAILWAY_GAME.rewardSourceId).length"),1);assert.equal(a.run("AppState.student.starTransactions.filter(item=>item.sourceId===FlightYZGame.CONFIG.rewardSourceId).length"),1);assert.equal(a.run("AppState.student.achievements.unlocked.filter(item=>item.id==='alphabet_conqueror').length"),1);assert.equal(a.run('riverCrossingState().correct'),12);assert.equal(a.run('AppState.completed'),true);assert.equal(a.run('letters.every(d=>AppState.stats[d.letter].mastery===3)'),true);assert.equal(a.run('AppState.characterState.ownedItems.length'),3);
- assert.equal(a.run("equipItem('jacket_racer')"),false);assert.equal(a.run("equipItem('accessory_bouquet')"),false);const resumed=createContext({saved:saved(a)});assert.equal(resumed.run('AppState.characterState.equipped.outfit'),'jacket_stars');assert.equal(resumed.run('AppState.characterState.equipped.hand_right'),'accessory_balloon');assert.equal(resumed.run('AppState.rewardFlow'),null);
- assert.equal(resumed.run('AppState.characterState.equipped.head'),'hat_straw_bow');assert.equal(resumed.run("equipItem('hat_adventure')"),false);
+ assert.equal(answers,215);assert.equal(translationAnswers,26);assert.deepEqual(rewards,['reward_abc','reward_def','reward_ghi','reward_jkl','reward_mno','reward_pqr','reward_stu','reward_vwx','reward_yz']);assert.deepEqual(rewardBalances,[{id:'reward_abc',balance:11},{id:'reward_def',balance:17},{id:'reward_ghi',balance:23},{id:'reward_jkl',balance:26},{id:'reward_mno',balance:32},{id:'reward_pqr',balance:38},{id:'reward_stu',balance:44},{id:'reward_vwx',balance:50},{id:'reward_yz',balance:65}]);assert.deepEqual(reviews,['cumulative_review_AC','cumulative_review_AF','cumulative_review_AI','cumulative_review_AL','cumulative_review_AO','cumulative_review_AR','cumulative_review_AU','cumulative_review_AX','cumulative_review_AZ']);assert.ok(phases.includes('river_jkl'));assert.ok(phases.includes('fruit_rain'));assert.ok(phases.includes('bubble_cannon'));assert.ok(phases.includes('treehouse_stu'));assert.ok(phases.includes('railway_vwx'));assert.ok(phases.includes('flight_yz'));assert.equal(a.run('fruitRainState().completedTasks.length'),9);assert.equal(a.run('bubbleCannonState().successfulHits'),12);assert.equal(a.run('treehouseState().completedDeliveries'),12);assert.equal(a.run('railwayState().completedDeliveries'),12);assert.equal(a.run('AppState.flightYZ.permanent.completed'),true);assert.equal(a.run("AppState.student.starTransactions.filter(item=>item.sourceId===MNO_FRUIT_RAIN_GAME.rewardSourceId).length"),1);assert.equal(a.run("AppState.student.starTransactions.filter(item=>item.sourceId===PQR_BUBBLE_CANNON_GAME.rewardSourceId).length"),1);assert.equal(a.run("AppState.student.starTransactions.filter(item=>item.sourceId===STU_TREEHOUSE_GAME.rewardSourceId).length"),1);assert.equal(a.run("AppState.student.starTransactions.filter(item=>item.sourceId===VWX_RAILWAY_GAME.rewardSourceId).length"),1);assert.equal(a.run("AppState.student.starTransactions.filter(item=>item.sourceId===FlightYZGame.CONFIG.rewardSourceId).length"),1);assert.equal(a.run("AppState.student.starTransactions.filter(item=>item.sourceId.startsWith('block:reward_')&&!['block:reward_abc','block:reward_def','block:reward_ghi'].includes(item.sourceId)).length"),0);assert.equal(a.run("AppState.student.achievements.unlocked.filter(item=>item.id==='alphabet_conqueror').length"),1);assert.equal(a.run('riverCrossingState().correct'),12);assert.equal(a.run('AppState.completed'),true);assert.equal(a.run('letters.every(d=>AppState.stats[d.letter].mastery===3)'),true);assert.equal(a.run('AppState.characterState.ownedItems.length'),9);
+ assert.equal(a.run("equipItem('jacket_racer')"),false);assert.equal(a.run("equipItem('accessory_bouquet')"),false);const resumed=createContext({saved:saved(a)});assert.equal(resumed.run('AppState.characterState.equipped.outfit'),null);assert.equal(resumed.run('AppState.characterState.equipped.hand_right'),'marius_hand_umbrella');assert.equal(resumed.run('AppState.rewardFlow'),null);
+ assert.equal(resumed.run('AppState.characterState.equipped.head'),'marius_head_cap_blue');assert.equal(resumed.run('AppState.characterState.equipped.outerwear'),'marius_outerwear_raincoat');assert.equal(resumed.run('AppState.characterState.equipped.hand_left'),'marius_hand_fishing_rod');assert.equal(resumed.run("equipItem('hat_adventure')"),false);
 
  // A current-version A–F completion resumes at G with both old gifts intact.
  const previousAF=JSON.parse(a.store.get('alfie-abc-v1'));
  for(const letter of 'GHIJKLMNOPQRSTUVWXYZ')delete previousAF.stats[letter];
  previousAF.completed=true;previousAF.cursor={phase:'results',index:5,step:6};
  previousAF.completedBlocks=['reward_abc','reward_def'];previousAF.claimedRewards=['reward_abc','reward_def'];previousAF.rewardFlow=null;
- previousAF.characterState.ownedItems=['jacket_stars','accessory_balloon'];previousAF.characterState.equipped.head=null;
+ previousAF.characterState.ownedItems=['jacket_stars','accessory_balloon'];previousAF.characterState.equipped.outfit='jacket_stars';previousAF.characterState.equipped.hand_right='accessory_balloon';previousAF.characterState.equipped.head=null;
  const resumedAF=createContext({saved:{'alfie-abc-v1':JSON.stringify(previousAF)}});
  assert.deepEqual(JSON.parse(resumedAF.run('JSON.stringify(AppState.cursor)')),{phase:'lesson',index:6,step:0});
  assert.equal(resumedAF.run('AppState.completed'),false);
@@ -62,6 +61,8 @@ const choiceB={reward_abc:'jacket_racer',reward_def:'accessory_bouquet',reward_g
 
  // Upgrade legacy v2 with both category options unlocked: retain only equipped.
  const legacy=JSON.parse(a.store.get('alfie-abc-v1'));
+ legacy.completed=false;legacy.cursor={phase:'lesson',index:9,step:0};
+ legacy.completedBlocks=['reward_abc','reward_def','reward_ghi'];legacy.claimedRewards=['reward_abc','reward_def','reward_ghi'];
  delete legacy.rewardStateVersion;
  legacy.characterState={unlockedItems:['jacket_01','jacket_02','headwear_01','headwear_02'],equipped:{jacket:'jacket_02',headwear:'headwear_01'}};
  legacy.rewardFlow=null;
@@ -83,7 +84,7 @@ const choiceB={reward_abc:'jacket_racer',reward_def:'accessory_bouquet',reward_g
  assert.equal(migratedAgain.run("isItemOwned('hat_adventure')"),false);
  migratedAgain.run("chooseReward('hat_straw_bow')");await migratedAgain.tick(1000);migratedAgain.run('continueReward()');
  assert.equal(migratedAgain.run('AppState.rewardFlow'),null);
- assert.equal(migratedAgain.run('AppState.completed'),true);
+ assert.equal(migratedAgain.run('AppState.completed'),false);
  // Development saves already using new IDs but missing a reward schema version.
  legacy.characterState={unlockedItems:['jacket_stars','jacket_racer','accessory_bouquet','accessory_balloon'],equipped:{giraffeVariant:'jacket_stars',handItem:'accessory_balloon'}};
  const development=createContext({saved:{'alfie-abc-v1':JSON.stringify(legacy)}});
@@ -99,16 +100,19 @@ const choiceB={reward_abc:'jacket_racer',reward_def:'accessory_bouquet',reward_g
   else if(c.phase==='lesson'||['mini','final','review','cumulative'].includes(c.phase)){const type=b.run('ensureQuestion().type');b.run('completeQuestion();go("course")');if(type==='translationPicture')bTranslationAnswers++;else bAnswers++;}
   else if(c.phase==='letterReward')b.run('advanceAfterLetter()');else if(c.phase==='room')playRoom(b);else if(c.phase==='maze')playMaze(b);else if(c.phase==='miniIntro')b.run('startGame(false)');else if(c.phase==='miniResult')b.run('advanceAfterMini()');else if(c.phase==='balloon_ghi')playBalloon(b);else if(c.phase==='river_jkl')playRiver(b);else if(c.phase==='fruit_rain')playFruitRain(b);else if(c.phase==='bubble_cannon')playBubbleCannon(b);else if(c.phase==='treehouse_stu')playTreehouse(b);else if(c.phase==='railway_vwx')playRailway(b);else if(c.phase==='flight_yz')playFlight(b);else if(c.phase==='reviewIntro')b.run('startReview(false)');else if(c.phase==='cumulativeIntro')b.run('startReview(true)');else if(['reviewResult','cumulativeResult'].includes(c.phase))b.run('advanceAfterReview()');else if(c.phase==='finalIntro')b.run('startGame(true)');else throw Error(c.phase);
  }
- assert.equal(bAnswers,142);assert.equal(bTranslationAnswers,26);
+ assert.equal(bAnswers,215);assert.equal(bTranslationAnswers,26);
  const bReload=createContext({saved:saved(b)});
- assert.equal(bReload.run('AppState.characterState.equipped.outfit'),'jacket_racer');
- assert.equal(bReload.run('AppState.characterState.equipped.hand_right'),'accessory_bouquet');
- assert.equal(bReload.run('AppState.characterState.equipped.head'),'hat_adventure');
+ assert.equal(bReload.run('AppState.characterState.equipped.outfit'),null);
+ assert.equal(bReload.run('AppState.characterState.equipped.hand_right'),'marius_hand_lantern');
+ assert.equal(bReload.run('AppState.characterState.equipped.head'),'marius_head_harvest_hat');
+ assert.equal(bReload.run('AppState.characterState.equipped.hand_left'),'marius_hand_satchel');
+ assert.equal(bReload.run('AppState.characterState.equipped.bottom'),'marius_bottom_denim');
+ assert.equal(bReload.run('AppState.characterState.equipped.outerwear'),'marius_outerwear_field_jacket');
  assert.equal(bReload.run('equipItem("jacket_stars")'),false);assert.equal(bReload.run('equipItem("accessory_balloon")'),false);
  assert.equal(bReload.run('equipItem("hat_straw_bow")'),false);
- assert.equal(bReload.run('AppState.characterState.ownedItems.length'),3);
- assert.ok(bReload.run('renderHome()').includes('giraffe_jacket_racer.png'));
- assert.ok(bReload.run('renderHome()').includes('background_home.png'));
+ assert.equal(bReload.run('AppState.characterState.ownedItems.length'),9);
+ assert.ok(bReload.run('renderHome()').includes('marius-wardrobe/outerwear-field-jacket.png'));
+ assert.ok(bReload.run('renderHome()').includes('background_home.webp'));
  assert.ok(!bReload.run('renderHome()').includes('reward_icon_jacket'));
  // Completed gifts never become mandatory again.
  a.run('AppState.cursor.index=2;AppState.cursor.phase="miniResult";finishBlock()');assert.equal(a.run('AppState.rewardFlow'),null);
@@ -145,5 +149,5 @@ const choiceB={reward_abc:'jacket_racer',reward_def:'accessory_bouquet',reward_g
  imageFailure.run("document.querySelectorAll=selector=>selector==='img[data-character-asset]'?[brokenClothing]:[];wireMedia();wireMedia()");assert.equal(imageFailure.context.brokenClothing.hidden,true);assert.equal(imageFailure.warnings.length,1);
  // Parent access still uses a two-second hold.
  const hold=createContext();hold.run("startHold({type:'keydown',key:'Enter',repeat:false,preventDefault(){}})");await hold.tick(1999);assert.equal(hold.nodes.get('#modal-layer')?.innerHTML||'','');await hold.tick(1);assert.ok(hold.nodes.get('#modal-layer').innerHTML.includes('Для родителей'));
- console.log(JSON.stringify({passed:true,answers,translationAnswers,reviewQuestions:{abc:5,def:'maze',ghi:5,riverJKL:12,fruitRainMNO:9,bubbleCannonPQR:12,treehouseSTU:12,railwayVWX:12,flightYZ:12,newLocal:6,newCumulative:6},reviews,mazeRounds:3,balloonCorrectAnswers:30,riverCorrectAnswers:12,fruitRainCorrectAnswers:9,bubbleCannonCorrectHits:12,treehouseDeliveries:12,railwayDeliveries:12,rewards,courseFlow:'reward_GHI -> J/K/L -> river crossing -> JKL review -> MNO review -> Fruit Rain -> A-O -> PQR review -> Bubble Cannon -> STU review -> Treehouse -> A-U -> VWX review -> Railway -> YZ review -> A-Z -> Flight YZ -> results',wardrobePersistence:true,lockedAlternatives:true,flowBAnswers:bAnswers,flowBTranslationAnswers:bTranslationAnswers,legacyBothUnlockedMigration:true,retiredHeadwearReplacement:true,completedAFResumesAtG:true,completedAIResumesAtJ:true,doubleRewardTapGuard:true,pendingRewardResume:true,selectedRewardResume:true,oldProgressMigration:true,noPrematureGifts:true,noRepeatedGifts:true,resetAndMute:true,questionResume:true,doubleTapGuard:true,weightedReview:true,choiceTrials:500,legacyFinalCoverageTrials:40,audioSequenceAndPause:true,audioRepeat:true,audioCancellation:true,audioMute:true,voiceAudioObjects:1,effectAudioObjects:audio.run('RIVER_EFFECT_KEYS.length'),maxConcurrentVoiceAudio:audio.stats().maxActive,normalTTSCalls:audio.spoken.length,missingFileFallbackLanguages:true,autoplayDoesNotTriggerTTS:true,parentHold:true,brokenImageFallback:true},null,2));
+ console.log(JSON.stringify({passed:true,answers,translationAnswers,reviewQuestions:{eachCumulative:'6–26 in 3 rounds',blocks:9,riverJKL:12,fruitRainMNO:9,bubbleCannonPQR:12,treehouseSTU:12,railwayVWX:12,flightYZ:12},reviews,mazeRounds:3,balloonCorrectAnswers:30,riverCorrectAnswers:12,fruitRainCorrectAnswers:9,bubbleCannonCorrectHits:12,treehouseDeliveries:12,railwayDeliveries:12,rewards,rewardBalances,courseFlow:'ABC game -> A-C -> DEF game -> A-F -> GHI game -> A-I -> JKL game -> A-L -> MNO game -> A-O -> PQR game -> A-R -> STU game -> A-U -> VWX game -> A-X -> YZ game -> A-Z -> results',wardrobePersistence:true,lockedAlternatives:true,flowBAnswers:bAnswers,flowBTranslationAnswers:bTranslationAnswers,legacyBothUnlockedMigration:true,retiredHeadwearReplacement:true,completedAFResumesAtG:true,completedAIResumesAtJ:true,doubleRewardTapGuard:true,pendingRewardResume:true,selectedRewardResume:true,oldProgressMigration:true,noPrematureGifts:true,noRepeatedGifts:true,resetAndMute:true,questionResume:true,doubleTapGuard:true,weightedReview:true,choiceTrials:500,legacyFinalCoverageTrials:40,audioSequenceAndPause:true,audioRepeat:true,audioCancellation:true,audioMute:true,voiceAudioObjects:1,effectAudioObjects:audio.run('RIVER_EFFECT_KEYS.length'),maxConcurrentVoiceAudio:audio.stats().maxActive,normalTTSCalls:audio.spoken.length,missingFileFallbackLanguages:true,autoplayDoesNotTriggerTTS:true,parentHold:true,brokenImageFallback:true},null,2));
 })().catch(e=>{console.error(e);process.exitCode=1});

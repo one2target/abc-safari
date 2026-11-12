@@ -99,6 +99,32 @@ const StudentDomain=(()=>{
     return {ok:true,reason:'purchased'};
   }
 
+  function purchaseItems(state,inventory,items,timestamp=Date.now()){
+    if(!Array.isArray(items)||!items.length||!inventory||!Array.isArray(inventory.ownedItems))return {ok:false,reason:'unknown',purchasedItemIds:[]};
+    const unique=[];
+    for(const item of items){
+      if(!item||typeof item.id!=='string'||!item.id||unique.some(entry=>entry.id===item.id))return {ok:false,reason:'unknown',purchasedItemIds:[]};
+      if(item.isPremium||item.currency==='money')return {ok:false,reason:'premium',purchasedItemIds:[]};
+      if(inventory.ownedItems.includes(item.id)||state.purchasedItemIds.includes(item.id)||hasTransaction(state,`shop:${item.id}`))return {ok:false,reason:'owned',purchasedItemIds:[]};
+      const price=integer(item.priceStars);
+      if(!price)return {ok:false,reason:'unavailable',purchasedItemIds:[]};
+      unique.push({item,price});
+    }
+    const total=unique.reduce((sum,entry)=>sum+entry.price,0);
+    if(integer(state.starBalance)<total)return {ok:false,reason:'insufficient',total,purchasedItemIds:[]};
+    // Validate the complete bundle before mutating either economy or inventory.
+    // Once validation succeeds, this synchronous block cannot expose a partial
+    // purchase to rendering or persistence.
+    const transactionTime=Number.isFinite(timestamp)?timestamp:Date.now();
+    state.starBalance-=total;
+    for(const {item,price} of unique){
+      state.starTransactions.push({amount:-price,reason:'shop_purchase',sourceId:`shop:${item.id}`,timestamp:transactionTime});
+      state.purchasedItemIds.push(item.id);
+      inventory.ownedItems.push(item.id);
+    }
+    return {ok:true,reason:'purchased',total,purchasedItemIds:unique.map(entry=>entry.item.id)};
+  }
+
   function localDayKey(timestamp=Date.now()){
     const date=new Date(timestamp);
     if(Number.isNaN(date.getTime()))return null;
@@ -153,7 +179,7 @@ const StudentDomain=(()=>{
 
   return Object.freeze({
     VERSION,STAR_REWARDS,LEVELS,ACHIEVEMENTS,initialStudentState,restoreStudentState,
-    awardStars,purchaseItem,recordActivity,activityStreak,letterMastery,levelFor,
+    awardStars,purchaseItem,purchaseItems,recordActivity,activityStreak,letterMastery,levelFor,
     evaluateAchievements,markAchievementNotified,createStorageAdapter,clone
   });
 })();

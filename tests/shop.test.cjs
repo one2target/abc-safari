@@ -3,7 +3,7 @@ const {createContext,saved}=require('./support/trainer-harness.cjs');
 
 // Preview is ephemeral and uses the requested item without granting ownership.
 const preview=createContext();
-preview.run("unlockItem('jacket_stars');equipItem('jacket_stars');AppState.completedBlocks=['reward_abc'];StudentDomain.awardStars(AppState.student,3,'block_completed','block:reward_abc');StudentDomain.awardStars(AppState.student,7,'test_seed','test:scenario-a');view='profile';profileSection='shop'");
+preview.run("unlockItem('jacket_stars');equipItem('jacket_stars');AppState.completedBlocks=['reward_abc'];AppState.claimedRewards=['reward_abc'];StudentDomain.awardStars(AppState.student,3,'block_completed','block:reward_abc');StudentDomain.awardStars(AppState.student,7,'test_seed','test:scenario-a');view='profile';profileSection='shop'");
 assert.equal(preview.run("tryShopItem('jacket_racer')"),true);
 assert.equal(preview.run('shopPreviewItemId'),'jacket_racer');
 assert.equal(preview.run("isItemOwned('jacket_racer')"),false);
@@ -24,14 +24,14 @@ assert.equal(preview.run("AppState.characterState.equipped.background"),null);
 
 // Sufficient balance: preview -> atomic purchase -> owned + equipped.
 const purchase=createContext();
-purchase.run("AppState.completedBlocks=['reward_abc'];StudentDomain.awardStars(AppState.student,3,'block_completed','block:reward_abc');StudentDomain.awardStars(AppState.student,32,'test_seed','test:racer');view='profile';profileSection='shop';tryShopItem('jacket_racer')");
+purchase.run("AppState.completedBlocks=['reward_abc'];AppState.claimedRewards=['reward_abc'];StudentDomain.awardStars(AppState.student,3,'block_completed','block:reward_abc');StudentDomain.awardStars(AppState.student,32,'test_seed','test:racer');view='profile';profileSection='shop';tryShopItem('jacket_racer')");
 assert.equal(purchase.run("buyShopItem('jacket_racer')"),true);
 assert.equal(purchase.run('AppState.student.starBalance'),5);
 assert.equal(purchase.run("isItemOwned('jacket_racer')"),true);
 assert.equal(purchase.run("getEquippedItem('outfit').id"),'jacket_racer');
 assert.equal(purchase.run("AppState.student.starTransactions.some(t=>t.amount===-30&&t.reason==='shop_purchase'&&t.sourceId==='shop:jacket_racer')"),true);
 assert.ok(purchase.run("renderWardrobeProfile()").includes('Гоночная куртка'));
-assert.ok(purchase.run("renderShopCard(getItemById('jacket_racer'))").includes('✓ Уже твоё'));
+assert.ok(purchase.run("renderShopCard(getItemById('jacket_racer'))").includes('✓ Куплено'));
 assert.ok(purchase.run("renderShopCard(getItemById('jacket_racer'))").includes('Надето ✓'));
 const purchaseReload=createContext({saved:saved(purchase)});
 assert.equal(purchaseReload.run('AppState.student.starBalance'),5);
@@ -40,7 +40,7 @@ assert.equal(purchaseReload.run("getEquippedItem('outfit').id"),'jacket_racer');
 
 // Insufficient balance is enforced in UI and domain/API paths.
 const poor=createContext();
-poor.run("AppState.completedBlocks=['reward_abc'];StudentDomain.awardStars(AppState.student,3,'block_completed','block:reward_abc');StudentDomain.awardStars(AppState.student,9,'test_seed','test:poor');view='profile';profileSection='shop';tryShopItem('jacket_racer')");
+poor.run("AppState.completedBlocks=['reward_abc'];AppState.claimedRewards=['reward_abc'];StudentDomain.awardStars(AppState.student,3,'block_completed','block:reward_abc');StudentDomain.awardStars(AppState.student,9,'test_seed','test:poor');view='profile';profileSection='shop';tryShopItem('jacket_racer')");
 assert.ok(poor.run("renderShopCard(getItemById('jacket_racer'))").includes('Не хватает 18 ⭐'));
 assert.equal(poor.run("buyShopItem('jacket_racer')"),false);
 assert.equal(poor.run('AppState.student.starBalance'),12);
@@ -94,11 +94,13 @@ assert.ok(racerThumbnail.includes('data-character-context="item-preview"'));
 assert.ok(racerThumbnail.includes('giraffe_jacket_racer.png'));
 assert.ok(!racerThumbnail.includes('giraffe_jacket_stars.png'));
 assert.equal(thumbnails.run("ITEMS.every(item=>renderCatalogArt(item).includes(MEDIA_ASSETS.images[item.asset].src))"),true);
+assert.equal(thumbnails.run("SHOP_ITEMS.every(item=>!renderShopCard(item).includes('<canvas'))"),true);
+assert.equal(thumbnails.run("SHOP_ITEMS.filter(item=>item.slot!=='background').every(item=>renderShopCard(item).includes('data-shop-thumbnail'))"),true);
 
 console.log(JSON.stringify({
   passed:true,previewWithoutOwnership:true,previewDoesNotEquip:true,previewClearsOnExitAndReload:true,
   equipUnownedGuard:true,backgroundEquipGuard:true,purchase:true,starDebit:true,ownedAfterPurchase:true,
   wardrobeAfterPurchase:true,insufficientFundsGuard:true,nonNegativeBalance:true,repeatPurchaseGuard:true,
   premiumGuard:true,previewPurchaseEquip:true,backgroundPreviewIsolation:true,ownedControls:true,
-  outfitThumbnailsByItemId:true,allCatalogAssets:true
+  outfitThumbnailsByItemId:true,allCatalogAssets:true,shopCardsAvoidCanvas:true
 },null,2));

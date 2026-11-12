@@ -241,6 +241,46 @@ main {
   align-items:stretch;
   width:min(100%,330px);
 }
+/* These home-only rules stay critical even though the full Training and
+   Profile stylesheets load on demand. Keep the established home design and
+   vertical rhythm without pulling either section bundle into first paint. */
+.home-actions > .marius-home-button {
+  margin-top:14px;
+  background:linear-gradient(135deg,#7961bd,#5d4aa0);
+  box-shadow:0 5px 0 #443378;
+}
+.home-actions > .marius-home-button:hover {
+  background:linear-gradient(135deg,#6f57b4,#51408e);
+}
+.home-actions > .training-home-card {
+  width:100%;
+  margin-top:18px;
+}
+.home-actions > .training-home-card .training-button {
+  background:linear-gradient(135deg,#ef7b45,#e6a825);
+  box-shadow:0 5px 0 #b95b30;
+}
+.home-actions > .training-home-card .training-button:hover:not(:disabled) {
+  background:linear-gradient(135deg,#e86f3b,#d99b1d);
+}
+.home-actions > .training-home-card .training-button:disabled {
+  background:#d9ddd9;
+  color:#737b77;
+  box-shadow:0 5px 0 #b9bfbb;
+  cursor:not-allowed;
+}
+.home-actions > .training-home-card p {
+  margin:11px 0 0;
+  text-align:center;
+  color:var(--muted);
+  font-size:14px;
+  font-weight:700;
+}
+@media(max-width:650px) {
+  .home-actions > .training-home-card {
+    margin-top:12px;
+  }
+}
 .home-actions .text-button {
   width:100%;
 }
@@ -780,12 +820,30 @@ main {
   letter-spacing:4px;
   margin-top:15px;
 }
+.review-round-status {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  width:max-content;
+  max-width:calc(100% - 24px);
+  margin:18px auto -10px;
+  padding:8px 14px;
+  border-radius:999px;
+  background:var(--mint);
+  color:var(--green);
+  font-size:13px;
+  font-weight:800;
+}
+.review-round-status strong {font-size:14px;}
+.review-round-status span {color:var(--muted);}
 .dots {
   display:flex;
   justify-content:center;
   gap:10px;
   margin:24px auto 20px;
 }
+@media(max-width:430px){.review-round-status{margin-top:10px;gap:8px;padding:7px 11px;font-size:11px}.review-round-status strong{font-size:12px}}
 .dot {
   height:12px;
   width:12px;
@@ -1547,6 +1605,50 @@ main {
 }
 @media(orientation:landscape) and (max-height:500px){.reward-layout,.wardrobe-layout{grid-template-columns:1fr 1fr;}.character-stage{width:200px;}}
 
+/* Isolated Marius wardrobe lab. It is reachable only through the demo URL. */
+.wardrobe-lab-screen {max-width:1180px;margin:0 auto;padding:18px 0 48px;}
+.wardrobe-lab-screen>h1 {font-size:clamp(30px,5vw,48px);margin-bottom:8px;}
+.wardrobe-lab-intro {max-width:760px;color:var(--muted);line-height:1.55;margin:0 0 24px;}
+.wardrobe-lab-workbench {display:grid;grid-template-columns:minmax(280px,420px) minmax(0,1fr);align-items:start;gap:28px;}
+.wardrobe-lab-preview {position:sticky;top:16px;padding:18px;border:1px solid var(--line);border-radius:28px;background:#fff;box-shadow:var(--shadow);}
+.wardrobe-lab-main-character {width:min(100%,390px);background:linear-gradient(135deg,#f8f4e9,#e6f0dc);}
+.wardrobe-lab-metrics,.wardrobe-lab-selection {font-size:12px;line-height:1.45;color:var(--muted);margin:10px 0 0;}
+.wardrobe-lab-status {min-height:44px;margin:12px 0 0;padding:10px 12px;border-radius:13px;background:#eef6ea;color:var(--ink);font-size:13px;line-height:1.4;}
+.wardrobe-lab-controls {display:grid;gap:18px;}
+.wardrobe-lab-actions {display:flex;flex-wrap:wrap;gap:8px;}
+.wardrobe-lab-actions .secondary {padding:10px 13px;font-size:13px;}
+.wardrobe-lab-group {padding:16px;border:1px solid var(--line);border-radius:20px;background:#fff;}
+.wardrobe-lab-group h2 {font-size:17px;margin:0 0 11px;}
+.wardrobe-lab-items {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+.wardrobe-lab-item {display:flex;min-width:0;min-height:66px;flex-direction:column;justify-content:center;align-items:flex-start;gap:4px;padding:9px 10px;border:2px solid var(--line);border-radius:14px;background:#faf9f3;text-align:left;line-height:1.2;}
+.wardrobe-lab-item:hover {border-color:var(--green);}
+.wardrobe-lab-item.selected {border-color:var(--green);background:#e9f5e7;box-shadow:inset 0 0 0 1px var(--green);}
+.wardrobe-lab-item span {font-size:12px;font-weight:800;}
+.wardrobe-lab-item small {font-size:9px;color:var(--muted);overflow-wrap:anywhere;}
+.wardrobe-lab-references {margin-top:42px;}
+.wardrobe-lab-references>h2 {font-size:26px;margin:0 0 16px;}
+.wardrobe-lab-reference-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;}
+.wardrobe-lab-comparison {padding:16px;border:1px solid var(--line);border-radius:22px;background:#fff;}
+.wardrobe-lab-comparison h3 {font-size:17px;margin:0 0 12px;}
+.wardrobe-lab-pair {display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.wardrobe-lab-pair>div {display:flex;min-width:0;min-height:250px;flex-direction:column;align-items:center;justify-content:flex-start;gap:7px;padding:9px;border-radius:15px;background:#f4f2ea;overflow:hidden;}
+.wardrobe-lab-pair span {font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.wardrobe-lab-pair img {display:block;width:100%;height:auto;max-height:330px;object-fit:contain;border-radius:10px;}
+.wardrobe-reference-character {width:100%;max-width:210px;background:transparent;border-radius:10px;box-shadow:none;}
+@media(max-width:820px){
+ .wardrobe-lab-workbench {grid-template-columns:1fr;}
+ .wardrobe-lab-preview {position:static;}
+ .wardrobe-lab-main-character {width:min(100%,330px);}
+ .wardrobe-lab-items {grid-template-columns:repeat(2,minmax(0,1fr));}
+ .wardrobe-lab-reference-grid {grid-template-columns:1fr;}
+}
+@media(max-width:480px){
+ .wardrobe-lab-screen {padding-top:8px;}
+ .wardrobe-lab-items {grid-template-columns:1fr;}
+ .wardrobe-lab-pair>div {min-height:190px;}
+ .wardrobe-lab-actions {display:grid;grid-template-columns:1fr;}
+}
+
 /* A full reaction above the letter badge, with room for the next button. */
 .interlude.letter-completed {min-height:0;padding:16px 5px;}
 .letter-completed .completion-sticker {
@@ -1557,6 +1659,12 @@ main {
 .letter-completed h1 {margin:12px 0 10px;}
 .letter-completed .stars {margin:8px 0;}
 .letter-completed .primary {margin-top:16px;max-width:100%;}
+.resource-loading {position:fixed;left:50%;bottom:max(22px,env(safe-area-inset-bottom));z-index:120;transform:translateX(-50%);display:flex;align-items:center;gap:10px;max-width:calc(100vw - 32px);padding:11px 16px;border:1px solid #d8e6de;border-radius:999px;background:rgba(255,255,255,.96);box-shadow:0 8px 30px rgba(23,102,76,.18);font-size:13px;font-weight:800;color:var(--green);}
+.resource-loading[hidden] {display:none;}
+.resource-loading i {width:16px;height:16px;border:2px solid #b9dcca;border-top-color:var(--green);border-radius:50%;animation:resource-spin .8s linear infinite;}
+.audio-loading {bottom:max(76px,calc(env(safe-area-inset-bottom) + 76px));}
+.audio-loading.is-error i {display:none;}
+@keyframes resource-spin {to{transform:rotate(360deg);}}
 
 @media(prefers-reduced-motion:reduce) {
   *,*::before,*::after {
@@ -1566,42 +1674,24 @@ main {
   }
 }
 </style>
-<link rel="stylesheet" href="./hidden-object-game.css">
-<link rel="stylesheet" href="./letter-maze-game.css?v=letter-maze-def3">
-<link rel="stylesheet" href="./balloon-pop-game.css">
-<link rel="stylesheet" href="./river-crossing-game.css?v=river-finale3">
-<link rel="stylesheet" href="./fruit-rain-game.css?v=fruit-rain-v6">
-<link rel="stylesheet" href="./bubble-cannon-game.css?v=bubble-cannon-pqr1">
-<link rel="stylesheet" href="./treehouse-stu-game.css?v=treehouse-stu6">
-<link rel="stylesheet" href="./railway-vwx-game.css?v=railway-vwx2">
-<link rel="stylesheet" href="./flight-yz-game.css?v=flight-yz13">
-<link rel="stylesheet" href="./training.css?v=training-layout-v3">
-<link rel="stylesheet" href="./student-profile.css?v=student-profile-v1">
 </head>
 <body>
 <div class="app" id="app">
 <header class="topbar"><div class="brand" aria-label="ABC Safari"><span class="brand-mark" aria-hidden="true">A</span><div>ABC <span>Safari</span></div></div><nav class="tools" aria-label="App controls"><button class="icon-button small-icon hide" id="home-button" aria-label="Home"></button><button class="icon-button small-icon" id="progress-button" aria-label="Жирафик — гардероб">👕</button><button class="icon-button" id="sound-button" aria-label="Turn sound off" aria-pressed="false">🔊</button></nav></header>
 <div id="storage-notice" class="storage-notice hide" lang="ru">Браузер не разрешает сохранять прогресс. Игра работает, пока открыта эта вкладка.</div>
+<div id="resource-loading" class="resource-loading" role="status" aria-live="polite" hidden><i aria-hidden="true"></i><span>Готовим следующий этап…</span></div>
+<div id="audio-loading" class="resource-loading audio-loading" role="status" aria-live="polite" hidden><i aria-hidden="true"></i><span>Загружаем озвучку…</span></div>
 <main id="main"></main>
 <footer class="footer"><span class="footer-note">Made for little explorers <span aria-hidden="true">✦</span></span><button id="parent-button" class="parent-button" aria-label="Parent view. Hold for two seconds" title="Hold for 2 seconds · Удерживайте 2 секунды">⚙ <span>Parents</span></button></footer>
 </div>
 <div id="modal-layer" class="backdrop" hidden></div><div id="confetti" class="confetti" aria-hidden="true"></div>
-<script src="./assets.js?v=river-d868880e"></script>
-<script src="./audio-manager.js?v=river-d868880e"></script>
-<script src="./find-object-scenes.js"></script>
-<script src="./hidden-object-game.js"></script>
-<script src="./letter-maze-scenes.js?v=letter-maze-def3"></script>
-<script src="./letter-maze-game.js?v=letter-maze-def3"></script>
-<script src="./balloon-pop-game.js?v=training-v1"></script>
-<script src="./river-crossing-game.js?v=river-training-v1"></script>
-<script src="./fruit-rain-game.js?v=fruit-rain-v6"></script>
-<script src="./bubble-cannon-game.js?v=bubble-cannon-pqr1"></script>
-<script src="./treehouse-stu-game.js?v=treehouse-stu6"></script>
-<script src="./railway-vwx-game.js?v=railway-vwx2"></script>
-<script src="./flight-yz-game.js?v=flight-yz13"></script>
+<script src="./assets.js?v=resource-packs2"></script>
+<script src="./marius-wardrobe-catalog.js?v=marius-collections4"></script>
+<script src="./audio-manager.js?v=critical-audio2"></script>
+<script src="./resource-registry.js?v=course-packs-2"></script>
+<script src="./resource-loader.js?v=critical-audio3"></script>
 <script src="./training-config.js?v=training-v1"></script>
 <script src="./training-state.js?v=training-v1"></script>
-<script src="./training-engine.js?v=training-v1"></script>
 <script src="./student-domain.js?v=student-profile-v2"></script>
 <script>
 'use strict';
@@ -1613,7 +1703,8 @@ const DEMO = QUERY_PARAMS.get('demo') === '1';
 const DEMO_LETTER = (QUERY_PARAMS.get('letter')||'').toUpperCase();
 const DEMO_SCREEN = QUERY_PARAMS.get('screen')||'';
 const STORAGE_KEY = DEMO ? 'alfie-abc-demo-v1' : 'alfie-abc-v1';
-const APP_STATE_VERSION=9;
+const APP_STATE_VERSION=11;
+const COURSE_SEQUENCE_VERSION=10;
 const storageAdapter=StudentDomain.createStorageAdapter(localStorage,STORAGE_KEY);
 const letters = [
  {letter:'A',lowercase:'a',sound:'æ',name:'ay',word:'Apple',translation:'Яблоко',emoji:'🍎',color:'#c85b33',tint:'#fff0e4',image:null,letterAudio:null,soundAudio:null,wordAudio:null,translationAudio:null,distractors:['M','S']},
@@ -1644,8 +1735,13 @@ const letters = [
  {letter:'Z',lowercase:'z',sound:'z',name:'zee',word:'Zebra',translation:'Зебра',emoji:'🦓',color:'#565f72',tint:'#eceff4',image:null,letterAudio:null,soundAudio:null,letterWordAudio:null,wordAudio:null,translationAudio:null,distractors:['S','N'],preferLetterWordAudio:true}
 ];
 const DEMO_LETTER_INDEX=DEMO?letters.findIndex(item=>item.letter===DEMO_LETTER):-1;
-const DEMO_REWARD_PREVIEW=DEMO&&DEMO_SCREEN==='reward_ghi';
+const DEMO_REWARD_IDS=Object.freeze(['reward_abc','reward_def','reward_ghi','reward_jkl','reward_mno','reward_pqr','reward_stu','reward_vwx','reward_yz']);
+const DEMO_REWARD_ID=DEMO&&DEMO_REWARD_IDS.includes(DEMO_SCREEN)?DEMO_SCREEN:'';
+const DEMO_REWARD_PREVIEW=Boolean(DEMO_REWARD_ID);
 const DEMO_INVENTORY_PREVIEW=DEMO&&DEMO_SCREEN==='inventory';
+const DEMO_SHOP_PREVIEW=DEMO&&DEMO_SCREEN==='shop';
+const DEMO_SHOP_CATEGORY_QUERY=DEMO_SHOP_PREVIEW?(QUERY_PARAMS.get('category')||''):'';
+const DEMO_COLLECTION_QUERY=DEMO_SHOP_PREVIEW?(QUERY_PARAMS.get('collection')||''):'';
 const DEMO_MAZE_PREVIEW=DEMO&&DEMO_SCREEN==='maze_def';
 const DEMO_BALLOON_PREVIEW=DEMO&&DEMO_SCREEN==='balloon_ghi';
 const DEMO_RIVER_PREVIEW=DEMO&&DEMO_SCREEN==='river_jkl';
@@ -1654,14 +1750,16 @@ const DEMO_BUBBLE_CANNON_PREVIEW=DEMO&&DEMO_SCREEN==='bubble_cannon_pqr';
 const DEMO_TREEHOUSE_PREVIEW=DEMO&&DEMO_SCREEN==='treehouse_stu';
 const DEMO_RAILWAY_PREVIEW=DEMO&&DEMO_SCREEN==='railway_vwx';
 const DEMO_FLIGHT_YZ_PREVIEW=DEMO&&DEMO_SCREEN==='flight_yz';
+const DEMO_WARDROBE_PREVIEW=DEMO&&DEMO_SCREEN==='marius_wardrobe';
 const RAILWAY_DEBUG=DEMO_RAILWAY_PREVIEW&&(QUERY_PARAMS.get('railwayDebug')==='1'||QUERY_PARAMS.get('debugRoutes')==='1');
 const FLIGHT_YZ_DEBUG=DEMO_FLIGHT_YZ_PREVIEW&&QUERY_PARAMS.get('flightDebug')==='1';
 const DEMO_RAILWAY_PROGRESS=DEMO_RAILWAY_PREVIEW?Math.max(0,Math.min(12,Number.parseInt(QUERY_PARAMS.get('railwayProgress')||'0',10)||0)):0;
 const DEMO_TRAINING_PREVIEW=DEMO&&DEMO_SCREEN==='training';
-const DEMO_SHORTCUT_ACTIVE=DEMO&&(DEMO_LETTER_INDEX>=0||DEMO_REWARD_PREVIEW||DEMO_INVENTORY_PREVIEW||DEMO_MAZE_PREVIEW||DEMO_BALLOON_PREVIEW||DEMO_RIVER_PREVIEW||DEMO_FRUIT_RAIN_PREVIEW||DEMO_BUBBLE_CANNON_PREVIEW||DEMO_TREEHOUSE_PREVIEW||DEMO_RAILWAY_PREVIEW||DEMO_FLIGHT_YZ_PREVIEW||DEMO_TRAINING_PREVIEW);
+const DEMO_SHORTCUT_ACTIVE=DEMO&&(DEMO_LETTER_INDEX>=0||DEMO_REWARD_PREVIEW||DEMO_INVENTORY_PREVIEW||DEMO_SHOP_PREVIEW||DEMO_MAZE_PREVIEW||DEMO_BALLOON_PREVIEW||DEMO_RIVER_PREVIEW||DEMO_FRUIT_RAIN_PREVIEW||DEMO_BUBBLE_CANNON_PREVIEW||DEMO_TREEHOUSE_PREVIEW||DEMO_RAILWAY_PREVIEW||DEMO_FLIGHT_YZ_PREVIEW||DEMO_TRAINING_PREVIEW||DEMO_WARDROBE_PREVIEW);
 const REWARD_RENDER_TOKEN=String(Date.now());
-const DEMO_REWARD_FLOW={id:'reward_ghi',resume:'course',selected:null};
+const DEMO_REWARD_FLOW={id:DEMO_REWARD_ID||'reward_ghi',resume:'course',selected:null};
 let demoRewardHeadAsset='marius_hat_adventure';
+let demoRewardItemId=null;
 const AUDIO_TEXT = {
  welcome:'Привет! Давай учить английские буквы!',start:'Начнём!',new_letter:'Познакомимся с новой буквой.',look_letter:'Посмотри на букву.',listen:'Послушай внимательно.',find_letter:'Найди эту букву.',find_small_letter:'Найди маленькую букву.',find_picture:'Найди правильную картинку.',which_starts:'Какое слово начинается с этой буквы?',which_letter:'С какой буквы начинается это слово?',choose_letter:'Выбери правильную букву.',choose_picture:'Выбери правильную картинку.',listen_word:'Послушай слово.',repeat:'Послушай ещё раз.',try_again:'Попробуй ещё раз.',almost:'Почти получилось!',correct:'Правильно!',great:'Отлично!',well_done:'Молодец!',super:'Супер!',amazing:'Замечательно!',next:'Дальше!',level_complete:'Уровень пройден!',reward:'Ты получил подарок для жирафика!',choose_reward:'Выбери подарок.',new_clothes:'У жирафика новая одежда!',new_item:'У жирафика новый подарок!',dress_giraffe:'Давай оденем жирафика!',challenge:'Поиграем с буквами!',final_challenge:'Последнее испытание!',three_correct:'Три правильных ответа!',all_done:'Ты всё прошёл!',come_again:'Приходи играть ещё!',repeat_letters:'Повторим буквы.',need_practice:'Давай потренируемся ещё.',giraffe_happy:'Жирафик очень рад!'
 };
@@ -1679,49 +1777,73 @@ for(const d of letters){const wordKey=wordAudioKey(d);d.letterAudio=MEDIA_ASSETS
    Every asset uses the same 2:3 stage and shared actor coordinate system. */
 const REWARD_STATE_VERSION=3;
 const ITEM_SLOTS=Object.freeze(['outfit','head','face','hand_left','hand_right','back','extra','background']);
+const CHARACTER_STATE_SLOTS=Object.freeze([...new Set([...ITEM_SLOTS,...MARIUS_EQUIPMENT_SLOTS])]);
 const CHARACTER_LAYER_ORDER=Object.freeze(['back','body','face','head','hand_left','hand_right','extra']);
 const SLOT_CONFIG=Object.freeze({
  outfit:{label:'Куртка'},head:{label:'На голове'},face:{label:'На лице'},
  hand_left:{label:'В левой руке'},hand_right:{label:'В руках'},back:{label:'За спиной'},
- extra:{label:'Дополнительно'},background:{label:'Фон'}
+ extra:{label:'Дополнительно'},background:{label:'Фон'},body_variant:{label:'Готовый образ'},
+ bottom:{label:'Шорты'},top:{label:'Рубашки'},vest:{label:'Жилеты'},outerwear:{label:'Верхняя одежда'},neck:{label:'Шарфы'}
 });
 const CATEGORY_CONFIG=Object.freeze({
  outfit:{label:'Одежда',icon:'👕'},head:{label:'Головные уборы',icon:'🎩'},face:{label:'Лицо',icon:'👓'},
  hand_left:{label:'В руки',icon:'🎈'},hand_right:{label:'В руки',icon:'🎈'},back:{label:'Спина',icon:'🎒'},
  extra:{label:'Аксессуары',icon:'✨'},background:{label:'Фоны',icon:'🌴'}
 });
+const SHOP_CATEGORY_CONFIG=Object.freeze([
+ Object.freeze({id:'collections',label:'Готовые образы',icon:'✨'}),
+ Object.freeze({id:'head',label:'Головные уборы',icon:'🎩'}),
+ Object.freeze({id:'clothing',label:'Одежда',icon:'👕'}),
+ Object.freeze({id:'neck',label:'Шарфы и украшения',icon:'🧣'}),
+ Object.freeze({id:'hands',label:'Предметы в руках',icon:'🎒'}),
+ Object.freeze({id:'background',label:'Фоны',icon:'🌴'})
+]);
 const characterConfig={
  width:1024,height:1536,
  backgrounds:{home:'background_home',reward:'background_reward',results:'background_home'},
  baseAsset:'giraffe_base'
 };
 const ITEMS=Object.freeze([
- {id:'jacket_stars',name:'Куртка со звёздами',category:'outfit',slot:'outfit',asset:'giraffe_jacket_stars',icon:'reward_icon_jacket_stars',collection:'base',rarity:'common',priceStars:30,priceMoney:null,currency:'stars',isPremium:false,unlockCondition:'reward_abc'},
- {id:'jacket_racer',name:'Гоночная куртка',category:'outfit',slot:'outfit',asset:'giraffe_jacket_racer',icon:'reward_icon_jacket_racer',collection:'base',rarity:'common',priceStars:30,priceMoney:null,currency:'stars',isPremium:false,unlockCondition:'reward_abc'},
- {id:'accessory_bouquet',name:'Букет',category:'hand_right',slot:'hand_right',asset:'accessory_bouquet',icon:'accessory_bouquet',collection:'base',rarity:'common',priceStars:22,priceMoney:null,currency:'stars',isPremium:false,unlockCondition:'reward_def'},
- {id:'accessory_balloon',name:'Шарик',category:'hand_right',slot:'hand_right',asset:'accessory_balloon',icon:'accessory_balloon',collection:'base',rarity:'common',priceStars:22,priceMoney:null,currency:'stars',isPremium:false,unlockCondition:'reward_def'},
- {id:'hat_straw_bow',name:'Соломенная шляпа',category:'head',slot:'head',asset:'marius_hat_straw_bow',icon:'marius_hat_straw_bow',collection:'base',rarity:'rare',priceStars:26,priceMoney:null,currency:'stars',isPremium:false,unlockCondition:'reward_ghi'},
+ {id:'jacket_stars',name:'Куртка со звёздами',category:'outfit',slot:'outfit',renderSlot:'body_variant',asset:'giraffe_jacket_stars',icon:'reward_icon_jacket_stars',collection:'base',rarity:'common',priceStars:30,priceMoney:null,currency:'stars',isPremium:false,unlockCondition:'reward_abc',incompatibleSlots:MARIUS_WEARABLE_SLOTS},
+ {id:'jacket_racer',name:'Гоночная куртка',category:'outfit',slot:'outfit',renderSlot:'body_variant',asset:'giraffe_jacket_racer',icon:'reward_icon_jacket_racer',collection:'base',rarity:'common',priceStars:30,priceMoney:null,currency:'stars',isPremium:false,unlockCondition:'reward_abc',incompatibleSlots:MARIUS_WEARABLE_SLOTS},
+ {id:'accessory_bouquet',name:'Букет цветов',category:'hand_right',slot:'hand_right',asset:'accessory_bouquet',icon:'accessory_bouquet',collection:'base',rarity:'common',priceStars:22,priceMoney:null,currency:'stars',isPremium:false,unlockCondition:'reward_def'},
+ {id:'accessory_balloon',name:'Воздушный шарик',category:'hand_right',slot:'hand_right',asset:'accessory_balloon',icon:'accessory_balloon',collection:'base',rarity:'common',priceStars:22,priceMoney:null,currency:'stars',isPremium:false,unlockCondition:'reward_def'},
+ {id:'hat_straw_bow',name:'Соломенная шляпа с бантом',category:'head',slot:'head',asset:'marius_hat_straw_bow',icon:'marius_hat_straw_bow',collection:'base',rarity:'rare',priceStars:26,priceMoney:null,currency:'stars',isPremium:false,unlockCondition:'reward_ghi'},
  {id:'hat_adventure',name:'Шляпа путешественника',category:'head',slot:'head',asset:'marius_hat_adventure',icon:'marius_hat_adventure',collection:'base',rarity:'rare',priceStars:26,priceMoney:null,currency:'stars',isPremium:false,unlockCondition:'reward_ghi'},
  {id:'background_jungle',name:'Домик в джунглях',category:'background',slot:'background',asset:'background_home',icon:'background_home',collection:'backgrounds',rarity:'common',priceStars:18,priceMoney:null,currency:'stars',isPremium:false,unlockCondition:'always'},
  {id:'background_sunset',name:'Праздничный закат',category:'background',slot:'background',asset:'background_reward',icon:'background_reward',collection:'backgrounds',rarity:'rare',priceStars:28,priceMoney:null,currency:'stars',isPremium:false,unlockCondition:'always'}
 ]);
-const itemCatalog=new Map(ITEMS.map(item=>[item.id,Object.freeze({...item})]));
+const mariusWardrobeCatalog=new Map(MARIUS_WARDROBE_ITEMS.map(item=>[item.id,item]));
+const SHOP_WARDROBE_ITEMS=Object.freeze(MARIUS_WARDROBE_ITEMS.filter(item=>['reward','shop'].includes(item.availability)));
+const REWARD_WARDROBE_ITEMS=Object.freeze(MARIUS_WARDROBE_ITEMS.filter(item=>item.availability==='reward'));
+const EXCLUSIVE_WARDROBE_ITEMS=Object.freeze(MARIUS_WARDROBE_ITEMS.filter(item=>item.availability==='shop'));
+const INVENTORY_ITEMS=Object.freeze([...ITEMS,...SHOP_WARDROBE_ITEMS]);
+const SHOP_ITEMS=INVENTORY_ITEMS;
+const itemCatalog=new Map(INVENTORY_ITEMS.map(item=>[item.id,Object.freeze({...item})]));
 const rewardConfig=[
- {id:'reward_abc',afterLetters:['A','B','C'],prompt:'Выбери одну куртку',itemIds:['jacket_stars','jacket_racer']},
- {id:'reward_def',afterLetters:['D','E','F'],prompt:'Выбери один подарок',itemIds:['accessory_bouquet','accessory_balloon']},
- {id:'reward_ghi',afterLetters:['G','H','I'],prompt:'Выбери одну шляпу',itemIds:['hat_straw_bow','hat_adventure']}
+ {id:'reward_abc',afterLetters:['A','B','C'],prompt:'Выбери одну куртку',itemIds:['jacket_stars','jacket_racer'],awardsBlockStars:true},
+ {id:'reward_def',afterLetters:['D','E','F'],prompt:'Выбери один подарок',itemIds:['accessory_bouquet','accessory_balloon'],awardsBlockStars:true},
+ {id:'reward_ghi',afterLetters:['G','H','I'],prompt:'Выбери одну шляпу',itemIds:['hat_straw_bow','hat_adventure'],awardsBlockStars:true},
+ {id:'reward_jkl',afterLetters:['J','K','L'],prompt:'Выбери один подарок',itemIds:['marius_hand_fishing_rod','marius_hand_satchel'],awardsBlockStars:false},
+ {id:'reward_mno',afterLetters:['M','N','O'],prompt:'Выбери один подарок',itemIds:['marius_hand_harvest_basket','marius_head_harvest_hat'],awardsBlockStars:false},
+ {id:'reward_pqr',afterLetters:['P','Q','R'],prompt:'Выбери один предмет',itemIds:['marius_head_cap_blue','marius_bottom_denim'],awardsBlockStars:false},
+ {id:'reward_stu',afterLetters:['S','T','U'],prompt:'Выбери один предмет',itemIds:['marius_top_plaid_shirt','marius_vest_harvest'],awardsBlockStars:false},
+ {id:'reward_vwx',afterLetters:['V','W','X'],prompt:'Выбери одну куртку',itemIds:['marius_outerwear_raincoat','marius_outerwear_field_jacket'],awardsBlockStars:false},
+ {id:'reward_yz',afterLetters:['Y','Z'],prompt:'Выбери один подарок',itemIds:['marius_hand_umbrella','marius_hand_lantern'],awardsBlockStars:false}
 ];
 const rewardItems=reward=>reward.itemIds.map(id=>itemCatalog.get(id)).filter(Boolean);
-const blankCharacter=()=>({ownedItems:[],equipped:Object.fromEntries(ITEM_SLOTS.map(slot=>[slot,null]))});
+const blankCharacter=()=>({ownedItems:[],equipped:Object.fromEntries(CHARACTER_STATE_SLOTS.map(slot=>[slot,null]))});
 
-const GROUP_SIZE=3, MINI_LENGTH=5, FINAL_LENGTH=10, REVIEW_LENGTH=6;
+const GROUP_SIZE=3, MINI_LENGTH=5, FINAL_LENGTH=10, MIN_REVIEW_LENGTH=6, REVIEW_ROUND_COUNT=3;
 const CORE_TYPES=['find','letterPicture','pictureLetter'];
 const MINI_TYPES=[...CORE_TYPES,'wordPicture'];
 const FINAL_TYPES=[...MINI_TYPES,'lowercase'];
 const REVIEW_TYPES=['find','soundLetter','pictureLetter','letterPicture','wordPicture','lowercase'];
 const TRANSLATION_TYPE='translationPicture';
 const ALL_QUESTION_TYPES=[...new Set([...FINAL_TYPES,...REVIEW_TYPES,TRANSLATION_TYPE])];
-const LOCAL_REVIEW_BLOCKS=Object.freeze([
+/* Kept only to migrate in-progress v9 saves. New course navigation uses one
+   cumulative review after each thematic mini-game. */
+const LEGACY_LOCAL_REVIEW_BLOCKS=Object.freeze([
  Object.freeze({id:'review_JKL',letters:Object.freeze(['J','K','L']),afterIndex:11}),
  Object.freeze({id:'review_MNO',letters:Object.freeze(['M','N','O']),afterIndex:14,cumulative:'cumulative_review_AO'}),
  Object.freeze({id:'review_PQR',letters:Object.freeze(['P','Q','R']),afterIndex:17}),
@@ -1730,12 +1852,29 @@ const LOCAL_REVIEW_BLOCKS=Object.freeze([
  Object.freeze({id:'review_YZ',letters:Object.freeze(['Y','Z']),afterIndex:25,cumulative:'cumulative_review_AZ'})
 ]);
 const CUMULATIVE_REVIEW_BLOCKS=Object.freeze([
- Object.freeze({id:'cumulative_review_AO',start:'A',end:'O',afterIndex:14,recent:Object.freeze(['M','N','O'])}),
- Object.freeze({id:'cumulative_review_AU',start:'A',end:'U',afterIndex:20,recent:Object.freeze(['S','T','U'])}),
- Object.freeze({id:'cumulative_review_AZ',start:'A',end:'Z',afterIndex:25,recent:Object.freeze(['Y','Z'])})
+ Object.freeze({id:'cumulative_review_AC',start:'A',end:'C',afterIndex:2,recent:Object.freeze(['A','B','C']),thematicPhase:'room'}),
+ Object.freeze({id:'cumulative_review_AF',start:'A',end:'F',afterIndex:5,recent:Object.freeze(['D','E','F']),thematicPhase:'maze'}),
+ Object.freeze({id:'cumulative_review_AI',start:'A',end:'I',afterIndex:8,recent:Object.freeze(['G','H','I']),thematicPhase:'balloon_ghi'}),
+ Object.freeze({id:'cumulative_review_AL',start:'A',end:'L',afterIndex:11,recent:Object.freeze(['J','K','L']),thematicPhase:'river_jkl'}),
+ Object.freeze({id:'cumulative_review_AO',start:'A',end:'O',afterIndex:14,recent:Object.freeze(['M','N','O']),thematicPhase:'fruit_rain'}),
+ Object.freeze({id:'cumulative_review_AR',start:'A',end:'R',afterIndex:17,recent:Object.freeze(['P','Q','R']),thematicPhase:'bubble_cannon'}),
+ Object.freeze({id:'cumulative_review_AU',start:'A',end:'U',afterIndex:20,recent:Object.freeze(['S','T','U']),thematicPhase:'treehouse_stu'}),
+ Object.freeze({id:'cumulative_review_AX',start:'A',end:'X',afterIndex:23,recent:Object.freeze(['V','W','X']),thematicPhase:'railway_vwx'}),
+ Object.freeze({id:'cumulative_review_AZ',start:'A',end:'Z',afterIndex:25,recent:Object.freeze(['Y','Z']),thematicPhase:'flight_yz'})
 ]);
-const localReviewAt=index=>LOCAL_REVIEW_BLOCKS.find(block=>block.afterIndex===index)||null;
+const localReviewAt=index=>LEGACY_LOCAL_REVIEW_BLOCKS.find(block=>block.afterIndex===index)||null;
 const cumulativeReviewAt=index=>CUMULATIVE_REVIEW_BLOCKS.find(block=>block.afterIndex===index)||null;
+const reviewLength=(block,cumulative=true)=>Math.max(MIN_REVIEW_LENGTH,cumulative?block.afterIndex+1:block.letters.length);
+function reviewRoundSizes(total){
+ const safe=Math.max(MIN_REVIEW_LENGTH,Number(total)||0),base=Math.floor(safe/REVIEW_ROUND_COUNT),extra=safe%REVIEW_ROUND_COUNT;
+ return Array.from({length:REVIEW_ROUND_COUNT},(_,index)=>base+(index<extra?1:0));
+}
+function reviewRoundProgress(game){
+ const sizes=Array.isArray(game?.roundSizes)&&game.roundSizes.length===REVIEW_ROUND_COUNT?game.roundSizes:reviewRoundSizes(game?.letterOrder?.length||MIN_REVIEW_LENGTH);
+ let offset=0,index=Math.max(0,Math.min((game?.index||0),sizes.reduce((sum,size)=>sum+size,0)-1));
+ for(let round=0;round<sizes.length;round++){const end=offset+sizes[round];if(index<end)return {round:round+1,roundCount:sizes.length,index:index-offset,size:sizes[round],offset};offset=end;}
+ return {round:sizes.length,roundCount:sizes.length,index:sizes.at(-1)-1,size:sizes.at(-1),offset:offset-sizes.at(-1)};
+}
 const hasTranslationLesson=d=>Boolean((d.image||d.emoji)&&d.wordAudio&&d.translationAudio);
 const lessonSteps=d=>[
  {id:'letter',kind:'card'},
@@ -1803,32 +1942,37 @@ function completeAnalyticsActivity(activity=analyticsActivityId()){
 }
 const icons={arrow:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>',speaker:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m11 5-6 4H2v6h3l6 4V5Z"/><path d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></svg>',home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10H3V10Z"/><path d="M9 20v-7h6v7"/></svg>'};
 const blankStats=()=>({attempts:0,correct:0,mistakes:0,mastery:0,skills:[],practiceDebt:0});
-const ABC_FIND_OBJECT_GAME=FIND_OBJECT_SCENES.mariusRoomABC;
-const DEF_LETTER_MAZE=LETTER_MAZE_SCENES.campDEF;
-const GHI_BALLOON_GAME=BalloonPopGame.CONFIG;
-const JKL_RIVER_GAME=RiverCrossingGame.CONFIG;
-const MNO_FRUIT_RAIN_GAME=FruitRainGame.CONFIG;
-const PQR_BUBBLE_CANNON_GAME=BubbleCannonGame.CONFIG;
-const STU_TREEHOUSE_GAME=TreehouseSTUGame.CONFIG;
-const VWX_RAILWAY_GAME=RailwayVWXGame.CONFIG;
-const FIND_OBJECT_COURSE=Object.freeze({
- room:Object.freeze({phase:'room',scene:ABC_FIND_OBJECT_GAME,courseIndex:2,nextPhase:'miniIntro'})
-});
-const LETTER_MAZE_COURSE=Object.freeze({
- maze:Object.freeze({phase:'maze',scene:DEF_LETTER_MAZE,courseIndex:5,nextPhase:'miniResult'})
-});
-const FIND_OBJECT_COURSE_BY_GAME=new Map(Object.values(FIND_OBJECT_COURSE).map(entry=>[entry.scene.id,entry]));
-const FIND_OBJECT_CONFIGS=[...new Set(Object.values(FIND_OBJECT_COURSE).map(entry=>entry.scene))];
-const blankFindObjectGames=()=>Object.fromEntries(FIND_OBJECT_CONFIGS.map(config=>[config.id,HiddenObjectGame.initialState(config)]));
-const LETTER_MAZE_COURSE_BY_GAME=new Map(Object.values(LETTER_MAZE_COURSE).map(entry=>[entry.scene.id,entry]));
-const LETTER_MAZE_CONFIGS=[...new Set(Object.values(LETTER_MAZE_COURSE).map(entry=>entry.scene))];
-const blankLetterMazeGames=()=>Object.fromEntries(LETTER_MAZE_CONFIGS.map(config=>[config.id,LetterMazeGame.initialState(config)]));
-const blankBalloonPop=()=>BalloonPopGame.initialState(GHI_BALLOON_GAME);
-const blankRiverCrossing=()=>RiverCrossingGame.initialState(JKL_RIVER_GAME);
-const blankFruitRain=()=>FruitRainGame.initialState(MNO_FRUIT_RAIN_GAME);
-const blankBubbleCannon=()=>BubbleCannonGame.initialState(PQR_BUBBLE_CANNON_GAME);
-const blankTreehouse=()=>TreehouseSTUGame.initialState(STU_TREEHOUSE_GAME);
-const blankRailway=()=>RailwayVWXGame.initialState(VWX_RAILWAY_GAME);
+const LAZY_GAME_IDS=Object.freeze({ABC:'marius-room-abc',DEF:'marius-camp-def',GHI:'balloon-ghi',JKL:'marius-river-jkl',MNO:'fruit-rain-mno',PQR:'bubble-cannon-pqr',STU:'treehouse-stu',VWX:'railway-vwx'});
+let ABC_FIND_OBJECT_GAME=null,DEF_LETTER_MAZE=null,GHI_BALLOON_GAME=null,JKL_RIVER_GAME=null,MNO_FRUIT_RAIN_GAME=null,PQR_BUBBLE_CANNON_GAME=null,STU_TREEHOUSE_GAME=null,VWX_RAILWAY_GAME=null;
+const FIND_OBJECT_COURSE={},LETTER_MAZE_COURSE={};
+const FIND_OBJECT_COURSE_BY_GAME=new Map(),LETTER_MAZE_COURSE_BY_GAME=new Map();
+const FIND_OBJECT_CONFIGS=[],LETTER_MAZE_CONFIGS=[];
+function bindLoadedRuntime(group='all'){
+ if((group==='all'||group==='ABC')&&typeof FIND_OBJECT_SCENES!=='undefined'&&typeof HiddenObjectGame!=='undefined'){
+  ABC_FIND_OBJECT_GAME=FIND_OBJECT_SCENES.mariusRoomABC;
+  const entry=Object.freeze({phase:'room',scene:ABC_FIND_OBJECT_GAME,courseIndex:2,nextPhase:'cumulativeIntro'});FIND_OBJECT_COURSE.room=entry;FIND_OBJECT_COURSE_BY_GAME.set(entry.scene.id,entry);FIND_OBJECT_CONFIGS.splice(0,FIND_OBJECT_CONFIGS.length,entry.scene);
+ }
+ if((group==='all'||group==='DEF')&&typeof LETTER_MAZE_SCENES!=='undefined'&&typeof LetterMazeGame!=='undefined'){
+  DEF_LETTER_MAZE=LETTER_MAZE_SCENES.campDEF;
+  const entry=Object.freeze({phase:'maze',scene:DEF_LETTER_MAZE,courseIndex:5,nextPhase:'cumulativeIntro'});LETTER_MAZE_COURSE.maze=entry;LETTER_MAZE_COURSE_BY_GAME.set(entry.scene.id,entry);LETTER_MAZE_CONFIGS.splice(0,LETTER_MAZE_CONFIGS.length,entry.scene);
+ }
+ if((group==='all'||group==='GHI')&&typeof BalloonPopGame!=='undefined')GHI_BALLOON_GAME=BalloonPopGame.CONFIG;
+ if((group==='all'||group==='JKL')&&typeof RiverCrossingGame!=='undefined')JKL_RIVER_GAME=RiverCrossingGame.CONFIG;
+ if((group==='all'||group==='MNO')&&typeof FruitRainGame!=='undefined')MNO_FRUIT_RAIN_GAME=FruitRainGame.CONFIG;
+ if((group==='all'||group==='PQR')&&typeof BubbleCannonGame!=='undefined')PQR_BUBBLE_CANNON_GAME=BubbleCannonGame.CONFIG;
+ if((group==='all'||group==='STU')&&typeof TreehouseSTUGame!=='undefined')STU_TREEHOUSE_GAME=TreehouseSTUGame.CONFIG;
+ if((group==='all'||group==='VWX')&&typeof RailwayVWXGame!=='undefined')VWX_RAILWAY_GAME=RailwayVWXGame.CONFIG;
+ return true;
+}
+bindLoadedRuntime();
+const blankFindObjectGames=()=>({[LAZY_GAME_IDS.ABC]:ABC_FIND_OBJECT_GAME&&typeof HiddenObjectGame!=='undefined'?HiddenObjectGame.initialState(ABC_FIND_OBJECT_GAME):{gameId:LAZY_GAME_IDS.ABC,gameCompleted:false}});
+const blankLetterMazeGames=()=>({[LAZY_GAME_IDS.DEF]:DEF_LETTER_MAZE&&typeof LetterMazeGame!=='undefined'?LetterMazeGame.initialState(DEF_LETTER_MAZE):{gameId:LAZY_GAME_IDS.DEF,gameCompleted:false}});
+const blankBalloonPop=()=>GHI_BALLOON_GAME&&typeof BalloonPopGame!=='undefined'?BalloonPopGame.initialState(GHI_BALLOON_GAME):{gameId:LAZY_GAME_IDS.GHI,gameCompleted:false};
+const blankRiverCrossing=()=>JKL_RIVER_GAME&&typeof RiverCrossingGame!=='undefined'?RiverCrossingGame.initialState(JKL_RIVER_GAME):{gameId:LAZY_GAME_IDS.JKL,gameCompleted:false};
+const blankFruitRain=()=>MNO_FRUIT_RAIN_GAME&&typeof FruitRainGame!=='undefined'?FruitRainGame.initialState(MNO_FRUIT_RAIN_GAME):{gameId:LAZY_GAME_IDS.MNO,gameCompleted:false};
+const blankBubbleCannon=()=>PQR_BUBBLE_CANNON_GAME&&typeof BubbleCannonGame!=='undefined'?BubbleCannonGame.initialState(PQR_BUBBLE_CANNON_GAME):{gameId:LAZY_GAME_IDS.PQR,gameCompleted:false};
+const blankTreehouse=()=>STU_TREEHOUSE_GAME&&typeof TreehouseSTUGame!=='undefined'?TreehouseSTUGame.initialState(STU_TREEHOUSE_GAME):{gameId:LAZY_GAME_IDS.STU,gameCompleted:false};
+const blankRailway=()=>VWX_RAILWAY_GAME&&typeof RailwayVWXGame!=='undefined'?RailwayVWXGame.initialState(VWX_RAILWAY_GAME):{gameId:LAZY_GAME_IDS.VWX,gameCompleted:false};
 const FLIGHT_YZ_STATE_VERSION=1;
 const blankFlightYZ=()=>({version:FLIGHT_YZ_STATE_VERSION,session:null,permanent:{completed:false,completedAt:null}});
 function restoreFlightYZ(saved){
@@ -1836,12 +1980,69 @@ function restoreFlightYZ(saved){
  const permanent=saved.permanent||{};
  fresh.permanent.completed=permanent.completed===true;
  fresh.permanent.completedAt=Number.isFinite(permanent.completedAt)?permanent.completedAt:null;
- if(saved.session&&typeof saved.session==='object')fresh.session=FlightYZGame.LearningEngine.restore(saved.session,FlightYZGame.EDUCATION,Math.random);
- if(fresh.session?.status==='complete'||fresh.session?.totalProgress>=FlightYZGame.EDUCATION.totalTasks){fresh.permanent.completed=true;fresh.permanent.completedAt??=0;}
+ if(saved.session&&typeof saved.session==='object')fresh.session=typeof FlightYZGame!=='undefined'?FlightYZGame.LearningEngine.restore(saved.session,FlightYZGame.EDUCATION,Math.random):JSON.parse(JSON.stringify(saved.session));
+ if(fresh.session?.status==='complete'||typeof FlightYZGame!=='undefined'&&fresh.session?.totalProgress>=FlightYZGame.EDUCATION.totalTasks){fresh.permanent.completed=true;fresh.permanent.completedAt??=0;}
  return fresh;
 }
+function hydrateRuntimeState(group,state){
+ bindLoadedRuntime(group);
+ if(group==='ABC'&&ABC_FIND_OBJECT_GAME)state.findObjectGames[ABC_FIND_OBJECT_GAME.id]=HiddenObjectGame.restore(ABC_FIND_OBJECT_GAME,state.findObjectGames?.[ABC_FIND_OBJECT_GAME.id]);
+ else if(group==='DEF'&&DEF_LETTER_MAZE)state.mazeGames[DEF_LETTER_MAZE.id]=LetterMazeGame.restore(DEF_LETTER_MAZE,state.mazeGames?.[DEF_LETTER_MAZE.id]);
+ else if(group==='GHI'&&GHI_BALLOON_GAME)state.balloonPop=BalloonPopGame.restore(GHI_BALLOON_GAME,state.balloonPop);
+ else if(group==='JKL'&&JKL_RIVER_GAME)state.riverCrossing=RiverCrossingGame.restore(JKL_RIVER_GAME,state.riverCrossing);
+ else if(group==='MNO'&&MNO_FRUIT_RAIN_GAME)state.fruitRain=FruitRainGame.restore(MNO_FRUIT_RAIN_GAME,state.fruitRain);
+ else if(group==='PQR'&&PQR_BUBBLE_CANNON_GAME)state.bubbleCannon=BubbleCannonGame.restore(PQR_BUBBLE_CANNON_GAME,state.bubbleCannon);
+ else if(group==='STU'&&STU_TREEHOUSE_GAME)state.treehouse=TreehouseSTUGame.restore(STU_TREEHOUSE_GAME,state.treehouse);
+ else if(group==='VWX'&&VWX_RAILWAY_GAME)state.railway=RailwayVWXGame.restore(VWX_RAILWAY_GAME,state.railway);
+ else if(group==='YZ'&&typeof FlightYZGame!=='undefined')state.flightYZ=restoreFlightYZ(state.flightYZ);
+ return state;
+}
+function thematicGameComplete(state,index){
+ if(index===2)return state.findObjectGames?.[LAZY_GAME_IDS.ABC]?.gameCompleted===true;
+ if(index===5)return state.mazeGames?.[LAZY_GAME_IDS.DEF]?.gameCompleted===true;
+ if(index===GHI_END_INDEX)return state.balloonPop?.gameCompleted===true;
+ if(index===JKL_END_INDEX)return state.riverCrossing?.gameCompleted===true;
+ if(index===MNO_END_INDEX)return state.fruitRain?.gameCompleted===true;
+ if(index===PQR_END_INDEX)return state.bubbleCannon?.gameCompleted===true;
+ if(index===STU_END_INDEX)return state.treehouse?.gameCompleted===true;
+ if(index===VWX_END_INDEX)return state.railway?.gameCompleted===true;
+ if(index===letters.length-1)return state.flightYZ?.permanent?.completed===true;
+ return false;
+}
+function phaseAfterLearnedBlock(state,index){
+ const block=cumulativeReviewAt(index);if(!block)return null;
+ return thematicGameComplete(state,index)?'cumulativeIntro':block.thematicPhase;
+}
+function migrateCourseSequence(state,saved){
+ if(Number(saved.version)>=COURSE_SEQUENCE_VERSION)return false;
+ const c=state.cursor,index=c.index,legacyReview=['reviewIntro','review','reviewResult'].includes(c.phase),legacyMini=['miniIntro','mini','miniResult'].includes(c.phase),legacyCumulative=['cumulativeIntro','cumulative','cumulativeResult'].includes(c.phase);
+ let next=null;
+ if(index===letters.length-1&&(legacyReview||legacyCumulative||c.phase==='results'||c.phase==='flight_yz'&&state.flightYZ.permanent.completed))next=state.flightYZ.permanent.completed?'cumulativeIntro':'flight_yz';
+ else if(legacyReview||(legacyMini&&cumulativeReviewAt(index)))next=phaseAfterLearnedBlock(state,index);
+ // A-O and A-U were already post-game cumulative reviews in v9, so their
+ // exact question and task order remain restorable.
+ if(legacyCumulative&&[MNO_END_INDEX,STU_END_INDEX].includes(index))next=null;
+ if(!next)return false;
+ state.cursor={phase:next,index,step:0};state.question=null;state.game=null;state.completed=false;return true;
+}
+function validCumulativeLetterOrder(block,order,legacy=false){
+ if(!block||!Array.isArray(order))return false;
+ if(legacy&&order.length===MIN_REVIEW_LENGTH){
+  if(['cumulative_review_AO','cumulative_review_AU'].includes(block.id))return new Set(order).size===MIN_REVIEW_LENGTH;
+  if(!block.recent.every(letter=>order.includes(letter)))return false;
+  if(order.some((letter,index)=>index>0&&letter===order[index-1]))return false;
+  if(block.afterIndex!==2)return new Set(order).size===MIN_REVIEW_LENGTH;
+  return new Set(order).size===block.recent.length&&block.recent.every(letter=>order.filter(item=>item===letter).length===2);
+ }
+ const pool=letters.slice(0,block.afterIndex+1).map(item=>item.letter);
+ if(order.length!==reviewLength(block,true)||!pool.every(letter=>order.includes(letter)))return false;
+ if(!block.recent.every(letter=>order.includes(letter)))return false;
+ if(order.some((letter,index)=>index>0&&letter===order[index-1]))return false;
+ const counts=pool.map(letter=>order.filter(item=>item===letter).length);
+ return Math.max(...counts)-Math.min(...counts)<=1;
+}
 /* STATE & STORAGE — keep the v1 key so existing progress survives. */
-const initialState=()=>({version:APP_STATE_VERSION,rewardStateVersion:REWARD_STATE_VERSION,student:StudentDomain.initialStudentState(),characterState:blankCharacter(),findObjectGames:blankFindObjectGames(),mazeGames:blankLetterMazeGames(),balloonPop:blankBalloonPop(),riverCrossing:blankRiverCrossing(),fruitRain:blankFruitRain(),fruitRainReturn:null,bubbleCannon:blankBubbleCannon(),bubbleCannonReturn:null,treehouse:blankTreehouse(),treehouseReturn:null,railway:blankRailway(),flightYZ:blankFlightYZ(),training:TrainingState.initialState(),completedBlocks:[],claimedRewards:[],rewardFlow:null,started:false,completed:false,soundEnabled:true,cursor:{phase:'lesson',index:0,step:0},stats:Object.fromEntries(letters.map(d=>[d.letter,blankStats()])),game:null,question:null,reviews:[],questionSerial:0});
+const initialState=()=>({version:APP_STATE_VERSION,rewardStateVersion:REWARD_STATE_VERSION,equipmentSchemaVersion:MARIUS_EQUIPMENT_SCHEMA_VERSION,student:StudentDomain.initialStudentState(),characterState:blankCharacter(),findObjectGames:blankFindObjectGames(),mazeGames:blankLetterMazeGames(),balloonPop:blankBalloonPop(),riverCrossing:blankRiverCrossing(),fruitRain:blankFruitRain(),fruitRainReturn:null,bubbleCannon:blankBubbleCannon(),bubbleCannonReturn:null,treehouse:blankTreehouse(),treehouseReturn:null,railway:blankRailway(),flightYZ:blankFlightYZ(),training:TrainingState.initialState(),completedBlocks:[],claimedRewards:[],rewardFlow:null,collectionCelebrations:[],started:false,completed:false,soundEnabled:true,cursor:{phase:'lesson',index:0,step:0},stats:Object.fromEntries(letters.map(d=>[d.letter,blankStats()])),game:null,question:null,reviews:[],questionSerial:0});
 function studentFactsFromState(state,now=Date.now()){
  const mastery=letters.map(d=>StudentDomain.letterMastery(state.stats[d.letter],state.training.progress[d.letter]));
  const learnedCount=mastery.filter(value=>value>0).length;
@@ -1859,25 +2060,27 @@ function studentFactsFromState(state,now=Date.now()){
 function migrateStudentState(state,saved){
  state.student=StudentDomain.restoreStudentState(saved.student);
  for(const d of letters)if(state.stats[d.letter].mastery>=3)StudentDomain.awardStars(state.student,StudentDomain.STAR_REWARDS.letterCompleted,'letter_completed',`letter:${d.letter}`,0);
- for(const id of state.completedBlocks)StudentDomain.awardStars(state.student,StudentDomain.STAR_REWARDS.blockCompleted,'block_completed',`block:${id}`,0);
+ for(const id of state.completedBlocks)if(rewardConfig.find(reward=>reward.id===id)?.awardsBlockStars)StudentDomain.awardStars(state.student,StudentDomain.STAR_REWARDS.blockCompleted,'block_completed',`block:${id}`,0);
  for(const result of state.training.history||[]){
   StudentDomain.awardStars(state.student,StudentDomain.STAR_REWARDS.trainingCompleted,'training_completed',`training:${result.id}`,result.completedAt||0);
   if(result.perfect===true)StudentDomain.awardStars(state.student,StudentDomain.STAR_REWARDS.perfectTraining,'training_perfect',`training-perfect:${result.id}`,result.completedAt||0);
  }
- if(state.fruitRain?.gameCompleted)StudentDomain.awardStars(state.student,StudentDomain.STAR_REWARDS.blockCompleted,'minigame_completed',MNO_FRUIT_RAIN_GAME.rewardSourceId,0);
- if(state.bubbleCannon?.gameCompleted)StudentDomain.awardStars(state.student,StudentDomain.STAR_REWARDS.blockCompleted,'minigame_completed',PQR_BUBBLE_CANNON_GAME.rewardSourceId,0);
- if(state.treehouse?.gameCompleted)StudentDomain.awardStars(state.student,StudentDomain.STAR_REWARDS.blockCompleted,'minigame_completed',STU_TREEHOUSE_GAME.rewardSourceId,0);
- if(state.railway?.gameCompleted)StudentDomain.awardStars(state.student,StudentDomain.STAR_REWARDS.blockCompleted,'minigame_completed',VWX_RAILWAY_GAME.rewardSourceId,0);
- if(state.flightYZ?.permanent?.completed)StudentDomain.awardStars(state.student,StudentDomain.STAR_REWARDS.blockCompleted,'minigame_completed',FlightYZGame.CONFIG.rewardSourceId,state.flightYZ.permanent.completedAt||0);
+ if(state.fruitRain?.gameCompleted)StudentDomain.awardStars(state.student,StudentDomain.STAR_REWARDS.blockCompleted,'minigame_completed','minigame:fruit-rain-mno',0);
+ if(state.bubbleCannon?.gameCompleted)StudentDomain.awardStars(state.student,StudentDomain.STAR_REWARDS.blockCompleted,'minigame_completed','minigame:bubble-cannon-pqr',0);
+ if(state.treehouse?.gameCompleted)StudentDomain.awardStars(state.student,StudentDomain.STAR_REWARDS.blockCompleted,'minigame_completed','minigame:treehouse-stu',0);
+ if(state.railway?.gameCompleted)StudentDomain.awardStars(state.student,StudentDomain.STAR_REWARDS.blockCompleted,'minigame_completed','minigame:railway-vwx',0);
+ if(state.flightYZ?.permanent?.completed)StudentDomain.awardStars(state.student,StudentDomain.STAR_REWARDS.blockCompleted,'minigame_completed','minigame:flight-yz',state.flightYZ.permanent.completedAt||0);
  StudentDomain.evaluateAchievements(state.student,studentFactsFromState(state),0);
  if(!saved.student||saved.version<APP_STATE_VERSION)for(const entry of state.student.achievements.unlocked)StudentDomain.markAchievementNotified(state.student,entry.id);
 }
 let storageAvailable=true;
+const cloneLazyState=(saved,fallback)=>{try{return saved&&typeof saved==='object'?JSON.parse(JSON.stringify(saved)):fallback();}catch(_){return fallback();}};
 function loadProgress(){
  const fresh=initialState();
  try{
   const saved=storageAdapter.read();if(!saved)return fresh;
-  if(![1,2,3,4,5,6,7,8,9].includes(saved.version))return fresh;
+  if(![1,2,3,4,5,6,7,8,9,10,11].includes(saved.version))return fresh;
+  fresh.collectionCelebrations=Array.isArray(saved.collectionCelebrations)?[...new Set(saved.collectionCelebrations.filter(id=>MARIUS_COLLECTIONS.some(collection=>collection.id===id)))]:[];
   fresh.soundEnabled=saved.soundEnabled!==false;
   fresh.started=Boolean(saved.started);fresh.completed=Boolean(saved.completed);
   for(const d of letters){const s=saved.stats?.[d.letter];if(!s)continue;const t=fresh.stats[d.letter];
@@ -1887,7 +2090,7 @@ function loadProgress(){
   }
   fresh.training=TrainingState.restore(saved.training,letters.map(d=>d.letter));
   const c=saved.cursor;
-  const phases=['lesson','letterReward',...Object.keys(FIND_OBJECT_COURSE),...Object.keys(LETTER_MAZE_COURSE),'miniIntro','mini','miniResult','balloon_ghi','river_jkl','fruit_rain','bubble_cannon','treehouse_stu','railway_vwx','flight_yz','reviewIntro','review','reviewResult','cumulativeIntro','cumulative','cumulativeResult','finalIntro','final','results'];
+  const phases=['lesson','letterReward','room','maze','miniIntro','mini','miniResult','balloon_ghi','river_jkl','fruit_rain','bubble_cannon','treehouse_stu','railway_vwx','flight_yz','reviewIntro','review','reviewResult','cumulativeIntro','cumulative','cumulativeResult','finalIntro','final','results'];
   if(c&&phases.includes(c.phase)&&Number.isInteger(c.index)&&c.index>=0&&c.index<letters.length&&Number.isInteger(c.step)&&c.step>=0){
    // State v1/v2 had five lesson steps. Preserve the exact old exercise by
    // moving its index past the two newly inserted meaning steps.
@@ -1895,29 +2098,26 @@ function loadProgress(){
    const step=c.step+legacyOffset,limit=c.phase==='lesson'?lessonSteps(letters[c.index]).length:MAX_LESSON_STEPS;
    if(step<limit)fresh.cursor={...c,step};
   }
-  for(const config of FIND_OBJECT_CONFIGS){
-   const legacy=config.id===ABC_FIND_OBJECT_GAME.id?saved.roomABC:undefined;
-   fresh.findObjectGames[config.id]=HiddenObjectGame.restore(config,saved.findObjectGames?.[config.id]??legacy);
-  }
-  for(const config of LETTER_MAZE_CONFIGS)fresh.mazeGames[config.id]=LetterMazeGame.restore(config,saved.mazeGames?.[config.id]);
-  fresh.balloonPop=BalloonPopGame.restore(GHI_BALLOON_GAME,saved.balloonPop);
-  fresh.riverCrossing=RiverCrossingGame.restore(JKL_RIVER_GAME,saved.riverCrossing);
-  fresh.fruitRain=FruitRainGame.restore(MNO_FRUIT_RAIN_GAME,saved.fruitRain);
-  fresh.bubbleCannon=BubbleCannonGame.restore(PQR_BUBBLE_CANNON_GAME,saved.bubbleCannon);
-  fresh.treehouse=TreehouseSTUGame.restore(STU_TREEHOUSE_GAME,saved.treehouse);
-  fresh.railway=RailwayVWXGame.restore(VWX_RAILWAY_GAME,saved.railway);
+  const savedFind=saved.findObjectGames?.[LAZY_GAME_IDS.ABC]??saved.roomABC;
+  fresh.findObjectGames[LAZY_GAME_IDS.ABC]=ABC_FIND_OBJECT_GAME&&typeof HiddenObjectGame!=='undefined'?HiddenObjectGame.restore(ABC_FIND_OBJECT_GAME,savedFind):cloneLazyState(savedFind,()=>fresh.findObjectGames[LAZY_GAME_IDS.ABC]);
+  const savedMaze=saved.mazeGames?.[LAZY_GAME_IDS.DEF];
+  fresh.mazeGames[LAZY_GAME_IDS.DEF]=DEF_LETTER_MAZE&&typeof LetterMazeGame!=='undefined'?LetterMazeGame.restore(DEF_LETTER_MAZE,savedMaze):cloneLazyState(savedMaze,()=>fresh.mazeGames[LAZY_GAME_IDS.DEF]);
+  fresh.balloonPop=GHI_BALLOON_GAME&&typeof BalloonPopGame!=='undefined'?BalloonPopGame.restore(GHI_BALLOON_GAME,saved.balloonPop):cloneLazyState(saved.balloonPop,blankBalloonPop);
+  fresh.riverCrossing=JKL_RIVER_GAME&&typeof RiverCrossingGame!=='undefined'?RiverCrossingGame.restore(JKL_RIVER_GAME,saved.riverCrossing):cloneLazyState(saved.riverCrossing,blankRiverCrossing);
+  fresh.fruitRain=MNO_FRUIT_RAIN_GAME&&typeof FruitRainGame!=='undefined'?FruitRainGame.restore(MNO_FRUIT_RAIN_GAME,saved.fruitRain):cloneLazyState(saved.fruitRain,blankFruitRain);
+  fresh.bubbleCannon=PQR_BUBBLE_CANNON_GAME&&typeof BubbleCannonGame!=='undefined'?BubbleCannonGame.restore(PQR_BUBBLE_CANNON_GAME,saved.bubbleCannon):cloneLazyState(saved.bubbleCannon,blankBubbleCannon);
+  fresh.treehouse=STU_TREEHOUSE_GAME&&typeof TreehouseSTUGame!=='undefined'?TreehouseSTUGame.restore(STU_TREEHOUSE_GAME,saved.treehouse):cloneLazyState(saved.treehouse,blankTreehouse);
+  fresh.railway=VWX_RAILWAY_GAME&&typeof RailwayVWXGame!=='undefined'?RailwayVWXGame.restore(VWX_RAILWAY_GAME,saved.railway):cloneLazyState(saved.railway,blankRailway);
   fresh.flightYZ=restoreFlightYZ(saved.flightYZ);
-  if(fresh.flightYZ.permanent.completed)fresh.completed=true;
+  migrateCourseSequence(fresh,saved);
   const returnCursor=saved.fruitRainReturn;
   if(returnCursor&&phases.includes(returnCursor.phase)&&returnCursor.phase!=='fruit_rain'&&Number.isInteger(returnCursor.index)&&returnCursor.index>=0&&returnCursor.index<letters.length&&Number.isInteger(returnCursor.step)&&returnCursor.step>=0)fresh.fruitRainReturn={phase:returnCursor.phase,index:returnCursor.index,step:returnCursor.step};
   const bubbleReturn=saved.bubbleCannonReturn;
   if(bubbleReturn&&phases.includes(bubbleReturn.phase)&&bubbleReturn.phase!=='bubble_cannon'&&Number.isInteger(bubbleReturn.index)&&bubbleReturn.index>=0&&bubbleReturn.index<letters.length&&Number.isInteger(bubbleReturn.step)&&bubbleReturn.step>=0)fresh.bubbleCannonReturn={phase:bubbleReturn.phase,index:bubbleReturn.index,step:bubbleReturn.step};
   const treehouseReturn=saved.treehouseReturn;
   if(treehouseReturn&&phases.includes(treehouseReturn.phase)&&treehouseReturn.phase!=='treehouse_stu'&&Number.isInteger(treehouseReturn.index)&&treehouseReturn.index>=0&&treehouseReturn.index<letters.length&&Number.isInteger(treehouseReturn.step)&&treehouseReturn.step>=0)fresh.treehouseReturn={phase:treehouseReturn.phase,index:treehouseReturn.index,step:treehouseReturn.step};
-  const findObjectEntry=FIND_OBJECT_COURSE[fresh.cursor.phase];
-  if(findObjectEntry&&fresh.cursor.index!==findObjectEntry.courseIndex)fresh.cursor.phase='lesson';
-  const mazeEntry=LETTER_MAZE_COURSE[fresh.cursor.phase];
-  if(mazeEntry&&fresh.cursor.index!==mazeEntry.courseIndex)fresh.cursor.phase='lesson';
+  if(fresh.cursor.phase==='room'&&fresh.cursor.index!==2)fresh.cursor.phase='lesson';
+  if(fresh.cursor.phase==='maze'&&fresh.cursor.index!==5)fresh.cursor.phase='lesson';
   if(fresh.cursor.phase==='balloon_ghi'&&fresh.cursor.index!==GHI_END_INDEX)fresh.cursor.phase='lesson';
   if(fresh.cursor.phase==='river_jkl'&&fresh.cursor.index!==JKL_END_INDEX)fresh.cursor.phase='lesson';
   if(fresh.cursor.phase==='fruit_rain'&&fresh.cursor.index!==MNO_END_INDEX)fresh.cursor.phase='lesson';
@@ -1928,12 +2128,21 @@ function loadProgress(){
   fresh.questionSerial=Math.max(0,Number(saved.questionSerial)||0);
   fresh.reviews=Array.isArray(saved.reviews)?saved.reviews.filter(r=>byLetter.has(r.letter)&&Number.isFinite(r.due)):[];
   const g=saved.game,reviewPhase=['review','cumulative'].includes(fresh.cursor.phase);
-  const expected=reviewPhase?REVIEW_LENGTH:fresh.cursor.phase==='final'?FINAL_LENGTH:MINI_LENGTH;
+  const reviewBlock=reviewPhase?(fresh.cursor.phase==='review'?localReviewAt(fresh.cursor.index):cumulativeReviewAt(fresh.cursor.index)):null;
+  const expected=reviewPhase&&reviewBlock?reviewLength(reviewBlock,fresh.cursor.phase==='cumulative'):fresh.cursor.phase==='final'?FINAL_LENGTH:MINI_LENGTH;
   const types=reviewPhase?REVIEW_TYPES:fresh.cursor.phase==='final'?FINAL_TYPES:MINI_TYPES;
-  const block=reviewPhase?(fresh.cursor.phase==='review'?localReviewAt(fresh.cursor.index):cumulativeReviewAt(fresh.cursor.index)):null;
+  const block=reviewBlock;
   const allowed=block?(fresh.cursor.phase==='review'?block.letters:letters.slice(0,block.afterIndex+1).map(d=>d.letter)):[];
-  const reviewGameValid=!reviewPhase||(block&&g?.id===block.id&&Array.isArray(g.poolLetters)&&g.poolLetters.length===allowed.length&&g.poolLetters.every(letter=>allowed.includes(letter))&&Array.isArray(g.letterOrder)&&g.letterOrder.length===REVIEW_LENGTH&&g.letterOrder.every(letter=>allowed.includes(letter))&&(fresh.cursor.phase!=='cumulative'||new Set(g.letterOrder).size===REVIEW_LENGTH));
-  if(g&&reviewGameValid&&Array.isArray(g.types)&&g.types.length===expected&&g.types.every(t=>types.includes(t))&&Number.isInteger(g.index)&&g.index>=0&&g.index<expected&&Array.isArray(g.recent))fresh.game={...g,recent:g.recent.filter(l=>byLetter.has(l))};
+  let restoredGame=g;
+  const legacyReview=reviewPhase&&Number(saved.version)<APP_STATE_VERSION&&block&&g?.id===block.id&&Array.isArray(g.types)&&g.types.length===MIN_REVIEW_LENGTH&&g.types.every(type=>REVIEW_TYPES.includes(type))&&Array.isArray(g.letterOrder)&&g.letterOrder.length===MIN_REVIEW_LENGTH&&g.letterOrder.every(letter=>allowed.includes(letter))&&(fresh.cursor.phase!=='cumulative'||validCumulativeLetterOrder(block,g.letterOrder,true));
+  if(legacyReview){
+   const order=[...g.letterOrder],uncovered=shuffle(allowed.filter(letter=>!order.includes(letter)));order.push(...uncovered);
+   while(order.length<expected){const counts=new Map(allowed.map(letter=>[letter,order.filter(item=>item===letter).length])),least=Math.min(...counts.values());const choices=allowed.filter(letter=>counts.get(letter)===least&&letter!==order.at(-1));order.push(getRandomItems(choices.length?choices:allowed,1)[0]);}
+   const typeOrder=[...g.types];while(typeOrder.length<expected)typeOrder.push(...reviewTypeOrder(expected-typeOrder.length));
+   restoredGame={...g,types:typeOrder.slice(0,expected),letterOrder:order.slice(0,expected),roundSizes:reviewRoundSizes(expected)};
+  }
+  const reviewGameValid=!reviewPhase||(block&&restoredGame?.id===block.id&&Array.isArray(restoredGame.poolLetters)&&restoredGame.poolLetters.length===allowed.length&&restoredGame.poolLetters.every(letter=>allowed.includes(letter))&&Array.isArray(restoredGame.letterOrder)&&restoredGame.letterOrder.length===expected&&restoredGame.letterOrder.every(letter=>allowed.includes(letter))&&(fresh.cursor.phase!=='cumulative'||validCumulativeLetterOrder(block,restoredGame.letterOrder,false)));
+  if(restoredGame&&reviewGameValid&&Array.isArray(restoredGame.types)&&restoredGame.types.length===expected&&restoredGame.types.every(t=>types.includes(t))&&Number.isInteger(restoredGame.index)&&restoredGame.index>=0&&restoredGame.index<expected&&Array.isArray(restoredGame.recent))fresh.game={...restoredGame,roundSizes:reviewRoundSizes(expected),recent:restoredGame.recent.filter(l=>byLetter.has(l))};
   if(['mini','final','review','cumulative'].includes(fresh.cursor.phase)&&!fresh.game)fresh.cursor.phase={mini:'miniIntro',final:'finalIntro',review:'reviewIntro',cumulative:'cumulativeIntro'}[fresh.cursor.phase];
   if(saved.question&&validQuestion(saved.question))fresh.question=saved.question;
   // An expanded letters[] resumes learning the first newly added/unmastered item.
@@ -1943,6 +2152,7 @@ function loadProgress(){
   if(firstUnmastered>=0&&(fresh.completed||formerTerminal)){fresh.completed=false;fresh.cursor={phase:'lesson',index:firstUnmastered,step:0};fresh.question=null;fresh.game=null;}
   if(saved.version<APP_STATE_VERSION&&firstUnmastered<0&&fresh.completed&&!fresh.flightYZ.permanent.completed){fresh.completed=false;fresh.cursor={phase:'flight_yz',index:letters.length-1,step:0};fresh.question=null;fresh.game=null;}
   migrateRewards(fresh,saved);
+  migrateEquipmentSchema(fresh,saved);
   migrateStudentState(fresh,saved);
   return fresh;
  }catch(e){log('Storage unavailable or invalid',e);return fresh;}
@@ -1957,12 +2167,24 @@ function unlockItem(id,state=AppState,persist){
  return true;
 }
 function getEquippedItem(slot,state=AppState){
- if(!ITEM_SLOTS.includes(slot))return null;
+ if(!CHARACTER_STATE_SLOTS.includes(slot))return null;
  const item=getItemById(state.characterState.equipped[slot]);
- return item?.slot===slot&&isItemOwned(item.id,state)?item:null;
+ return item&&(item.slot===slot||mariusRenderSlot(item)===slot)&&isItemOwned(item.id,state)?item:null;
 }
 function equipItem(id,state=AppState,persist){
  const item=getItemById(id);if(!item||!isItemOwned(id,state))return false;
+ const slot=mariusRenderSlot(item),clearItem=equippedId=>{
+  if(!equippedId)return;
+  for(const stateSlot of CHARACTER_STATE_SLOTS)if(state.characterState.equipped[stateSlot]===equippedId)state.characterState.equipped[stateSlot]=null;
+ };
+ const incompatible=new Set(mariusItemIncompatibleSlots(item));
+ if(slot==='body_variant')for(const wearableSlot of MARIUS_WEARABLE_SLOTS)incompatible.add(wearableSlot);
+ if(MARIUS_WEARABLE_SLOTS.includes(slot))incompatible.add('body_variant');
+ for(const stateSlot of CHARACTER_STATE_SLOTS){
+  const occupied=getItemById(state.characterState.equipped[stateSlot]);if(!occupied||occupied.id===id)continue;
+  const occupiedSlot=mariusRenderSlot(occupied);
+  if(occupiedSlot===slot||incompatible.has(occupiedSlot)||mariusItemIncompatibleSlots(occupied).includes(slot))clearItem(occupied.id);
+ }
  state.characterState.equipped[item.slot]=id;
  if(persist===true||(persist===undefined&&state===AppState))saveProgress();
  log('Equipped',id);return true;
@@ -1982,10 +2204,12 @@ function migrateRewards(state,saved){
  for(const reward of rewardConfig){
   const end=letters.findIndex(d=>d.letter===reward.afterLetters.at(-1)),c=state.cursor;
   const alreadyEarned=state.completedBlocks.includes(reward.id)||saved.claimedRewards?.includes(reward.id)||saved.rewardFlow?.id===reward.id;
-  const passed=reward.id==='reward_ghi'?alreadyEarned:end>=0&&(c.index>end||(c.index===end&&['miniResult','finalIntro','final','results'].includes(c.phase))||state.completed);
+  const legacyReward=reward.awardsBlockStars===true;
+  const passed=alreadyEarned||end>=0&&(c.index>end||state.completed||(legacyReward&&c.index===end&&['miniResult','finalIntro','final','results'].includes(c.phase)));
   if(passed&&!state.completedBlocks.includes(reward.id))state.completedBlocks.push(reward.id);
  }
  const previous=saved.characterState||{},equipped=previous.equipped||{},flow=saved.rewardFlow;
+ const purchased=new Set(Array.isArray(saved.student?.purchasedItemIds)?saved.student.purchasedItemIds:[]);
  const oldIDs={jacket_01:'jacket_stars',jacket_02:'jacket_racer'};
  const mapID=id=>oldIDs[id]||id;
  const previousRewardVersion=Number(saved.rewardStateVersion)||0;
@@ -1996,30 +2220,50 @@ function migrateRewards(state,saved){
  // item is carried over. Retired headwear earns a fresh accessory choice.
  if(previousRewardVersion>=2&&Array.isArray(previous.ownedItems)){
   for(const id of previous.ownedItems)unlockItem(mapID(id),state,false);
-  for(const slot of ITEM_SLOTS){
+  for(const slot of CHARACTER_STATE_SLOTS){
    const item=getItemById(mapID(equippedBySlot[slot]));
-   if(item?.slot===slot&&isItemOwned(item.id,state))equipItem(item.id,state,false);
+   if(item&&(item.slot===slot||mariusRenderSlot(item)===slot)&&isItemOwned(item.id,state))equipItem(item.id,state,false);
   }
  }
  for(const reward of rewardConfig){
   const eligible=state.completedBlocks.includes(reward.id);
-  const items=rewardItems(reward),slot=items[0]?.slot;
-  let chosen=mapID(equippedBySlot[slot]);
-  if(!items.some(item=>item.id===chosen))chosen=flow?.id===reward.id?mapID(flow.selected):null;
+  const items=rewardItems(reward);
+  let chosen=flow?.id===reward.id?mapID(flow.selected):null;
+  if(!items.some(item=>item.id===chosen))chosen=items.find(item=>mapID(equippedBySlot[item.slot])===item.id||mapID(equippedBySlot[mariusRenderSlot(item)])===item.id)?.id||null;
   if(!items.some(item=>item.id===chosen))chosen=null;
   if(previousRewardVersion<2&&eligible&&chosen)unlockItem(chosen,state,false);
-  const owned=items.filter(item=>isItemOwned(item.id,state));
+  const owned=items.filter(item=>isItemOwned(item.id,state)),rewardOwned=owned.filter(item=>!purchased.has(item.id));
   if(chosen&&isItemOwned(chosen,state))equipItem(chosen,state,false);
   else if(previousRewardVersion<REWARD_STATE_VERSION&&owned.length)equipItem(owned[0].id,state,false);
-  if(eligible&&owned.length)state.claimedRewards.push(reward.id);
+  if(eligible&&rewardOwned.length&&!state.claimedRewards.includes(reward.id))state.claimedRewards.push(reward.id);
  }
  const reward=rewardConfig.find(r=>r.id===flow?.id);
  if(reward&&state.completedBlocks.includes(reward.id)){
-  const slot=rewardItems(reward)[0]?.slot;
-  const selected=state.claimedRewards.includes(reward.id)?getEquippedItem(slot,state)?.id||null:null;
+  const items=rewardItems(reward);
+  const claimed=state.claimedRewards.includes(reward.id),flowSelection=items.find(item=>item.id===mapID(flow.selected))?.id||null;
+  const selected=claimed?items.find(item=>item.id===flowSelection&&isItemOwned(item.id,state))?.id||items.find(item=>mapID(equippedBySlot[item.slot])===item.id&&isItemOwned(item.id,state))?.id||null:flowSelection;
   state.rewardFlow={id:reward.id,resume:flow.resume==='after-mini'?'after-mini':'course',selected};
  }
  ensureRewardFlow(state);
+}
+
+/* Equipment schema evolves independently from the reward schema. Adding a
+   slot never equips anything and never changes a deliberately empty slot. */
+function migrateEquipmentSchema(state,saved){
+ const previous=saved.characterState||{},equipped=previous.equipped||{};
+ for(const id of Array.isArray(previous.ownedItems)?previous.ownedItems:[]){
+  if(mariusWardrobeCatalog.has(id)&&!state.characterState.ownedItems.includes(id))state.characterState.ownedItems.push(id);
+ }
+ for(const slot of MARIUS_EQUIPMENT_SLOTS){
+  if(ITEM_SLOTS.includes(slot))continue;
+  const id=typeof equipped[slot]==='string'?equipped[slot]:null;
+  const wardrobeItem=mariusWardrobeCatalog.get(id),legacyItem=getItemById(id);
+  const validWardrobe=wardrobeItem?.slot===slot;
+  const validBodyVariant=slot==='body_variant'&&legacyItem?.renderSlot==='body_variant'&&state.characterState.ownedItems.includes(id);
+  state.characterState.equipped[slot]=null;
+  if((validWardrobe||validBodyVariant)&&state.characterState.ownedItems.includes(id))equipItem(id,state,false);
+ }
+ state.equipmentSchemaVersion=MARIUS_EQUIPMENT_SCHEMA_VERSION;
 }
 
 function ensureRewardFlow(state=AppState){
@@ -2027,6 +2271,7 @@ function ensureRewardFlow(state=AppState){
  const reward=rewardConfig.find(r=>state.completedBlocks.includes(r.id)&&!state.claimedRewards.includes(r.id));
  if(reward)state.rewardFlow={id:reward.id,resume:state.cursor.phase==='miniResult'&&reward.afterLetters.at(-1)===letters[state.cursor.index].letter?'after-mini':'course',selected:null};
 }
+function rewardFlowClaimed(flow,state=AppState){return Boolean(flow?.selected&&state.claimedRewards.includes(flow.id)&&isItemOwned(flow.selected,state));}
 const AppState=loadProgress();
 function awardStars(amount,reason,sourceId,timestamp=Date.now()){
  const awarded=StudentDomain.awardStars(AppState.student,amount,reason,sourceId,timestamp);if(awarded)saveProgress();return awarded;
@@ -2036,12 +2281,61 @@ function evaluateStudentAchievements(timestamp=Date.now()){
  const unlocked=StudentDomain.evaluateAchievements(AppState.student,studentFactsFromState(AppState,timestamp),timestamp);if(unlocked.length)saveProgress();return unlocked;
 }
 function masteryForLetter(letter){return StudentDomain.letterMastery(AppState.stats[letter]||blankStats(),AppState.training.progress[letter]||{});}
-function shopItemUnlocked(item){return item?.unlockCondition==='always'||AppState.completedBlocks.includes(item?.unlockCondition);}
+function shopRewardConfig(item){return item?rewardConfig.find(reward=>reward.id===item.rewardId||reward.itemIds.includes(item.id))||null:null;}
+function shopItemUnlocked(item){
+ if(!item)return false;
+ const reward=shopRewardConfig(item);
+ if(reward)return AppState.completedBlocks.includes(reward.id)&&AppState.claimedRewards.includes(reward.id);
+ return item.unlockCondition==='always'||AppState.completedBlocks.includes(item.unlockCondition);
+}
+function shopItemVisible(item){return Boolean(item&&(item.availability==='shop'||shopRewardConfig(item)&&!shopRewardConfig(item).awardsBlockStars||shopItemUnlocked(item)));}
+function shopItemState(item){
+ if(isItemOwned(item.id))return AppState.student.purchasedItemIds.includes(item.id)?'purchased':'reward';
+ return shopItemUnlocked(item)?'available':'locked';
+}
+function shopLockedCopy(item){
+ const reward=shopRewardConfig(item);if(!reward)return 'Пока недоступно';
+ return AppState.completedBlocks.includes(reward.id)?'Сначала выбери награду':`После блока ${reward.afterLetters[0]}–${reward.afterLetters.at(-1)}`;
+}
 function purchaseCatalogItem(id){
- const item=getItemById(id);if(!item||!shopItemUnlocked(item))return {ok:false,reason:'locked'};
+ const item=getItemById(id);if(!item)return {ok:false,reason:'locked'};
+ if(!isItemOwned(id)&&!AppState.student.purchasedItemIds.includes(id)&&!shopItemUnlocked(item))return {ok:false,reason:'locked'};
  const result=StudentDomain.purchaseItem(AppState.student,AppState.characterState,item);
  if(result.ok){evaluateStudentAchievements();saveProgress();}
  return result;
+}
+function getMariusCollection(id){return MARIUS_COLLECTIONS.find(collection=>collection.id===id)||null;}
+function collectionItems(collection){return (collection?.itemIds||[]).map(getItemById).filter(Boolean);}
+function collectionOwnedCount(collection,state=AppState){return collectionItems(collection).filter(item=>isItemOwned(item.id,state)).length;}
+function collectionComplete(collection,state=AppState){const items=collectionItems(collection);return Boolean(items.length)&&items.every(item=>isItemOwned(item.id,state));}
+function collectionAvailableTotal(collection,state=AppState){return collectionItems(collection).filter(item=>!isItemOwned(item.id,state)&&shopItemUnlocked(item)).reduce((sum,item)=>sum+Math.max(0,Number(item.priceStars)||0),0);}
+function collectionMissingItems(collection,state=AppState){return collectionItems(collection).filter(item=>!isItemOwned(item.id,state));}
+function collectionMissingTotal(collection,state=AppState){return collectionMissingItems(collection,state).reduce((sum,item)=>sum+Math.max(0,Number(item.priceStars)||0),0);}
+function collectionLockedItems(collection,state=AppState){return collectionMissingItems(collection,state).filter(item=>!shopItemUnlocked(item));}
+function purchaseCollection(id){
+ const collection=getMariusCollection(id);if(!collection)return {ok:false,reason:'unknown'};
+ const missing=collectionMissingItems(collection);if(!missing.length)return {ok:false,reason:'owned'};
+ if(missing.some(item=>!shopItemUnlocked(item)))return {ok:false,reason:'locked',lockedItemIds:collectionLockedItems(collection).map(item=>item.id)};
+ const result=StudentDomain.purchaseItems(AppState.student,AppState.characterState,missing);
+ if(result.ok){evaluateStudentAchievements();saveProgress();}
+ return result;
+}
+function collectionEquipped(collection,state=AppState){return collectionItems(collection).every(item=>getEquippedItem(mariusRenderSlot(item),state)?.id===item.id);}
+function equipCollection(id,state=AppState,persist){
+ const collection=getMariusCollection(id);if(!collection||!collectionComplete(collection,state))return false;
+ const controlledSlots=new Set([...MARIUS_WEARABLE_SLOTS,'head','hand_left','hand_right']);
+ for(const slot of controlledSlots)if(!collection.equipment[slot])state.characterState.equipped[slot]=null;
+ for(const item of collectionItems(collection))if(!equipItem(item.id,state,false))return false;
+ if(persist===true||(persist===undefined&&state===AppState))saveProgress();
+ return true;
+}
+function pendingCompletedCollection(state=AppState){return MARIUS_COLLECTIONS.find(collection=>collectionComplete(collection,state)&&!state.collectionCelebrations.includes(collection.id))||null;}
+function showPendingCollectionCelebration(){
+ if(!$('#modal-layer').hidden)return false;
+ const collection=pendingCompletedCollection();if(!collection)return false;
+ AppState.collectionCelebrations.push(collection.id);saveProgress();
+ openModal(`<div class="achievement-celebration collection-celebration"><div class="achievement-icon" aria-hidden="true">✨</div><p class="eyebrow">Готовый образ</p><h2 id="modal-title">Образ собран!</h2><p>Теперь Мариус может надеть «${escapeHTML(collection.name)}» целиком.</p><button class="primary" data-action="close-collection-celebration">Ура!</button></div>`);
+ celebrate();return true;
 }
 function pendingAchievement(){return AppState.student.achievements.unlocked.find(entry=>!AppState.student.achievements.notified.includes(entry.id))||null;}
 function showPendingAchievementCelebration(){
@@ -2053,15 +2347,16 @@ function showPendingAchievementCelebration(){
 }
 const completedTrainingLetters=(state=AppState)=>letters.filter(d=>state.stats[d.letter].mastery===3).map(d=>d.letter);
 if(DEMO_LETTER_INDEX>=0){AppState.cursor={phase:'lesson',index:DEMO_LETTER_INDEX,step:0};AppState.question=null;AppState.game=null;AppState.rewardFlow=null;}
-if(DEMO_MAZE_PREVIEW){AppState.cursor={phase:'maze',index:5,step:lessonSteps(letters[5]).length-1};AppState.mazeGames[DEF_LETTER_MAZE.id]=LetterMazeGame.initialState(DEF_LETTER_MAZE);AppState.question=null;AppState.game=null;AppState.rewardFlow=null;}
+if(DEMO_MAZE_PREVIEW){AppState.cursor={phase:'maze',index:5,step:lessonSteps(letters[5]).length-1};if(DEF_LETTER_MAZE&&typeof LetterMazeGame!=='undefined')AppState.mazeGames[DEF_LETTER_MAZE.id]=LetterMazeGame.initialState(DEF_LETTER_MAZE);AppState.question=null;AppState.game=null;AppState.rewardFlow=null;}
 if(DEMO_BALLOON_PREVIEW){AppState.cursor={phase:'balloon_ghi',index:GHI_END_INDEX,step:lessonSteps(letters[GHI_END_INDEX]).length-1};AppState.balloonPop=blankBalloonPop();AppState.question=null;AppState.game=null;AppState.rewardFlow=null;}
 if(DEMO_RIVER_PREVIEW){AppState.cursor={phase:'river_jkl',index:JKL_END_INDEX,step:lessonSteps(letters[JKL_END_INDEX]).length-1};AppState.riverCrossing=blankRiverCrossing();AppState.question=null;AppState.game=null;AppState.rewardFlow=null;}
 if(DEMO_FRUIT_RAIN_PREVIEW){AppState.cursor={phase:'fruit_rain',index:MNO_END_INDEX,step:lessonSteps(letters[MNO_END_INDEX]).length-1};AppState.fruitRain=blankFruitRain();AppState.fruitRainReturn=null;AppState.question=null;AppState.game=null;AppState.rewardFlow=null;}
 if(DEMO_BUBBLE_CANNON_PREVIEW){AppState.cursor={phase:'bubble_cannon',index:PQR_END_INDEX,step:lessonSteps(letters[PQR_END_INDEX]).length-1};AppState.bubbleCannon=blankBubbleCannon();AppState.bubbleCannonReturn=null;AppState.question=null;AppState.game=null;AppState.rewardFlow=null;}
 if(DEMO_TREEHOUSE_PREVIEW){AppState.cursor={phase:'treehouse_stu',index:STU_END_INDEX,step:lessonSteps(letters[STU_END_INDEX]).length-1};AppState.treehouse=blankTreehouse();AppState.treehouseReturn=null;AppState.question=null;AppState.game=null;AppState.rewardFlow=null;}
-if(DEMO_RAILWAY_PREVIEW){AppState.cursor={phase:'railway_vwx',index:VWX_END_INDEX,step:lessonSteps(letters[VWX_END_INDEX]).length-1};AppState.railway=blankRailway();while(AppState.railway.completedDeliveries<DEMO_RAILWAY_PROGRESS){const task=RailwayVWXGame.currentTask(VWX_RAILWAY_GAME,AppState.railway);RailwayVWXGame.answer(VWX_RAILWAY_GAME,AppState.railway,task.routeId);}AppState.question=null;AppState.game=null;AppState.rewardFlow=null;}
+if(DEMO_RAILWAY_PREVIEW){AppState.cursor={phase:'railway_vwx',index:VWX_END_INDEX,step:lessonSteps(letters[VWX_END_INDEX]).length-1};AppState.railway=blankRailway();if(VWX_RAILWAY_GAME&&typeof RailwayVWXGame!=='undefined')while(AppState.railway.completedDeliveries<DEMO_RAILWAY_PROGRESS){const task=RailwayVWXGame.currentTask(VWX_RAILWAY_GAME,AppState.railway);RailwayVWXGame.answer(VWX_RAILWAY_GAME,AppState.railway,task.routeId);}AppState.question=null;AppState.game=null;AppState.rewardFlow=null;}
 if(DEMO_FLIGHT_YZ_PREVIEW){AppState.cursor={phase:'flight_yz',index:letters.length-1,step:0};AppState.flightYZ=blankFlightYZ();AppState.question=null;AppState.game=null;AppState.rewardFlow=null;}
-if(DEMO_TRAINING_PREVIEW){for(const d of letters.slice(0,8)){AppState.stats[d.letter].skills=[...CORE_TYPES];AppState.stats[d.letter].mastery=CORE_TYPES.length;}AppState.started=true;AppState.rewardFlow=null;AppState.training.activeSession=TrainingEngine.createSession(completedTrainingLetters(),AppState.training.progress,TRAINING_CONFIG,Math.random,AppState.training.lastSignature);}
+if(DEMO_TRAINING_PREVIEW){for(const d of letters.slice(0,8)){AppState.stats[d.letter].skills=[...CORE_TYPES];AppState.stats[d.letter].mastery=CORE_TYPES.length;}AppState.started=true;AppState.rewardFlow=null;if(typeof TrainingEngine!=='undefined')AppState.training.activeSession=TrainingEngine.createSession(completedTrainingLetters(),AppState.training.progress,TRAINING_CONFIG,Math.random,AppState.training.lastSignature);}
+if(DEMO_SHOP_PREVIEW){AppState.completedBlocks=['reward_jkl'];AppState.claimedRewards=['reward_jkl'];AppState.rewardFlow=null;unlockItem('marius_hand_fishing_rod',AppState,false);equipItem('marius_hand_fishing_rod',AppState,false);StudentDomain.awardStars(AppState.student,24,'demo_balance','demo:shop',0);}
 const visibleRewardFlow=()=>DEMO_REWARD_PREVIEW?DEMO_REWARD_FLOW:AppState.rewardFlow;
 function activeFindObjectEntry(){return FIND_OBJECT_COURSE[AppState.cursor.phase]||null;}
 function findObjectState(config=activeFindObjectEntry()?.scene){return config?AppState.findObjectGames[config.id]||null:null;}
@@ -2106,7 +2401,59 @@ function courseRiverActive(){return view==='course'&&AppState.cursor.phase==='ri
 function riverContextActive(){return trainingRiverActive()||courseRiverActive();}
 function activeRiverConfig(){return trainingRiverActive()?trainingRiverConfig():JKL_RIVER_GAME;}
 function activeRiverState(){return trainingRiverActive()?ensureTrainingRiverState():riverCrossingState();}
-let view=DEMO_TRAINING_PREVIEW?'training':DEMO_LETTER_INDEX>=0||DEMO_MAZE_PREVIEW||DEMO_BALLOON_PREVIEW||DEMO_RIVER_PREVIEW||DEMO_FRUIT_RAIN_PREVIEW||DEMO_BUBBLE_CANNON_PREVIEW||DEMO_TREEHOUSE_PREVIEW||DEMO_RAILWAY_PREVIEW||DEMO_FLIGHT_YZ_PREVIEW?'course':DEMO_REWARD_PREVIEW?'reward':DEMO_INVENTORY_PREVIEW?'progress':AppState.rewardFlow?'reward':'home',lastView='home',profileSection='marius',shopPreviewItemId=null,answerLocked=false,transitionTimer=null,viewEpoch=0,restoreFocus=null,rewardReady=Boolean(visibleRewardFlow()?.selected);
+const initialShopCollectionId=getMariusCollection(DEMO_COLLECTION_QUERY)?.id||null;
+const initialShopCategoryId=initialShopCollectionId?'collections':SHOP_CATEGORY_CONFIG.some(category=>category.id===DEMO_SHOP_CATEGORY_QUERY)?DEMO_SHOP_CATEGORY_QUERY:DEMO_SHOP_PREVIEW?'hands':'head';
+let view=DEMO_WARDROBE_PREVIEW?'wardrobe-preview':DEMO_TRAINING_PREVIEW?'training':DEMO_SHOP_PREVIEW?'profile':DEMO_LETTER_INDEX>=0||DEMO_MAZE_PREVIEW||DEMO_BALLOON_PREVIEW||DEMO_RIVER_PREVIEW||DEMO_FRUIT_RAIN_PREVIEW||DEMO_BUBBLE_CANNON_PREVIEW||DEMO_TREEHOUSE_PREVIEW||DEMO_RAILWAY_PREVIEW||DEMO_FLIGHT_YZ_PREVIEW?'course':DEMO_REWARD_PREVIEW?'reward':DEMO_INVENTORY_PREVIEW?'progress':AppState.rewardFlow?'reward':'home',lastView='home',profileSection=DEMO_SHOP_PREVIEW?'shop':'marius',shopCategoryId=initialShopCategoryId,shopPreviewItemId=null,shopCollectionId=initialShopCollectionId,shopCollectionPreviewId=initialShopCollectionId,answerLocked=false,transitionTimer=null,viewEpoch=0,restoreFocus=null,rewardReady=DEMO_REWARD_PREVIEW?Boolean(visibleRewardFlow()?.selected):rewardFlowClaimed(AppState.rewardFlow);
+const COURSE_PHASE_GROUP=Object.freeze({room:'ABC',maze:'DEF',balloon_ghi:'GHI',river_jkl:'JKL',fruit_rain:'MNO',bubble_cannon:'PQR',treehouse_stu:'STU',railway_vwx:'VWX',flight_yz:'YZ'});
+let resourceTransitionId=0,deferredDemoPrepared=false;
+function currentResourceGroup(cursor=AppState.cursor){return COURSE_PHASE_GROUP[cursor.phase]||(typeof ResourceLoader!=='undefined'?ResourceLoader.groupForIndex(cursor.index):'ABC')||'ABC';}
+function rewardResourceGroup(){const id=visibleRewardFlow()?.id||'';return ({reward_abc:'ABC',reward_def:'DEF',reward_ghi:'GHI',reward_jkl:'JKL',reward_mno:'MNO',reward_pqr:'PQR',reward_stu:'STU',reward_vwx:'VWX',reward_yz:'YZ'})[id]||currentResourceGroup();}
+function setResourceLoading(visible,message='Готовим следующий этап…'){
+ const indicator=$('#resource-loading');if(!indicator)return;
+ indicator.hidden=!visible;const copy=indicator.querySelector?.('span');if(copy)copy.textContent=message;
+}
+let audioLoadingHideTimer=null;
+function setAudioLoading(state,message='Загружаем озвучку…'){
+ const indicator=$('#audio-loading');if(!indicator)return;
+ clearTimeout(audioLoadingHideTimer);indicator.classList.toggle('is-error',state==='error');
+ const copy=indicator.querySelector?.('span');if(copy)copy.textContent=message;
+ if(['idle','ready'].includes(state)){indicator.hidden=true;return;}
+ indicator.hidden=false;
+ if(state==='error')audioLoadingHideTimer=setTimeout(()=>{indicator.hidden=true;indicator.classList.remove('is-error');},3200);
+}
+document.addEventListener('abc-audio-state',event=>{
+ const state=event.detail?.state||'idle';
+ const message=state==='retrying'?'Связь медленная — повторяем загрузку звука…':state==='error'?'Звук не загрузился. Нажмите «Послушать» ещё раз.':'Загружаем озвучку…';
+ setAudioLoading(state,message);
+});
+function finishDeferredDemoRuntime(group){
+ if(!DEMO||deferredDemoPrepared)return;
+ if(DEMO_TRAINING_PREVIEW&&group==='training'&&!AppState.training.activeSession)AppState.training.activeSession=TrainingEngine.createSession(completedTrainingLetters(),AppState.training.progress,TRAINING_CONFIG,Math.random,AppState.training.lastSignature);
+ if(DEMO_RAILWAY_PREVIEW&&group==='VWX'&&DEMO_RAILWAY_PROGRESS>0&&AppState.railway.completedDeliveries===0)while(AppState.railway.completedDeliveries<DEMO_RAILWAY_PROGRESS){const task=RailwayVWXGame.currentTask(VWX_RAILWAY_GAME,AppState.railway);RailwayVWXGame.answer(VWX_RAILWAY_GAME,AppState.railway,task.routeId);}
+ deferredDemoPrepared=true;
+}
+async function prepareResourceContext(nextView=view){
+ if(typeof ResourceLoader==='undefined')return true;
+ if(nextView==='course'){
+  const group=currentResourceGroup(),phase=AppState.cursor.phase;
+  if(COURSE_PHASE_GROUP[phase]){await ResourceLoader.ensureRuntime(group);hydrateRuntimeState(group,AppState);ResourceLoader.warmGroupScreen(group,'game');finishDeferredDemoRuntime(group);}
+  else ResourceLoader.warmLetter(letters[AppState.cursor.index]?.letter);
+ }else if(nextView==='training'){
+  await ResourceLoader.ensureSection('training');bindLoadedRuntime('GHI');bindLoadedRuntime('JKL');hydrateRuntimeState('GHI',AppState);hydrateRuntimeState('JKL',AppState);finishDeferredDemoRuntime('training');
+ }else if(nextView==='profile')await ResourceLoader.ensureSection(profileSection==='shop'?'shop':'profile');
+ else if(['progress','wardrobe-preview'].includes(nextView))await ResourceLoader.ensureSection('wardrobe');
+ else if(nextView==='reward')ResourceLoader.warmGroupScreen(rewardResourceGroup(),'reward');
+ return true;
+}
+async function waitForResourceContext(nextView=view){
+ const token=++resourceTransitionId;let shown=false;
+ const timer=setTimeout(()=>{if(token===resourceTransitionId){shown=true;setResourceLoading(true);}},180);
+ try{await prepareResourceContext(nextView);return token===resourceTransitionId;}
+ catch(error){console.warn('[ABC Safari resources]',error);if(token===resourceTransitionId)setResourceLoading(true,'Не удалось загрузить этап. Проверьте соединение.');return false;}
+ finally{clearTimeout(timer);if(shown&&token===resourceTransitionId)setResourceLoading(false);}
+}
+const blankMariusPreviewEquipment=()=>Object.fromEntries(MARIUS_EQUIPMENT_SLOTS.map(slot=>[slot,null]));
+let mariusPreviewEquipment=blankMariusPreviewEquipment(),mariusPreviewMessage='Базовый Мариус — без выбранных предметов.';
 const SLIDE_AUDIO_WAITING='waitingForAudio',SLIDE_AUDIO_READY='readyToContinue';
 const completedLessonCardAudioKeys=new Set();
 let lessonCardAudioState={key:null,status:SLIDE_AUDIO_READY},lessonCardAudioRun=0;
@@ -2141,7 +2488,15 @@ function getWeightedRandomLetter(pool=letters,recent=[]){
 function createQuestion(type,d,pool=letters,lesson=false){
  let wrong=pool.filter(x=>x.letter!==d.letter).map(x=>x.letter);
  if(type==='find'&&lesson){const suggested=d.distractors||[];wrong=[...new Set([...suggested,...wrong,...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'])].filter(x=>x!==d.letter);wrong=[...getRandomItems(suggested.filter(x=>x!==d.letter),2),...shuffle(wrong)];wrong=[...new Set(wrong)];}
- else wrong=shuffle(wrong);
+ else{
+  wrong=shuffle(wrong);
+  // Picture checks for the two-letter Y–Z block still need three stable,
+  // unique answers. Keep the existing distractor and fill only the missing
+  // slot from the canonical A–Z picture catalog.
+  if(['letterPicture','wordPicture',TRANSLATION_TYPE].includes(type)&&wrong.length<2){
+   const present=new Set([d.letter,...wrong]);wrong.push(...shuffle(letters.filter(item=>!present.has(item.letter)).map(item=>item.letter)).slice(0,2-wrong.length));
+  }
+ }
  return {type,letter:d.letter,options:shuffle([d.letter,...wrong.slice(0,2)]),hadMistake:false,serial:AppState.questionSerial};
 }
 function registerMistake(q){const s=AppState.stats[q.letter];s.attempts++;s.mistakes++;s.practiceDebt=Math.min(s.practiceDebt+1,12);q.hadMistake=true;noteAnalyticsMistake();const old=AppState.reviews.find(r=>r.letter===q.letter);if(old)old.due=Math.min(old.due,AppState.questionSerial+2);else AppState.reviews.push({letter:q.letter,due:AppState.questionSerial+2});recordLearningActivity();evaluateStudentAchievements();saveProgress();}
@@ -2153,18 +2508,32 @@ function gamePool(){
 function startGame(final=false){const types=final?FINAL_TYPES:MINI_TYPES,count=final?FINAL_LENGTH:MINI_LENGTH;
  const bag=shuffle(types);while(bag.length<count)bag.push(...shuffle(types));
  AppState.game={index:0,types:bag.slice(0,count),recent:[]};AppState.cursor.phase=final?'final':'mini';AppState.question=null;go('course');}
+function reviewTypeOrder(total){
+ const order=[];while(order.length<total){let cycle=shuffle(REVIEW_TYPES);if(order.length&&cycle[0]===order.at(-1))cycle=[...cycle.slice(1),cycle[0]];order.push(...cycle);}
+ return order.slice(0,total);
+}
+function balancedReviewLetterOrder(pool,total){
+ const selected=[...pool];
+ while(selected.length<total){
+  const counts=new Map(pool.map(letter=>[letter,selected.filter(item=>item===letter).length])),least=Math.min(...counts.values());
+  selected.push(...getRandomItems(pool.filter(letter=>counts.get(letter)===least),1));
+ }
+ for(let attempt=0;attempt<24;attempt++){
+  const order=shuffle(selected);if(order.every((letter,index)=>index===0||letter!==order[index-1]))return order;
+ }
+ return selected;
+}
 function localReviewLetterOrder(block){
- const order=[];while(order.length<REVIEW_LENGTH)order.push(...shuffle(block.letters));return order.slice(0,REVIEW_LENGTH);
+ return balancedReviewLetterOrder([...block.letters],reviewLength(block,false));
 }
 function cumulativeReviewLetterOrder(block){
- const pool=letters.slice(0,block.afterIndex+1).map(d=>d.letter),recent=block.recent.filter(letter=>pool.includes(letter));
- const recentPicks=getRandomItems(recent,Math.min(2,recent.length)),older=pool.filter(letter=>!recent.includes(letter));
- return shuffle([...recentPicks,...getRandomItems(older,REVIEW_LENGTH-recentPicks.length)]);
+ const pool=letters.slice(0,block.afterIndex+1).map(d=>d.letter);
+ return balancedReviewLetterOrder(pool,reviewLength(block,true));
 }
 function startReview(cumulative=false){
  const block=cumulative?cumulativeReviewAt(AppState.cursor.index):localReviewAt(AppState.cursor.index);if(!block)return false;
- const poolLetters=cumulative?letters.slice(0,block.afterIndex+1).map(d=>d.letter):[...block.letters];
- AppState.game={id:block.id,index:0,types:shuffle(REVIEW_TYPES),recent:[],poolLetters,letterOrder:cumulative?cumulativeReviewLetterOrder(block):localReviewLetterOrder(block)};
+ const poolLetters=cumulative?letters.slice(0,block.afterIndex+1).map(d=>d.letter):[...block.letters],total=reviewLength(block,cumulative);
+ AppState.game={id:block.id,index:0,types:reviewTypeOrder(total),recent:[],poolLetters,letterOrder:cumulative?cumulativeReviewLetterOrder(block):localReviewLetterOrder(block),roundSizes:reviewRoundSizes(total)};
  AppState.cursor.phase=cumulative?'cumulative':'review';AppState.question=null;go('course');return true;
 }
 function ensureQuestion(){
@@ -2202,20 +2571,29 @@ async function renderMariusComposite(canvas,composition,loadImage=loadCharacterI
  if(!context)return false;
  const renderId=String((Number(canvas.dataset.mariusRenderId)||0)+1);
  canvas.dataset.mariusRenderId=renderId;
- const sources=CHARACTER_LAYER_ORDER.map(slot=>composition[slot]).filter(Boolean);
+ const positionedLayers=Array.isArray(composition)?composition.filter(layer=>layer?.source):null;
+ const sources=positionedLayers?positionedLayers.map(layer=>layer.source):CHARACTER_LAYER_ORDER.map(slot=>composition[slot]).filter(Boolean);
  let images;
  try{images=await Promise.all(sources.map(source=>loadImage(source)));}
- catch(error){if(canvas.dataset.mariusRenderId!==renderId)return false;context.clearRect(0,0,characterConfig.width,characterConfig.height);throw error;}
+ catch(error){if(canvas.dataset.mariusRenderId!==renderId)return false;context.clearRect(0,0,canvas.width||characterConfig.width,canvas.height||characterConfig.height);throw error;}
  if(canvas.dataset.mariusRenderId!==renderId||canvas.isConnected===false)return false;
- context.clearRect(0,0,characterConfig.width,characterConfig.height);
- images.forEach(image=>context.drawImage(image,0,0,characterConfig.width,characterConfig.height));
+ if(positionedLayers){
+  context.clearRect(0,0,canvas.width||characterConfig.width,canvas.height||characterConfig.height);
+  images.forEach((image,index)=>{const rect=positionedLayers[index].rect;context.drawImage(image,rect.x,rect.y,rect.width,rect.height);});
+ }else{
+  context.clearRect(0,0,characterConfig.width,characterConfig.height);
+  images.forEach(image=>context.drawImage(image,0,0,characterConfig.width,characterConfig.height));
+ }
  return true;
 }
 function wireCharacterComposites(root=document,loadImage=loadCharacterImage){
  const draws=[...root.querySelectorAll('canvas[data-marius-sources]')].map(canvas=>{
   const slots=(canvas.dataset.mariusSlots||'').split(',').filter(Boolean),sources=canvas.dataset.mariusSources.split('|').filter(Boolean);
   const composition=Object.fromEntries(slots.map((slot,index)=>[slot,sources[index]]).filter(([,source])=>source));
-  return renderMariusComposite(canvas,composition,loadImage).then(drawn=>{if(drawn)canvas.closest('.character-stage')?.classList.remove('composite-unavailable');return drawn;}).catch(()=>{canvas.closest('.character-stage')?.classList.add('composite-unavailable');return false;});
+  let layout=null;
+  try{layout=canvas.dataset.mariusLayout?JSON.parse(canvas.dataset.mariusLayout):null;}catch(_){layout=null;}
+  const positioned=Array.isArray(layout?.layers)?layout.layers.map((layer,index)=>({source:sources[index],rect:layer.rect})).filter(layer=>layer.source&&layer.rect):null;
+  return renderMariusComposite(canvas,positioned?.length?positioned:composition,loadImage).then(drawn=>{if(drawn)canvas.closest('.character-stage')?.classList.remove('composite-unavailable');return drawn;}).catch(()=>{canvas.closest('.character-stage')?.classList.add('composite-unavailable');return false;});
  });
  return Promise.all(draws);
 }
@@ -2224,22 +2602,81 @@ function wireMedia(root=document){
  root.querySelectorAll('img[data-fallback]').forEach(img=>{const fallback=()=>{img.replaceWith(document.createTextNode(img.dataset.fallback));};img.addEventListener('error',fallback,{once:true});if(img.complete&&img.naturalWidth===0)fallback();});
  root.querySelectorAll('img[data-character-asset]').forEach(img=>{const fallback=()=>{const src=img.getAttribute('src');if(!failedImages.has(src)){failedImages.add(src);console.warn('[Alfie image] Image could not be loaded:',src);}img.hidden=true;};img.addEventListener('error',fallback,{once:true});if(img.complete&&img.naturalWidth===0)fallback();});
  wireCharacterComposites(root);
+ wireShopThumbnails(root);
 }
 function letterStrip(){return `<div class="letter-strip" aria-label="Letter progress">${letters.map((d,i)=>`<div class="letter-chip ${AppState.stats[d.letter].mastery===3?'mastered':''} ${view==='course'&&i===AppState.cursor.index&&AppState.cursor.phase==='lesson'?'current':''}" aria-label="${d.letter}: ${AppState.stats[d.letter].mastery===3?'mastered':'learning'}"><span>${escapeHTML(d.letter)}</span><span class="star" aria-hidden="true">${AppState.stats[d.letter].mastery===3?'★':'☆'}</span></div>`).join('')}</div>`;}
 function journeyStrip(){return `<div class="journey-strip"><div class="journey-copy"><b>Буква за буквой — к новым открытиям</b><span>Учись и выбирай подарки для жирафика.</span></div>${letterStrip()}</div>`;}
 /* CHARACTER — the only renderer for the inventory-compatible 1024×1536 pose.
    Outfit is a full body variant; the remaining wearable slots are overlays. */
-function characterAssetSource(assetKey,freshReward=false){
- const source=MEDIA_ASSETS.images[assetKey]?.src;
+function characterAssetSource(assetKey,freshReward=false,scene='home'){
+ const homeBase=assetKey===characterConfig.baseAsset&&scene==='home'&&view==='home';
+ const source=MEDIA_ASSETS.images[homeBase?'giraffe_home':assetKey]?.src;
  if(!source)return '';
  return freshReward?`${source.split('?')[0]}?reward=${REWARD_RENDER_TOKEN}`:source;
 }
-function mariusLayerEntries(scene='home',previewItem=null){
- if(DEMO_REWARD_PREVIEW&&scene==='reward')return [
-  {slot:'body',asset:characterConfig.baseAsset},
-  {slot:'head',asset:demoRewardHeadAsset},
-  {slot:'hand_right',asset:'accessory_bouquet'}
- ];
+function getMariusCatalogItem(id){return mariusWardrobeCatalog.get(id)||getItemById(id)||null;}
+function mariusRenderSlot(item){return item?.renderSlot||item?.slot||null;}
+function normalizeMariusEquipment(equipment={}){
+ const normalized=Object.fromEntries(MARIUS_EQUIPMENT_SLOTS.map(slot=>[slot,null]));
+ for(const slot of MARIUS_EQUIPMENT_SLOTS){
+  const id=equipment[slot]??(slot==='body_variant'?equipment.outfit:null),item=getMariusCatalogItem(id);
+  if(item&&mariusRenderSlot(item)===slot)normalized[slot]=item.id;
+ }
+ if(normalized.body_variant)for(const slot of MARIUS_WEARABLE_SLOTS)normalized[slot]=null;
+ if(normalized.vest&&normalized.outerwear)normalized.vest=null;
+ return normalized;
+}
+function mariusEquipmentLayerEntries(equipment={}){
+ const normalized=normalizeMariusEquipment(equipment),entries=[];
+ for(const slot of MARIUS_LAYER_ORDER){
+  if(slot==='body_variant'){
+   const item=getMariusCatalogItem(normalized.body_variant);
+   entries.push({slot:'body',asset:item?.asset||characterConfig.baseAsset,item:item||null});
+   continue;
+  }
+  const item=getMariusCatalogItem(normalized[slot]);
+  if(item)entries.push({slot,asset:item.asset,item});
+ }
+ return entries.filter(entry=>entry.asset&&MEDIA_ASSETS.images[entry.asset]);
+}
+function mariusItemDrawRect(item){
+ const position=item?.positioning;
+ return position?{x:position.x,y:position.y,width:position.width,height:position.height}:{x:0,y:0,width:characterConfig.width,height:characterConfig.height};
+}
+function mariusItemRenderBounds(item){
+ const position=item?.positioning,bounds=item?.sourceBounds;
+ if(!position||!bounds)return {left:0,top:0,right:characterConfig.width,bottom:characterConfig.height};
+ return {
+  left:Math.floor(position.x+bounds.x*position.scale),
+  top:Math.floor(position.y+bounds.y*position.scale),
+  right:Math.ceil(position.x+(bounds.x+bounds.width)*position.scale),
+  bottom:Math.ceil(position.y+(bounds.y+bounds.height)*position.scale)
+ };
+}
+function mariusCompositeLayout(entries){
+ let left=0,top=0,right=characterConfig.width,bottom=characterConfig.height;
+ for(const entry of entries){const bounds=mariusItemRenderBounds(entry.item);left=Math.min(left,bounds.left);top=Math.min(top,bounds.top);right=Math.max(right,bounds.right);bottom=Math.max(bottom,bounds.bottom);}
+ const originX=Math.floor(left),originY=Math.floor(top),width=Math.ceil(right)-originX,height=Math.ceil(bottom)-originY;
+ return {
+  originX,originY,width,height,
+  layers:entries.map(entry=>{const rect=mariusItemDrawRect(entry.item);return {slot:entry.slot,asset:entry.asset,rect:{x:rect.x-originX,y:rect.y-originY,width:rect.width,height:rect.height}};})
+ };
+}
+function mariusLayerEntries(scene='home',previewItem=null,previewEquipment=null){
+ if(previewEquipment)return mariusEquipmentLayerEntries(previewEquipment);
+ if(DEMO_REWARD_PREVIEW&&scene==='reward'){
+  if(DEMO_REWARD_FLOW.id==='reward_ghi')return [
+   {slot:'body',asset:characterConfig.baseAsset},
+   {slot:'head',asset:demoRewardHeadAsset},
+   {slot:'hand_right',asset:'accessory_bouquet'}
+  ];
+  const demoItem=getItemById(demoRewardItemId);
+  return demoItem?mariusEquipmentLayerEntries({[demoItem.slot]:demoItem.id}):mariusEquipmentLayerEntries();
+ }
+ const savedEquipment=Object.fromEntries(MARIUS_EQUIPMENT_SLOTS.map(slot=>[slot,AppState.characterState.equipped[slot]??(slot==='body_variant'?AppState.characterState.equipped.outfit:null)]));
+ if(previewItem&&mariusWardrobeCatalog.has(previewItem.id)){savedEquipment[mariusRenderSlot(previewItem)]=previewItem.id;return mariusEquipmentLayerEntries(savedEquipment);}
+ const usesWardrobeLayers=Object.values(savedEquipment).some(id=>mariusWardrobeCatalog.has(id));
+ if(usesWardrobeLayers){if(previewItem)savedEquipment[mariusRenderSlot(previewItem)]=previewItem.id;return mariusEquipmentLayerEntries(savedEquipment);}
  return CHARACTER_LAYER_ORDER.map(slot=>{
   const targetSlot=slot==='body'?'outfit':slot;
   const item=previewItem?.slot===targetSlot?previewItem:getEquippedItem(targetSlot);
@@ -2247,50 +2684,113 @@ function mariusLayerEntries(scene='home',previewItem=null){
  }).filter(entry=>entry.asset&&MEDIA_ASSETS.images[entry.asset]);
 }
 function mariusComposition(entries,scene='home',freshReward=false){
- return Object.fromEntries(entries.map(entry=>[entry.slot,characterAssetSource(entry.asset,freshReward||scene==='reward')]));
+ return Object.fromEntries(entries.map(entry=>[entry.slot,characterAssetSource(entry.asset,freshReward||scene==='reward',scene)]));
 }
 function setMariusCanvasComposition(canvas,entries,scene='home',loadImage=loadCharacterImage){
  const composition=mariusComposition(entries,scene);
+ const layout=mariusCompositeLayout(entries),layers=layout.layers.map(layer=>({source:composition[layer.slot],rect:layer.rect}));
+ canvas.width=layout.width;canvas.height=layout.height;
  canvas.dataset.mariusAssets=entries.map(entry=>entry.asset).join(',');
  canvas.dataset.mariusSlots=entries.map(entry=>entry.slot).join(',');
  canvas.dataset.mariusSources=entries.map(entry=>composition[entry.slot]).join('|');
- return renderMariusComposite(canvas,composition,loadImage);
+ canvas.dataset.mariusLayout=JSON.stringify({originX:layout.originX,originY:layout.originY,width:layout.width,height:layout.height,layers:layout.layers});
+ return renderMariusComposite(canvas,layers,loadImage);
 }
 function redrawRewardMarius(canvas=document.querySelector('#character-preview canvas.marius-composite'),loadImage=loadCharacterImage){
  if(!canvas)return Promise.resolve(false);
  return setMariusCanvasComposition(canvas,mariusLayerEntries('reward'),'reward',loadImage);
 }
 function renderCharacter(scene='home',options={}){
- const {includeBackground=true,className='',decorative=false,freshReward=false}=options,previewItem=getItemById(options.previewItem?.id||options.previewItem);
+ const {includeBackground=true,className='',decorative=false,freshReward=false,previewEquipment=null}=options,previewItem=getItemById(options.previewItem?.id||options.previewItem);
  const equippedFor=slot=>getEquippedItem(slot);
  const outfit=previewItem?.slot==='outfit'?previewItem:equippedFor('outfit'),backgroundItem=includeBackground?(previewItem?.slot==='background'?previewItem:equippedFor('background')):null;
  const background=backgroundItem?.asset||characterConfig.backgrounds[scene]||characterConfig.backgrounds.home;
  const overlaySlots=CHARACTER_LAYER_ORDER.filter(slot=>slot!=='body');
  const overlays=overlaySlots.map(equippedFor).filter(Boolean);
- const entries=mariusLayerEntries(scene,previewItem),assetKeys=entries.map(entry=>entry.asset),slots=entries.map(entry=>entry.slot);
- const labels=DEMO_REWARD_PREVIEW&&scene==='reward'?[]:[outfit,...overlays,backgroundItem,previewItem].filter(Boolean).map(item=>item.name);
+ const entries=mariusLayerEntries(scene,previewItem,previewEquipment),layout=mariusCompositeLayout(entries),assetKeys=entries.map(entry=>entry.asset),slots=entries.map(entry=>entry.slot);
+ const layeredItems=entries.map(entry=>entry.item).filter(Boolean);
+ const labels=DEMO_REWARD_PREVIEW&&scene==='reward'?[]:(previewEquipment||layeredItems.some(item=>mariusWardrobeCatalog.has(item.id))?layeredItems:[outfit,...overlays,backgroundItem,previewItem].filter(Boolean)).map(item=>item.name);
  const accessibility=decorative?'aria-hidden="true"':`role="img" aria-label="Жирафик${labels.length?' — '+escapeHTML(labels.join(', ')):''}"`;
- const backgroundLayer=includeBackground&&MEDIA_ASSETS.images[background]?`<img class="marius-stage-background" src="${escapeHTML(MEDIA_ASSETS.images[background].src)}" width="${characterConfig.width}" height="${characterConfig.height}" data-character-asset="${background}" data-layer="background" data-layer-order="0" data-slot="background" alt="" draggable="false">`:'';
+ const backgroundStyle=`left:${(-layout.originX/layout.width*100).toFixed(6)}%;top:${(-layout.originY/layout.height*100).toFixed(6)}%;width:${(characterConfig.width/layout.width*100).toFixed(6)}%;height:${(characterConfig.height/layout.height*100).toFixed(6)}%`;
+ const backgroundLayer=includeBackground&&MEDIA_ASSETS.images[background]?`<img class="marius-stage-background" style="${backgroundStyle}" src="${escapeHTML(MEDIA_ASSETS.images[background].src)}" width="${characterConfig.width}" height="${characterConfig.height}" data-character-asset="${background}" data-layer="background" data-layer-order="0" data-slot="background" alt="" draggable="false">`:'';
  const composition=mariusComposition(entries,scene,freshReward),sources=slots.map(slot=>composition[slot]).join('|');
- return `<div class="character-stage character-${escapeHTML(scene)} ${escapeHTML(className)}" data-character-context="${escapeHTML(scene)}" ${accessibility}>${backgroundLayer}<span class="character-fallback" aria-hidden="true">🦒</span><canvas class="marius-composite" width="${characterConfig.width}" height="${characterConfig.height}" data-marius-assets="${escapeHTML(assetKeys.join(','))}" data-marius-slots="${escapeHTML(slots.join(','))}" data-marius-sources="${escapeHTML(sources)}" aria-hidden="true"></canvas></div>`;
+ const renderLayout={originX:layout.originX,originY:layout.originY,width:layout.width,height:layout.height,layers:layout.layers};
+ return `<div class="character-stage character-${escapeHTML(scene)} ${escapeHTML(className)}" style="aspect-ratio:${layout.width}/${layout.height}" data-character-context="${escapeHTML(scene)}" data-marius-origin="${layout.originX},${layout.originY}" ${accessibility}>${backgroundLayer}<span class="character-fallback" aria-hidden="true">🦒</span><canvas class="marius-composite" width="${layout.width}" height="${layout.height}" style="aspect-ratio:${layout.width}/${layout.height}" data-marius-assets="${escapeHTML(assetKeys.join(','))}" data-marius-slots="${escapeHTML(slots.join(','))}" data-marius-sources="${escapeHTML(sources)}" data-marius-layout="${escapeHTML(JSON.stringify(renderLayout))}" aria-hidden="true"></canvas></div>`;
 }
 /* Every item thumbnail uses the same itemId-aware character compositor as the
    large preview. Preview never touches owned/equipped RewardState. */
 function renderItemPreview(item,freshReward=false){
- return `<span class="item-preview-stage" aria-hidden="true">${renderCharacter('item-preview',{includeBackground:item.slot==='background',previewItem:item,freshReward,className:'item-preview-character',decorative:true})}</span>`;
+ const wardrobeItem=mariusWardrobeCatalog.get(item?.id),previewEquipment=wardrobeItem?{[wardrobeItem.slot]:wardrobeItem.id}:null;
+ const previewEntries=wardrobeItem?mariusEquipmentLayerEntries(previewEquipment):mariusLayerEntries('item-preview',item),layout=mariusCompositeLayout(previewEntries);
+ return `<span class="item-preview-stage" style="aspect-ratio:${layout.width}/${layout.height}" aria-hidden="true">${renderCharacter('item-preview',{includeBackground:item.slot==='background',previewItem:wardrobeItem?null:item,previewEquipment,freshReward,className:'item-preview-character',decorative:true})}</span>`;
+}
+const SHOP_THUMBNAIL_WIDTH=240,SHOP_THUMBNAIL_HEIGHT=320,SHOP_THUMBNAIL_CACHE_LIMIT=12,SHOP_THUMBNAIL_IMAGE_CACHE_LIMIT=8;
+const shopThumbnailCache=new Map(),shopThumbnailImageCache=new Map();
+let shopThumbnailCanvas=null,shopThumbnailQueue=Promise.resolve(),shopThumbnailObserver=null;
+function shopThumbnailEntries(item){return mariusEquipmentLayerEntries({[mariusRenderSlot(item)]:item.id});}
+function thumbnailPlanForEntries(entries,item=null){
+ const layout=mariusCompositeLayout(entries),padding=8;
+ const scale=Math.min((SHOP_THUMBNAIL_WIDTH-padding*2)/layout.width,(SHOP_THUMBNAIL_HEIGHT-padding*2)/layout.height);
+ const offsetX=(SHOP_THUMBNAIL_WIDTH-layout.width*scale)/2,offsetY=(SHOP_THUMBNAIL_HEIGHT-layout.height*scale)/2;
+ const bounds=item?mariusItemRenderBounds(item):null,itemBounds=bounds?{x:offsetX+(bounds.left-layout.originX)*scale,y:offsetY+(bounds.top-layout.originY)*scale,width:(bounds.right-bounds.left)*scale,height:(bounds.bottom-bounds.top)*scale}:null;
+ return {width:SHOP_THUMBNAIL_WIDTH,height:SHOP_THUMBNAIL_HEIGHT,entries,itemBounds,layers:layout.layers.map(layer=>({...layer,rect:{x:offsetX+layer.rect.x*scale,y:offsetY+layer.rect.y*scale,width:layer.rect.width*scale,height:layer.rect.height*scale}}))};
+}
+function shopThumbnailPlan(item){return thumbnailPlanForEntries(shopThumbnailEntries(item),item);}
+function collectionThumbnailPlan(collection){return thumbnailPlanForEntries(mariusEquipmentLayerEntries(collection?.equipment||{}));}
+function touchLimitedCache(cache,key,value,limit){cache.delete(key);cache.set(key,value);while(cache.size>limit)cache.delete(cache.keys().next().value);return value;}
+function loadShopThumbnailImage(source){
+ if(shopThumbnailImageCache.has(source))return touchLimitedCache(shopThumbnailImageCache,source,shopThumbnailImageCache.get(source),SHOP_THUMBNAIL_IMAGE_CACHE_LIMIT);
+ const promise=new Promise((resolve,reject)=>{const image=new Image();image.decoding='async';image.onload=()=>resolve(image);image.onerror=()=>{if(!failedImages.has(source)){failedImages.add(source);console.warn('[ABC Safari thumbnail] Image could not be loaded:',source);}reject(new Error(`Thumbnail image failed: ${source}`));};image.src=source;if(image.complete&&image.naturalWidth>0)resolve(image);});
+ return touchLimitedCache(shopThumbnailImageCache,source,promise,SHOP_THUMBNAIL_IMAGE_CACHE_LIMIT);
+}
+async function createThumbnailFromPlan(plan){
+ if(!shopThumbnailCanvas)shopThumbnailCanvas=document.createElement('canvas');
+ shopThumbnailCanvas.width=plan.width;shopThumbnailCanvas.height=plan.height;
+ const context=shopThumbnailCanvas.getContext?.('2d');if(!context)throw new Error('Thumbnail canvas unavailable');
+ context.clearRect(0,0,plan.width,plan.height);
+ const images=await Promise.all(plan.layers.map(async layer=>{try{return await loadShopThumbnailImage(characterAssetSource(layer.asset));}catch(_){return null;}}));
+ images.forEach((image,index)=>{if(!image)return;const rect=plan.layers[index].rect;context.drawImage(image,rect.x,rect.y,rect.width,rect.height);});
+ return shopThumbnailCanvas.toDataURL('image/webp',.78);
+}
+function createShopThumbnail(item){return createThumbnailFromPlan(shopThumbnailPlan(item));}
+function createCollectionThumbnail(collection){return createThumbnailFromPlan(collectionThumbnailPlan(collection));}
+function shopThumbnailFor(item){
+ if(shopThumbnailCache.has(item.id))return touchLimitedCache(shopThumbnailCache,item.id,shopThumbnailCache.get(item.id),SHOP_THUMBNAIL_CACHE_LIMIT);
+ const task=shopThumbnailQueue.then(()=>createShopThumbnail(item));shopThumbnailQueue=task.catch(()=>null);
+ return touchLimitedCache(shopThumbnailCache,item.id,task,SHOP_THUMBNAIL_CACHE_LIMIT);
+}
+function collectionThumbnailFor(collection){
+ const key=`collection:${collection.id}`;
+ if(shopThumbnailCache.has(key))return touchLimitedCache(shopThumbnailCache,key,shopThumbnailCache.get(key),SHOP_THUMBNAIL_CACHE_LIMIT);
+ const task=shopThumbnailQueue.then(()=>createCollectionThumbnail(collection));shopThumbnailQueue=task.catch(()=>null);
+ return touchLimitedCache(shopThumbnailCache,key,task,SHOP_THUMBNAIL_CACHE_LIMIT);
+}
+function renderShopThumbnail(item){
+ const background=item.slot==='background',source=background?MEDIA_ASSETS.images[item.asset]?.src:'';
+ return `<span class="shop-thumbnail ${background?'is-background':''}" aria-hidden="true"><span class="shop-thumbnail-fallback">${background?'🌴':'🦒'}</span><img ${source?`src="${escapeHTML(source)}"`:''} ${background?'data-character-asset="'+escapeHTML(item.asset)+'"':'data-shop-thumbnail="'+escapeHTML(item.id)+'"'} loading="lazy" decoding="async" alt="" draggable="false"></span>`;
+}
+function renderCollectionThumbnail(collection){return `<span class="shop-thumbnail collection-thumbnail" aria-hidden="true"><span class="shop-thumbnail-fallback">🦒</span><img data-collection-thumbnail="${escapeHTML(collection.id)}" loading="lazy" decoding="async" alt="" draggable="false"></span>`;}
+function wireShopThumbnails(root=document){
+ shopThumbnailObserver?.disconnect();shopThumbnailObserver=null;
+ const images=[...root.querySelectorAll('img[data-shop-thumbnail],img[data-collection-thumbnail]')];if(!images.length)return;
+ const load=async image=>{if(image.dataset.thumbnailState==='loading'||image.dataset.thumbnailState==='ready')return;const item=getItemById(image.dataset.shopThumbnail),collection=getMariusCollection(image.dataset.collectionThumbnail);if(!item&&!collection)return;image.dataset.thumbnailState='loading';try{const source=collection?await collectionThumbnailFor(collection):await shopThumbnailFor(item);if(!image.isConnected)return;image.src=source;image.dataset.thumbnailState='ready';image.closest('.shop-thumbnail')?.classList.add('is-ready');}catch(_){if(!image.isConnected)return;image.dataset.thumbnailState='error';image.closest('.shop-thumbnail')?.classList.add('is-error');}};
+ const unload=image=>{if(image.dataset.thumbnailState!=='ready')return;image.removeAttribute('src');image.dataset.thumbnailState='idle';image.closest('.shop-thumbnail')?.classList.remove('is-ready');};
+ if(typeof window.IntersectionObserver!=='function'){images.forEach(load);return;}
+ shopThumbnailObserver=new window.IntersectionObserver(entries=>entries.forEach(entry=>entry.isIntersecting?load(entry.target):unload(entry.target)),{rootMargin:'180px 0px'});
+ images.forEach(image=>shopThumbnailObserver.observe(image));
 }
 function outfitOptions(reward,action){
  const flow=visibleRewardFlow();
- const choosing=action==='claim-reward'&&flow?.id===reward.id&&(DEMO_REWARD_PREVIEW||(!flow.selected&&!AppState.claimedRewards.includes(reward.id)));
+ const choosing=['claim-reward','preview-reward'].includes(action)&&flow?.id===reward.id&&(DEMO_REWARD_PREVIEW||!AppState.claimedRewards.includes(reward.id));
  const items=rewardItems(reward),slot=items[0]?.slot;
  return `<div class="outfit-options" role="group" aria-label="${escapeHTML(SLOT_CONFIG[slot]?.label||'Предметы')}">${items.map(item=>{
-  const owned=isItemOwned(item.id),selected=DEMO_REWARD_PREVIEW?item.asset===demoRewardHeadAsset:getEquippedItem(item.slot)?.id===item.id;
+  const owned=isItemOwned(item.id),selected=DEMO_REWARD_PREVIEW?(flow.id==='reward_ghi'?item.asset===demoRewardHeadAsset:demoRewardItemId===item.id):flow?.id===reward.id&&flow.selected?flow.selected===item.id:getEquippedItem(item.slot)?.id===item.id;
   const enabled=choosing||(action==='equip'&&owned),locked=!owned&&!choosing;
   const icon=MEDIA_ASSETS.images[item.icon]?.src;
   const itemAction=action==='equip'&&selected&&item.slot==='head'?'unequip':action;
-  const headItem=item.slot==='head';
-  const artClass=item.slot==='outfit'?'jacket-art':headItem?'character-art':'accessory-art';
-  const art=headItem?renderItemPreview(item,action==='claim-reward'):(icon?`<img src="${escapeHTML(icon)}" data-character-asset="${item.icon}" alt="" draggable="false">`:'');
+  const composedItem=mariusWardrobeCatalog.has(item.id)||item.slot==='head';
+  const artClass=item.slot==='outfit'?'jacket-art':composedItem?'character-art':'accessory-art';
+  const art=composedItem?renderItemPreview(item,['claim-reward','preview-reward'].includes(action)):(icon?`<img src="${escapeHTML(icon)}" data-character-asset="${item.icon}" alt="" draggable="false">`:'');
   return `<button class="outfit-option ${selected?'selected':''} ${locked?'locked':''}" data-action="${itemAction}" data-item="${item.id}" ${enabled?'':'disabled'} aria-label="${escapeHTML(item.name)}${locked?' — закрыто':itemAction==='unequip'?' — снять':''}" aria-pressed="${selected}"><span class="outfit-art ${artClass}">${art}</span><span class="outfit-name">${escapeHTML(item.name)}</span><span class="outfit-check" aria-hidden="true">${locked?'🔒':'✓'}</span><span class="outfit-status">${locked?'Закрыто':itemAction==='unequip'?'Снять':selected?'Твой подарок':owned?'Получено':'Выбрать'}</span></button>`;
  }).join('')}</div>`;
 }
@@ -2298,22 +2798,67 @@ function renderWardrobe(){
  const available=rewardConfig.filter(r=>AppState.completedBlocks.includes(r.id));
  return `<section class="screen wardrobe-screen"><p class="eyebrow">Твой друг</p><h1>Жирафик</h1><div class="wardrobe-layout"><div id="character-preview">${renderCharacter()}</div><div class="wardrobe-options">${available.length?available.map(r=>{const slot=rewardItems(r)[0]?.slot;return `<section class="outfit-category"><h2>${escapeHTML(SLOT_CONFIG[slot]?.label||'Предметы')}</h2>${outfitOptions(r,'equip')}</section>`;}).join(''):'<p class="wardrobe-empty">Пройди буквы A–C и мини-игру, чтобы выбрать первый подарок.</p>'}</div></div><button class="primary" data-action="back">В игру ${icons.arrow}</button></section>`;
 }
+function mariusItemIncompatibleSlots(item){return item?.compatibility?.incompatibleSlots||item?.incompatibleSlots||[];}
+function chooseMariusPreviewItem(id){
+ if(!DEMO_WARDROBE_PREVIEW)return false;
+ const item=getMariusCatalogItem(id),slot=mariusRenderSlot(item);
+ if(!item||!MARIUS_EQUIPMENT_SLOTS.includes(slot))return false;
+ if(mariusPreviewEquipment[slot]===item.id){mariusPreviewEquipment[slot]=null;mariusPreviewMessage=`Снято: ${item.name}.`;showScreen();return true;}
+ const cleared=[];
+ for(const incompatibleSlot of mariusItemIncompatibleSlots(item)){
+  if(mariusPreviewEquipment[incompatibleSlot])cleared.push(incompatibleSlot);
+  mariusPreviewEquipment[incompatibleSlot]=null;
+ }
+ for(const occupiedSlot of MARIUS_EQUIPMENT_SLOTS){
+  const occupied=getMariusCatalogItem(mariusPreviewEquipment[occupiedSlot]);
+  if(occupied&&mariusItemIncompatibleSlots(occupied).includes(slot)){mariusPreviewEquipment[occupiedSlot]=null;cleared.push(occupiedSlot);}
+ }
+ if(slot==='body_variant')for(const wearableSlot of MARIUS_WEARABLE_SLOTS){if(mariusPreviewEquipment[wearableSlot])cleared.push(wearableSlot);mariusPreviewEquipment[wearableSlot]=null;}
+ if(MARIUS_WEARABLE_SLOTS.includes(slot)&&mariusPreviewEquipment.body_variant){mariusPreviewEquipment.body_variant=null;cleared.push('body_variant');}
+ mariusPreviewEquipment[slot]=item.id;
+ mariusPreviewMessage=`Надето: ${item.name}.${cleared.length?' Несовместимые слои сняты автоматически.':''}`;
+ showScreen();return true;
+}
+function resetMariusPreview(){mariusPreviewEquipment=blankMariusPreviewEquipment();mariusPreviewMessage='Базовый Мариус — без выбранных предметов.';showScreen();return true;}
+function applyMariusPreviewPreset(id){
+ const preset=MARIUS_WARDROBE_PRESETS.find(entry=>entry.id===id);if(!DEMO_WARDROBE_PREVIEW||!preset)return false;
+ mariusPreviewEquipment={...blankMariusPreviewEquipment(),...preset.equipment};mariusPreviewMessage=`Пресет «${preset.name}» применён.`;showScreen();return true;
+}
+function renderMariusPreviewComparison(preset){
+ const reference=MEDIA_ASSETS.images[preset.referenceAsset];
+ return `<article class="wardrobe-lab-comparison"><h3>${escapeHTML(preset.name)}</h3><div class="wardrobe-lab-pair"><div><span>Сборка</span>${renderCharacter('wardrobe-reference',{includeBackground:false,previewEquipment:preset.equipment,className:'wardrobe-reference-character',decorative:true})}</div><div><span>Референс</span><img src="${escapeHTML(reference.src)}" width="${reference.width}" height="${reference.height}" alt="Референс: ${escapeHTML(preset.name)}" data-character-asset="${preset.referenceAsset}"></div></div></article>`;
+}
+function renderMariusWardrobePreview(){
+ const normalized=normalizeMariusEquipment(mariusPreviewEquipment),selected=MARIUS_EQUIPMENT_SLOTS.map(slot=>getMariusCatalogItem(normalized[slot])).filter(Boolean);
+ const entries=mariusEquipmentLayerEntries(normalized),layout=mariusCompositeLayout(entries);
+ const bodyVariants=ITEMS.filter(item=>item.renderSlot==='body_variant');
+ const groups=[...new Set(MARIUS_WARDROBE_ITEMS.map(item=>item.category))];
+ const itemButton=item=>{const slot=mariusRenderSlot(item),active=normalized[slot]===item.id;return `<button class="wardrobe-lab-item ${active?'selected':''}" data-action="marius-preview-item" data-item="${item.id}" aria-pressed="${active}"><span>${escapeHTML(item.name)}</span><small>${escapeHTML(slot)}</small></button>`;};
+ return `<section class="screen wardrobe-lab-screen" lang="ru"><p class="eyebrow">Изолированный технический preview</p><h1>Новая одежда Мариуса</h1><p class="wardrobe-lab-intro">23 PNG-слоя в новой слотной модели. Эта страница не читает и не записывает экипировку игрока.</p><div class="wardrobe-lab-workbench"><div class="wardrobe-lab-preview"><div id="character-preview">${renderCharacter('wardrobe-lab',{includeBackground:false,previewEquipment:normalized,className:'wardrobe-lab-main-character'})}</div><p class="wardrobe-lab-metrics">Холст ${layout.width} × ${layout.height}; начало координат ${layout.originX}, ${layout.originY}</p><p class="wardrobe-lab-status" role="status">${escapeHTML(mariusPreviewMessage)}</p><p class="wardrobe-lab-selection">${selected.length?selected.map(item=>escapeHTML(item.name)).join(' · '):'Предметы не выбраны'}</p></div><div class="wardrobe-lab-controls"><div class="wardrobe-lab-actions"><button class="secondary" data-action="marius-preview-reset">Сбросить всё</button>${MARIUS_WARDROBE_PRESETS.map(preset=>`<button class="secondary" data-action="marius-preview-preset" data-preset="${preset.id}">${escapeHTML(preset.name)}</button>`).join('')}</div><section class="wardrobe-lab-group"><h2>Базовый образ и старые куртки</h2><div class="wardrobe-lab-items"><button class="wardrobe-lab-item ${normalized.body_variant?'':'selected'}" data-action="marius-preview-reset" aria-pressed="${!normalized.body_variant}"><span>Базовый Мариус</span><small>body_variant</small></button>${bodyVariants.map(itemButton).join('')}</div></section>${groups.map(group=>`<section class="wardrobe-lab-group"><h2>${escapeHTML(group)}</h2><div class="wardrobe-lab-items">${MARIUS_WARDROBE_ITEMS.filter(item=>item.category===group).map(itemButton).join('')}</div></section>`).join('')}</div></div><section class="wardrobe-lab-references"><h2>Сравнение с четырьмя референсами</h2><div class="wardrobe-lab-reference-grid">${MARIUS_WARDROBE_PRESETS.map(renderMariusPreviewComparison).join('')}</div></section></section>`;
+}
 /* Completion makes a choice available; ownership is granted only by selection. */
 function finishBlock(){
  const group=groups[Math.floor(AppState.cursor.index/GROUP_SIZE)].map(d=>d.letter);
  const reward=rewardConfig.find(r=>r.afterLetters.length===group.length&&r.afterLetters.every(l=>group.includes(l)));
  if(!reward)return;
  if(!AppState.completedBlocks.includes(reward.id))AppState.completedBlocks.push(reward.id);
- StudentDomain.awardStars(AppState.student,StudentDomain.STAR_REWARDS.blockCompleted,'block_completed',`block:${reward.id}`);
+ if(reward.awardsBlockStars)StudentDomain.awardStars(AppState.student,StudentDomain.STAR_REWARDS.blockCompleted,'block_completed',`block:${reward.id}`);
  ensureRewardFlow();log('Reward available',reward.id);
 }
 function renderReward(){
  const flow=visibleRewardFlow(),r=rewardConfig.find(r=>r.id===flow?.id);
  if(!r)return renderWardrobe();
- return `<section class="screen reward-screen"><div class="stars" aria-hidden="true">★ ★ ★</div><h1>${flow.selected?'Как здорово!':'Уровень пройден!'}</h1><p>${flow.selected?'Жирафик рад новому подарку.':'Один из этих подарков станет твоим.'}</p><div class="reward-layout"><div id="character-preview">${renderCharacter('reward')}</div><div class="reward-choices">${renderRewardChoices(flow,r)}</div></div><button class="repeat" data-action="repeat" aria-label="Повторить инструкцию">${icons.speaker} Послушать</button></section>`;
+ const demoItem=DEMO_REWARD_PREVIEW&&flow.id!=='reward_ghi'?getItemById(demoRewardItemId):null;
+ const selectedItem=!DEMO_REWARD_PREVIEW?getItemById(flow.selected):null,previewItem=demoItem||selectedItem;
+ const previewEquipment=previewItem?{[previewItem.slot]:previewItem.id}:null,claimed=DEMO_REWARD_PREVIEW?Boolean(flow.selected):rewardFlowClaimed(flow);
+ const title=claimed?'Как здорово!':flow.selected?'Так тебе нравится?':'Уровень пройден!',copy=claimed?'Жирафик рад новому подарку.':flow.selected?'Посмотри, как подарок выглядит на Мариусе.':'Один из этих подарков станет твоим.';
+ return `<section class="screen reward-screen"><div class="stars" aria-hidden="true">★ ★ ★</div><h1>${title}</h1><p>${copy}</p><div class="reward-layout"><div id="character-preview">${renderCharacter('reward',{previewEquipment})}</div><div class="reward-choices">${renderRewardChoices(flow,r)}</div></div><button class="repeat" data-action="repeat" aria-label="Повторить инструкцию">${icons.speaker} Послушать</button></section>`;
 }
 function renderRewardChoices(flow,reward){
- return `<h2>${escapeHTML(reward.prompt)}</h2>${outfitOptions(reward,'claim-reward')}<div class="reward-next" aria-live="polite">${flow.selected?`<p>Подарок сохранён ✓</p><button class="primary" data-action="reward-next" ${rewardReady?'':'disabled'}>Дальше ${icons.arrow}</button>`:'<p>Выбери тот, который тебе нравится.</p>'}</div>`;
+ if(DEMO_REWARD_PREVIEW)return `<h2>${escapeHTML(reward.prompt)}</h2>${outfitOptions(reward,'claim-reward')}<div class="reward-next" aria-live="polite"><p>Выбери предмет для просмотра.</p></div>`;
+ const claimed=rewardFlowClaimed(flow);
+ const next=claimed?`<p>Подарок сохранён ✓</p><button class="primary" data-action="reward-next" ${rewardReady?'':'disabled'}>Дальше ${icons.arrow}</button>`:flow.selected?`<p>Можно выбрать другой или подтвердить этот.</p><button class="primary" data-action="confirm-reward">Получить бесплатно</button>`:'<p>Выбери тот, который тебе нравится.</p>';
+ return `<h2>${escapeHTML(reward.prompt)}</h2>${outfitOptions(reward,'preview-reward')}<div class="reward-next" aria-live="polite">${next}</div>`;
 }
 function refreshRewardGHI(){
  const flow=visibleRewardFlow(),reward=rewardConfig.find(entry=>entry.id===flow?.id);
@@ -2327,25 +2872,33 @@ function refreshRewardGHI(){
  redrawRewardMarius();
  return true;
 }
+function previewReward(id){
+ if(DEMO_REWARD_PREVIEW)return chooseReward(id);
+ const flow=AppState.rewardFlow,reward=rewardConfig.find(entry=>entry.id===flow?.id);
+ if(!reward||AppState.claimedRewards.includes(reward.id)||!AppState.completedBlocks.includes(reward.id)||!reward.itemIds.includes(id))return false;
+ flow.selected=id;rewardReady=false;saveProgress();showScreen();return true;
+}
 function chooseReward(id){
  if(DEMO_REWARD_PREVIEW){
   const item=getItemById(id),r=rewardConfig.find(entry=>entry.id===DEMO_REWARD_FLOW.id);
-  if(!item||item.slot!=='head'||!r.itemIds.includes(id))return false;
-  demoRewardHeadAsset=item.asset;refreshRewardGHI();return true;
+  if(!item||!r?.itemIds.includes(id))return false;
+  if(r.id==='reward_ghi'){demoRewardHeadAsset=item.asset;refreshRewardGHI();return true;}
+  demoRewardItemId=id;showScreen();return true;
  }
  const flow=AppState.rewardFlow,r=rewardConfig.find(r=>r.id===flow?.id);
- if(!r||flow.selected||AppState.claimedRewards.includes(r.id)||!AppState.completedBlocks.includes(r.id)||!r.itemIds.includes(id))return false;
+ if(!r||flow.selected&&flow.selected!==id||AppState.claimedRewards.includes(r.id)||!AppState.completedBlocks.includes(r.id)||!r.itemIds.includes(id))return false;
  // One atomic save before animation. A queued second tap cannot change the gift.
  if(!unlockItem(id,AppState,false)||!equipItem(id,AppState,false))return false;
  flow.selected=id;AppState.claimedRewards.push(r.id);saveProgress();
- const rewardSource={reward_abc:Analytics?.ACTIVITIES.ABC_CHECK,reward_def:Analytics?.ACTIVITIES.MAZE_DEF,reward_ghi:Analytics?.ACTIVITIES.BALLOONS_GHI}[r.id];
+ const rewardSource={reward_abc:Analytics?.ACTIVITIES.ABC_CHECK,reward_def:Analytics?.ACTIVITIES.MAZE_DEF,reward_ghi:Analytics?.ACTIVITIES.BALLOONS_GHI,reward_jkl:Analytics?.ACTIVITIES.RIVER_JKL,reward_mno:'fruit_rain_mno',reward_pqr:'bubble_cannon_pqr',reward_stu:'treehouse_stu',reward_vwx:'railway_vwx',reward_yz:'flight_yz'}[r.id];
  Analytics?.trackEvent(Analytics.EVENTS.REWARD_RECEIVED,{reward:id,source:rewardSource},{onceKey:`reward-received-${r.id}`});
  rewardReady=false;if(r.id==='reward_ghi')refreshRewardGHI();else showScreen();celebrate();
  const epoch=viewEpoch;
  transitionTimer=setTimeout(()=>{if(epoch!==viewEpoch)return;rewardReady=true;const b=document.querySelector('[data-action="reward-next"]');if(b)b.disabled=false;},1000);
  return true;
 }
-function continueReward(){if(!rewardReady||!AppState.rewardFlow?.selected)return;const resume=AppState.rewardFlow.resume;AppState.rewardFlow=null;rewardReady=false;if(resume==='after-mini')advanceAfterMini();else{ensureRewardFlow();go('course');}}
+function confirmReward(){const id=AppState.rewardFlow?.selected;return id?chooseReward(id):false;}
+function continueReward(){if(!rewardReady||!rewardFlowClaimed(AppState.rewardFlow))return;const resume=AppState.rewardFlow.resume;AppState.rewardFlow=null;rewardReady=false;if(resume==='after-mini')advanceAfterMini();else{ensureRewardFlow();go('course');}}
 
 /* SCREENS — existing lessons plus character, training and gift views. */
 function renderTrainingHomeCard(){
@@ -2376,24 +2929,54 @@ function renderTrainingProfile(){
 function renderCatalogArt(item,fresh=false){
  return renderItemPreview(item,fresh);
 }
+function renderWardrobeCollections(){
+ const completed=MARIUS_COLLECTIONS.filter(collection=>collectionComplete(collection));if(!completed.length)return '';
+ return `<section class="wardrobe-collections"><div class="wardrobe-collections-heading"><div><h3>✨ Собранные образы</h3><p>Можно надеть целиком или продолжить выбирать вещи по одной.</p></div></div><div class="wardrobe-collection-shortcuts">${completed.map(collection=>{const equipped=collectionEquipped(collection);return `<article class="wardrobe-collection-shortcut ${equipped?'selected':''}"><div><strong>${escapeHTML(collection.name)}</strong><span>${equipped?'Надето':'Собрано!'}</span></div><div class="collection-shortcut-actions"><button class="secondary" data-action="open-collection" data-collection="${collection.id}">Открыть</button><button class="${equipped?'try-button':'buy-button'}" data-action="equip-collection" data-collection="${collection.id}" ${equipped?'disabled':''}>${equipped?'Надето ✓':'Надеть образ'}</button></div></article>`;}).join('')}</div></section>`;
+}
 function renderWardrobeProfile(){
- const owned=ITEMS.filter(item=>isItemOwned(item.id));
- return `<div class="student-panel-heading"><div><h2>Гардероб</h2><p>Наряди Мариуса</p></div></div>${owned.length?`<div class="marius-dashboard"><div>${renderCharacter('home')}</div><div class="wardrobe-grid">${owned.map(item=>{const selected=getEquippedItem(item.slot)?.id===item.id;return `<article class="inventory-card ${selected?'selected':''}">${renderCatalogArt(item)}<h3>${escapeHTML(item.name)}</h3><p>${CATEGORY_CONFIG[item.category]?.icon||'✨'} ${escapeHTML(CATEGORY_CONFIG[item.category]?.label||'Предмет')}</p><div class="card-actions"><button class="${selected?'try-button':'buy-button'}" data-action="${selected?'unequip':'equip'}" data-item="${item.id}">${selected?'Снять':'Надеть'}</button></div></article>`;}).join('')}</div></div>`:'<div class="empty-profile-state">🎁 Первый предмет появится после блока A–C.</div>'}`;
+ const owned=INVENTORY_ITEMS.filter(item=>isItemOwned(item.id));
+ return `<div class="student-panel-heading"><div><h2>Гардероб</h2><p>Наряди Мариуса</p></div></div>${renderWardrobeCollections()}${owned.length?`<div class="marius-dashboard"><div>${renderCharacter('home')}</div><div class="wardrobe-grid">${owned.map(item=>{const selected=getEquippedItem(item.slot)?.id===item.id,category=CATEGORY_CONFIG[item.category]?.label||SLOT_CONFIG[item.slot]?.label||item.category||'Предмет';return `<article class="inventory-card ${selected?'selected':''}">${renderCatalogArt(item)}<h3>${escapeHTML(item.name)}</h3><p>${CATEGORY_CONFIG[item.category]?.icon||'✨'} ${escapeHTML(category)}</p><div class="card-actions"><button class="${selected?'try-button':'buy-button'}" data-action="${selected?'unequip':'equip'}" data-item="${item.id}">${selected?'Снять':'Надеть'}</button></div></article>`;}).join('')}</div></div>`:'<div class="empty-profile-state">🎁 Первый предмет появится после блока A–C.</div>'}`;
 }
 function renderAchievementsProfile(){
  const unlocked=new Set(AppState.student.achievements.unlocked.map(entry=>entry.id));
  return `<div class="student-panel-heading"><div><h2>Достижения</h2><p>${unlocked.size} из ${StudentDomain.ACHIEVEMENTS.length}</p></div></div><div class="achievement-grid">${StudentDomain.ACHIEVEMENTS.map(item=>`<article class="achievement-card ${unlocked.has(item.id)?'':'locked'}"><div class="achievement-icon" aria-hidden="true">${unlocked.has(item.id)?item.icon:'🔒'}</div><h3>${escapeHTML(item.title)}</h3><p>${escapeHTML(item.description)}</p>${item.rewardStars?`<span class="achievement-reward">+${item.rewardStars} ⭐</span>`:''}</article>`).join('')}</div>`;
 }
 function renderShopCard(item){
- const owned=isItemOwned(item.id),selected=getEquippedItem(item.slot)?.id===item.id,previewing=shopPreviewItemId===item.id;
- const price=Math.max(0,Number(item.priceStars)||0),shortfall=Math.max(0,price-AppState.student.starBalance),premium=item.isPremium===true&&!owned;
+ const state=shopItemState(item),owned=['purchased','reward'].includes(state),selected=getEquippedItem(item.slot)?.id===item.id,previewing=shopPreviewItemId===item.id;
+ const price=Math.max(0,Number(item.priceStars)||0),shortfall=Math.max(0,price-AppState.student.starBalance),premium=item.isPremium===true&&!owned,locked=state==='locked';
  const ownedAction=item.slot==='background'?(selected?'Выбран ✓':'Использовать'):(selected?'Надето ✓':'Надеть');
- const purchaseControl=premium?`<button class="premium-button" data-action="premium-info">🔒 Попроси взрослого</button>`:shortfall?`<button class="buy-button" disabled>🔒 Не хватает ${shortfall} ⭐</button>`:`<button class="buy-button" data-action="buy-item" data-item="${item.id}">Купить за ${price} ⭐</button>`;
- return `<article class="shop-card ${owned?'owned':''} ${previewing?'previewing':''}">${renderCatalogArt(item)}<h3>${escapeHTML(item.name)}</h3><p>${CATEGORY_CONFIG[item.category]?.icon||'✨'} ${escapeHTML(CATEGORY_CONFIG[item.category]?.label||'Предмет')}</p>${owned?'<span class="shop-owned-status">✓ Уже твоё</span>':premium?'<span class="shop-premium-status">💎 Премиум</span>':`<span class="shop-price">⭐ ${price}</span>${shortfall?`<span class="shop-balance">⭐ ${AppState.student.starBalance} / ${price}</span>`:''}`}<div class="card-actions">${owned?`<button class="buy-button" data-action="equip" data-item="${item.id}" ${selected?'disabled':''}>${ownedAction}</button>`:`<button class="try-button" data-action="try-shop-item" data-item="${item.id}">${previewing?'Примерено ✓':'Примерить'}</button>${purchaseControl}`}</div></article>`;
+ const purchaseControl=locked?`<button class="buy-button" disabled>🔒 ${escapeHTML(shopLockedCopy(item))}</button>`:premium?`<button class="premium-button" data-action="premium-info">🔒 Попроси взрослого</button>`:shortfall?`<button class="buy-button" disabled>🔒 Не хватает ${shortfall} ⭐</button>`:`<button class="buy-button" data-action="buy-item" data-item="${item.id}">Купить за ${price} ⭐</button>`;
+ const status=state==='reward'?'<span class="shop-owned-status reward-status">🎁 Получено как награда</span>':state==='purchased'?'<span class="shop-owned-status">✓ Куплено</span>':locked?`<span class="shop-lock-status">🔒 ${escapeHTML(shopLockedCopy(item))}</span>`:premium?'<span class="shop-premium-status">💎 Премиум</span>':`<span class="shop-price">⭐ ${price}</span>${shortfall?`<span class="shop-balance">⭐ ${AppState.student.starBalance} / ${price}</span>`:''}`;
+ return `<article class="shop-card state-${state} ${previewing?'previewing':''}" data-shop-preview="${item.id}" tabindex="0" aria-label="Примерить: ${escapeHTML(item.name)}">${renderShopThumbnail(item)}<h3>${escapeHTML(item.name)}</h3><p>${escapeHTML(SLOT_CONFIG[item.slot]?.label||CATEGORY_CONFIG[item.category]?.label||item.category||'Предмет')}</p>${status}<div class="card-actions">${owned?`<button class="buy-button" data-action="equip" data-item="${item.id}" ${selected?'disabled':''}>${ownedAction}</button>`:`<button class="try-button" data-action="try-shop-item" data-item="${item.id}">${previewing?'Примерено ✓':'Примерить'}</button>${purchaseControl}`}</div></article>`;
+}
+function shopCategoryFor(item){
+ const slot=mariusRenderSlot(item);if(slot==='background')return 'background';if(slot==='head')return 'head';if(['neck','face','extra'].includes(slot))return 'neck';if(['hand_left','hand_right','back'].includes(slot))return 'hands';return 'clothing';
+}
+function renderCollectionCard(collection){
+ const items=collectionItems(collection),owned=collectionOwnedCount(collection),total=items.length,complete=owned===total,percent=Math.round(owned/total*100),missing=total-owned,missingTotal=collectionMissingTotal(collection),locked=collectionLockedItems(collection),shortfall=Math.max(0,missingTotal-AppState.student.starBalance),equipped=collectionEquipped(collection);
+ const buyLabel=locked.length?`Закрыто: ${locked.length}`:shortfall?`Не хватает ${shortfall} ⭐`:`Докупить · ${missingTotal} ⭐`;
+ return `<article class="collection-card ${complete?'is-complete':''}">${renderCollectionThumbnail(collection)}<div class="collection-card-copy"><h3>${escapeHTML(collection.name)}</h3><ul class="collection-item-list" aria-label="Состав образа">${items.map(item=>`<li class="${isItemOwned(item.id)?'owned':''}"><span aria-hidden="true">${isItemOwned(item.id)?'✓':'○'}</span>${escapeHTML(item.name)}</li>`).join('')}</ul><p class="collection-progress-copy">${complete?'Комплект собран':`Осталось ${missing} · ${missingTotal} ⭐`}</p><div class="collection-progress" role="progressbar" aria-label="${escapeHTML(collection.name)}: ${owned} из ${total}" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${owned}"><i style="--collection-progress:${percent}%"></i></div>${complete?'<span class="collection-complete-status">✨ Комплект собран</span>':''}<div class="collection-card-actions"><button class="secondary" data-action="try-collection" data-collection="${collection.id}">Примерить</button>${complete?`<button class="primary" data-action="equip-collection" data-collection="${collection.id}" ${equipped?'disabled':''}>${equipped?'Надето ✓':'Надеть'}</button>`:`<button class="primary" data-action="buy-collection" data-collection="${collection.id}" ${locked.length||shortfall?'disabled':''}>${buyLabel}</button>`}<button class="text-button" data-action="open-collection" data-collection="${collection.id}">Все предметы</button></div></div></article>`;
+}
+function renderCollectionsOverview(){return `<section class="collections-overview" aria-labelledby="collections-title"><div class="collections-intro"><h3 id="collections-title">✨ Готовые образы</h3><p>Собирай вещи и открывай полный наряд Мариуса.</p></div><div class="collection-grid">${MARIUS_COLLECTIONS.map(renderCollectionCard).join('')}</div></section>`;}
+function renderCollectionItem(item){
+ const state=shopItemState(item),owned=['purchased','reward'].includes(state),locked=state==='locked',price=Math.max(0,Number(item.priceStars)||0),shortfall=Math.max(0,price-AppState.student.starBalance);
+ const status=owned?'<span class="collection-item-status owned">✓ Есть</span>':locked?'<span class="collection-item-status locked">🔒 Пока закрыто</span>':`<span class="collection-item-status available">⭐ ${price}</span>`;
+ const action=owned?'':locked?`<button class="buy-button" disabled>${escapeHTML(shopLockedCopy(item))}</button>`:shortfall?`<button class="buy-button" disabled>Не хватает ${shortfall} ⭐</button>`:`<button class="buy-button" data-action="buy-collection-item" data-item="${item.id}">Купить за ${price} ⭐</button>`;
+ return `<article class="collection-item state-${state}">${renderShopThumbnail(item)}<div class="collection-item-copy"><h4>${escapeHTML(item.name)}</h4>${status}${action}</div></article>`;
+}
+function renderCollectionDetail(collection){
+ const items=collectionItems(collection),owned=collectionOwnedCount(collection),total=items.length,complete=owned===total,missingTotal=collectionMissingTotal(collection),locked=collectionLockedItems(collection),previewing=shopCollectionPreviewId===collection.id,equipped=collectionEquipped(collection);
+ const missing=total-owned,shortfall=Math.max(0,missingTotal-AppState.student.starBalance);
+ const availableCopy=missing===0?'Все предметы уже твои.':locked.length?`Стоимость недостающих: ${missingTotal} ⭐. Сначала открой ещё ${locked.length}.`:`Стоимость всех недостающих предметов: ${missingTotal} ⭐.`;
+ const buyLabel=locked.length?`Недоступно: ${locked.length} закрыто`:shortfall?`Не хватает ${shortfall} ⭐`:`Докупить за ${missingTotal} ⭐`;
+ return `<section class="collection-detail"><button class="collection-back" data-action="back-to-collections">← Все образы</button><div class="collection-detail-layout"><div class="collection-hero">${renderCharacter('home',{previewEquipment:collection.equipment,className:'collection-main-character'})}<h3>${escapeHTML(collection.name)}</h3><p>${complete?'✨ Комплект собран!':`${owned} из ${total} предметов`}</p><div class="collection-progress" role="progressbar" aria-label="${escapeHTML(collection.name)}: ${owned} из ${total}" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${owned}"><i style="--collection-progress:${Math.round(owned/total*100)}%"></i></div><p class="collection-total">${escapeHTML(availableCopy)}</p><div class="collection-actions"><button class="secondary" data-action="try-collection" data-collection="${collection.id}" ${previewing?'disabled':''}>${previewing?'Примерено ✓':'Примерить'}</button>${complete?`<button class="primary" data-action="equip-collection" data-collection="${collection.id}" ${equipped?'disabled':''}>${equipped?'Надето ✓':'Надеть'}</button>`:`<button class="primary" data-action="buy-collection" data-collection="${collection.id}" ${locked.length||shortfall?'disabled':''}>${buyLabel}</button>`}</div><p class="shop-preview-note">Примерка временная: сохранённая экипировка не меняется.</p></div><div class="collection-items"><h3>Что входит в образ</h3><div class="collection-item-grid">${items.map(renderCollectionItem).join('')}</div></div></div></section>`;
 }
 function renderShopProfile(){
- const available=ITEMS.filter(shopItemUnlocked),preview=getItemById(shopPreviewItemId),categories=[...new Set(available.map(item=>item.category))];
- return `<div class="student-panel-heading"><div><h2>Магазин</h2><p>Зарабатывай звёзды в игре</p></div></div><div class="marius-dashboard"><div>${renderCharacter('home',{previewItem:preview})}${preview?`<p class="marius-rank">Примерка: ${escapeHTML(preview.name)}</p>`:''}</div><div>${categories.map(category=>`<section class="shop-section"><h3>${CATEGORY_CONFIG[category]?.icon||'✨'} ${escapeHTML(CATEGORY_CONFIG[category]?.label||'Предметы')}</h3><div class="shop-grid">${available.filter(item=>item.category===category).map(renderShopCard).join('')}</div></section>`).join('')}<section class="shop-section"><h3>💎 Премиум</h3><div class="shop-card"><div class="achievement-icon">🔒</div><h3>Премиальные предметы</h3><p>Их сможет купить взрослый</p><div class="card-actions"><button class="try-button" data-action="premium-info">Попроси взрослого</button></div></div></section></div></div>`;
+ const visible=SHOP_ITEMS.filter(shopItemVisible),preview=getItemById(shopPreviewItemId),category=SHOP_CATEGORY_CONFIG.find(entry=>entry.id===shopCategoryId)||SHOP_CATEGORY_CONFIG[0],items=visible.filter(item=>shopCategoryFor(item)===category.id);
+ const countFor=entry=>entry.id==='collections'?MARIUS_COLLECTIONS.length:visible.filter(item=>shopCategoryFor(item)===entry.id).length;
+ const navigation=SHOP_CATEGORY_CONFIG.map(entry=>`<button class="${entry.id===category.id?'active':''}" data-action="shop-category" data-category="${entry.id}" aria-pressed="${entry.id===category.id}"><span aria-hidden="true">${entry.icon}</span>${escapeHTML(entry.label)}<small>${countFor(entry)}</small></button>`).join('');
+ const categoryContent=category.id==='collections'?(getMariusCollection(shopCollectionId)?renderCollectionDetail(getMariusCollection(shopCollectionId)):renderCollectionsOverview()):`<div class="marius-dashboard shop-layout"><div class="shop-main-preview">${renderCharacter('home',{previewItem:preview})}${preview?`<p class="marius-rank">Примерка: ${escapeHTML(preview.name)}</p><p class="shop-preview-note">Экипировка сохранится только после покупки или кнопки «Надеть».</p>`:'<p class="shop-preview-note">Нажми на карточку, чтобы примерить предмет.</p>'}</div><section class="shop-section"><h3>${category.icon} ${escapeHTML(category.label)}</h3><div class="shop-grid">${items.map(renderShopCard).join('')}</div></section></div>`;
+ return `<div class="student-panel-heading"><div><h2>Магазин</h2><p>Зарабатывай звёзды в игре</p></div></div><nav class="shop-category-nav" aria-label="Категории магазина">${navigation}</nav>${categoryContent}`;
 }
 function renderStudentProfile(){
  const content={marius:renderMariusDashboard,alphabet:renderAlphabetProfile,training:renderTrainingProfile,wardrobe:renderWardrobeProfile,achievements:renderAchievementsProfile,shop:renderShopProfile}[profileSection]?.()||renderMariusDashboard();
@@ -2404,7 +2987,7 @@ function panelStyle(d){return `style="--accent:${d.color||'#17664c'};--tint:${d.
 function lessonContinueContent(ready){return `<span class="lesson-continue-icon" aria-hidden="true">${ready?'☝️':'👂'}</span><span>${ready?'ЖМИ!':'Слушай'}</span>`;}
 function renderLessonContinueButton(){const ready=syncLessonCardAudioState().status===SLIDE_AUDIO_READY;return `<button class="primary lesson-continue ${ready?'is-ready':'is-waiting'}" data-action="next" data-lesson-continue data-audio-state="${ready?SLIDE_AUDIO_READY:SLIDE_AUDIO_WAITING}" aria-label="${ready?'ЖМИ!':'Слушай'}" aria-disabled="${String(!ready)}" ${ready?'':'disabled'}>${lessonContinueContent(ready)}</button>`;}
 function renderLessonCardActions(){return `<div class="lesson-actions">${renderLessonContinueButton()}</div>`;}
-function updateLessonContinueButton(){const button=document.querySelector('[data-lesson-continue]');if(!button)return false;button.disabled=false;button.dataset.audioState=SLIDE_AUDIO_READY;button.setAttribute('aria-disabled','false');button.setAttribute('aria-label','ЖМИ!');button.classList.remove('is-waiting');button.classList.add('is-ready','is-activating');button.innerHTML=lessonContinueContent(true);return true;}
+function updateLessonContinueButton(){const button=document.querySelector('[data-lesson-continue]');if(!button)return false;button.disabled=false;button.dataset.audioState=SLIDE_AUDIO_READY;button.setAttribute('aria-disabled','false');button.setAttribute('aria-label','ЖМИ!');button.classList.remove('is-waiting');button.classList.add('is-ready','is-activating');button.innerHTML=lessonContinueContent(true);setTimeout(()=>button.classList.remove('is-activating'),700);return true;}
 function completeLessonCardAudio(key,epoch=viewEpoch){if(!key||epoch!==viewEpoch||key!==lessonCardKey())return false;completedLessonCardAudioKeys.add(key);lessonCardAudioState={key,status:SLIDE_AUDIO_READY};return updateLessonContinueButton();}
 function renderLearnLetter(){const d=letters[AppState.cursor.index];return `${lessonTop()}<section class="lesson-panel" ${panelStyle(d)}><div class="alfie-line">${buddy()}<span>Знакомься: ${escapeHTML(d.letter)}</span></div><h1 class="letter-pair" id="audio-focus" tabindex="-1" aria-label="${d.letter}, lowercase ${d.lowercase}">${escapeHTML(d.letter)}<span>${escapeHTML(d.lowercase)}</span></h1><p class="sound-label">Звук /${escapeHTML(d.sound)}/</p><button class="repeat" data-action="repeat" aria-label="Hear the letter name and sound">${icons.speaker} Послушать</button></section>${renderLessonCardActions()}`;}
 function renderWordLabel(d){const index=d.word.toLowerCase().indexOf(d.lowercase);if(index<0)return escapeHTML(d.word);return `${escapeHTML(d.word.slice(0,index))}<strong>${escapeHTML(d.word[index])}</strong>${escapeHTML(d.word.slice(index+1))}`;}
@@ -2418,14 +3001,19 @@ function questionBody(q){const d=byLetter.get(q.letter),pictures=['letterPicture
 }
 function renderFindLetter(q){return questionBody(q);}function renderLetterToPicture(q){return questionBody(q);}function renderPictureToLetter(q){return questionBody(q);}
 function dots(index,count){return `<div class="dots" role="progressbar" aria-label="Challenge progress" aria-valuemin="0" aria-valuemax="${count}" aria-valuenow="${index}">${Array.from({length:count},(_,i)=>`<span class="dot ${i<index?'done':i===index?'active':''}"></span>`).join('')}</div>`;}
-function renderGame(final=false){const q=ensureQuestion(),count=['review','cumulative'].includes(AppState.cursor.phase)?REVIEW_LENGTH:final?FINAL_LENGTH:MINI_LENGTH;return `${dots(AppState.game.index,count)}${questionBody(q)}`;}
+function renderGame(final=false){
+ const reviewing=['review','cumulative'].includes(AppState.cursor.phase),q=ensureQuestion();
+ if(reviewing){const progress=reviewRoundProgress(AppState.game),total=AppState.game.letterOrder.length;return `<div class="review-round-status"><strong>Раунд ${progress.round} из ${progress.roundCount}</strong><span>Задание ${AppState.game.index+1} из ${total}</span></div>${dots(progress.index,progress.size)}${questionBody(q)}`;}
+ const count=final?FINAL_LENGTH:MINI_LENGTH;return `${dots(AppState.game.index,count)}${questionBody(q)}`;
+}
 function renderMiniGame(){return renderGame(false);}function renderFinalChallenge(){return renderGame(true);}
 function renderInterlude(kind){const c=AppState.cursor,group=groups[Math.floor(c.index/GROUP_SIZE)],range=letters.map(d=>d.letter).join('');
  if(kind==='letterReward'){const d=letters[c.index];return `<section class="interlude letter-completed">${renderCompletionSticker()}<div class="group-badge">${escapeHTML(d.letter)} ★</div><h1>Молодец!</h1><p>Ты подружился с буквой ${escapeHTML(d.letter)}.</p><div class="stars" aria-hidden="true">★</div><button class="primary" data-action="after-letter">Дальше ${icons.arrow}</button></section>`;}
  if(['reviewIntro','reviewResult','cumulativeIntro','cumulativeResult'].includes(kind)){
   const cumulative=kind.startsWith('cumulative'),result=kind.endsWith('Result'),block=cumulative?cumulativeReviewAt(c.index):localReviewAt(c.index);
   const badge=cumulative?`${block.start}–${block.end}`:block.letters.join(' '),title=result?'Повторение пройдено!':cumulative?'Большое повторение!':'Закрепим буквы!';
-  const copy=result?(cumulative?'Все изученные буквы стали ещё крепче.':'Отлично различаешь новые буквы!'):(cumulative?'Вспомним старые и новые буквы.':'Шесть коротких заданий на новые буквы.');
+  const total=block?reviewLength(block,cumulative):MIN_REVIEW_LENGTH;
+  const copy=result?(cumulative?'Все изученные буквы стали ещё крепче.':'Отлично различаешь новые буквы!'):(cumulative?`Три раунда и ${total} заданий: каждая изученная буква обязательно встретится.`:`Три коротких раунда и ${total} заданий на новые буквы.`);
   return `<section class="interlude"><div class="group-badge">${escapeHTML(badge)}</div><h1>${title}</h1>${buddy('interlude')}<div class="stars" aria-label="Три звезды">★★★</div><p>${copy}</p><button class="primary" data-action="${result?'after-review':cumulative?'play-cumulative':'play-review'}">${result?'Дальше':'Играть'} ${icons.arrow}</button></section>`;
  }
  const isFinal=kind==='finalIntro',isResult=kind==='miniResult';return `<section class="interlude">${buddy('interlude')}<div class="group-badge">${escapeHTML(isFinal?range:group.map(d=>d.letter).join(' '))}</div><h1>${isResult?'Уровень пройден!':isFinal?'Большая игра!':'Мини-игра!'}</h1><div class="stars" aria-label="Три звезды">★★★</div><p>${isResult?'Отправляемся дальше?':isFinal?'Вспомним все буквы. Готов?':'Поиграем с новыми буквами.'}</p><button class="primary" data-action="${isResult?'after-mini':isFinal?'play-final':'play-mini'}">${isResult?'Дальше':'Играть'} ${icons.arrow}</button>${kind==='miniIntro'&&c.index===2?`<button class="text-button" data-action="find-object-replay" data-game="${ABC_FIND_OBJECT_GAME.id}">Ещё раз в комнату</button>`:''}</section>`;
@@ -2438,12 +3026,16 @@ function trainingQuestion(){return TrainingEngine.currentQuestion(trainingSessio
 function trainingUnlocked(){return completedTrainingLetters().length>=TRAINING_CONFIG.minCompletedLetters;}
 function startTraining(forceNew=false){
  if(!trainingUnlocked())return false;
+ if(typeof TrainingEngine==='undefined'){
+  waitForResourceContext('training').then(ready=>{if(ready)startTraining(forceNew);});
+  return true;
+ }
  let session=trainingSession();
  if(forceNew||!session||session.completed||session.pool.some(letter=>!completedTrainingLetters().includes(letter))){
   session=TrainingEngine.createSession(completedTrainingLetters(),AppState.training.progress,TRAINING_CONFIG,Math.random,AppState.training.lastSignature);
   TrainingState.startSession(AppState.training,session);
  }
- preloadFeedbackStickers();view='training';saveProgress();showScreen();
+ view='training';saveProgress();showScreen();
  Analytics?.trackEvent(Analytics.EVENTS.START_TRAINING);
  Analytics?.trackEvent(Analytics.EVENTS.TRAINING_STARTED);
  return true;
@@ -2468,10 +3060,11 @@ function trainingQuestionAudio(q=trainingQuestion()){
 }
 function renderTrainingQuestion(q,blitz=false){
  const d=byLetter.get(q.letter),pictures=q.answerType==='image';
- const cue=q.promptType==='image'?media(d,'picture'):q.promptType==='letter'?escapeHTML(d.letter):icons.speaker;
+ const audioCue=q.type==='soundLetter'&&['name','sound'].includes(q.promptType);
+ const cue=q.promptType==='image'?media(d,'picture'):q.promptType==='letter'?escapeHTML(d.letter):audioCue?`<button class="training-audio-cue" type="button" data-action="training-repeat" data-training-audio-cue aria-label="Повторить аудиозадание">${icons.speaker}</button>`:icons.speaker;
  const activity=trainingActivity(),combo=activity?.kind==='blitz'?(activity.streak||0):0;
  const answerCount=q.options.length;
- return `${blitz?`<div class="training-blitz-banner"><strong>⚡ БЛИЦ!</strong><span class="training-combo">${combo>=2?`x${combo} ${combo>=4?'🔥':''}`:'Вперёд!'}</span></div>`:''}<section class="lesson-panel training-question" ${panelStyle(d)}><div class="training-question-content"><h1 class="lesson-heading">${escapeHTML(trainingPrompt(q))}</h1><div class="question-cue" aria-hidden="true">${cue}</div><div class="choices answers-grid answers-grid--${answerCount}" data-answer-count="${answerCount}" role="group" aria-label="Выбери ответ">${q.options.map(letter=>{const option=byLetter.get(letter),label=pictures?option.word:letter;return `<button class="choice answer-card" data-action="training-answer" data-training-answer="${escapeHTML(letter)}" aria-label="${escapeHTML(label)}">${pictures?media(option,'picture'):escapeHTML(letter)}</button>`;}).join('')}</div><div class="feedback" id="feedback" role="status" aria-live="polite"></div><button class="repeat question-repeat" data-action="training-repeat" aria-label="Повторить задание">${icons.speaker} Послушать ещё</button></div></section>`;
+ return `${blitz?`<div class="training-blitz-banner"><strong>⚡ БЛИЦ!</strong><span class="training-combo">${combo>=2?`x${combo} ${combo>=4?'🔥':''}`:'Вперёд!'}</span></div>`:''}<section class="lesson-panel training-question" ${panelStyle(d)}><div class="training-question-content"><h1 class="lesson-heading">${escapeHTML(trainingPrompt(q))}</h1><div class="question-cue${audioCue?' is-audio-cue':''}" ${audioCue?'':'aria-hidden="true"'}>${cue}</div><div class="choices answers-grid answers-grid--${answerCount}" data-answer-count="${answerCount}" role="group" aria-label="Выбери ответ">${q.options.map(letter=>{const option=byLetter.get(letter),label=pictures?option.word:letter;return `<button class="choice answer-card" data-action="training-answer" data-training-answer="${escapeHTML(letter)}" aria-label="${escapeHTML(label)}">${pictures?media(option,'picture'):escapeHTML(letter)}</button>`;}).join('')}</div><div class="feedback" id="feedback" role="status" aria-live="polite"></div>${audioCue?'':`<button class="repeat question-repeat" data-action="training-repeat" aria-label="Повторить задание">${icons.speaker} Послушать ещё</button>`}</div></section>`;
 }
 function renderTrainingResults(){
  const session=trainingSession(),seen=session.seenLetters||[];
@@ -2682,7 +3275,7 @@ function nextLetterMazeRound(gameId){
 function continueLetterMazeGame(gameId){
  const entry=LETTER_MAZE_COURSE_BY_GAME.get(gameId);
  if(view!=='course'||!entry||AppState.cursor.phase!==entry.phase||!letterMazeState(entry.scene).gameCompleted)return;
- AppState.cursor.phase=entry.nextPhase;AppState.game=null;AppState.question=null;finishBlock();go('course');
+ AppState.cursor.phase=entry.nextPhase;AppState.game=null;AppState.question=null;go('course');
 }
 /* BALLOON POP G/H/I — pure game rules live in balloon-pop-game.js. */
 const BALLOON_LETTER_CHANGE_INTERVAL_MULTIPLIER=1.25,BALLOON_POP_ANIMATION_MS=200,BALLOON_TARGET_MAX_WAIT_MS=2800,BALLOON_RESPAWN_DELAY_MS=1400,BALLOON_IDLE_HINT_MS=5500,BALLOON_HINT_DURATION_MS=900;
@@ -2906,7 +3499,7 @@ function repeatBalloonInstruction(){
 }
 function continueBalloonPopGame(){
  if(view!=='course'||AppState.cursor.phase!=='balloon_ghi'||!balloonPopState().gameCompleted)return false;
- finishBlock();AppState.cursor=letters[GHI_END_INDEX+1]?{phase:'lesson',index:GHI_END_INDEX+1,step:0}:{phase:'finalIntro',index:GHI_END_INDEX,step:0};AppState.game=null;AppState.question=null;go('course');return true;
+ AppState.cursor={phase:'cumulativeIntro',index:GHI_END_INDEX,step:0};AppState.game=null;AppState.question=null;go('course');return true;
 }
 function continueTrainingBalloonGame(){
  if(!trainingBalloonActive()||!activeBalloonState().gameCompleted)return false;
@@ -3017,7 +3610,7 @@ function tapRiverCrossing(letter,button=null){
 }
 function continueRiverCrossingGame(){
  if(view!=='course'||AppState.cursor.phase!=='river_jkl'||!riverCrossingState().gameCompleted)return false;
- const block=localReviewAt(JKL_END_INDEX);AppState.cursor={phase:block?'reviewIntro':'lesson',index:block?JKL_END_INDEX:JKL_END_INDEX+1,step:0};AppState.game=null;AppState.question=null;go('course');return true;
+ AppState.cursor={phase:'cumulativeIntro',index:JKL_END_INDEX,step:0};AppState.game=null;AppState.question=null;go('course');return true;
 }
 function continueTrainingRiverCrossing(){
  if(!trainingRiverActive()||!activeRiverState().gameCompleted)return false;
@@ -3058,7 +3651,7 @@ function wireFruitRainAsset(image){
 const fruitRainPreloadedAssets=new Map();
 function fruitRainAssetSources(){const assets=FruitRainGame.ASSETS;return [assets.background,assets.basket,assets.basketFull,assets.hit,assets.miss,assets.hintGlow,assets.branch,...assets.leaves,...Object.values(assets.fruits),...Object.values(assets.blitzFruits)].filter(Boolean);}
 function preloadFruitRainAssets(){if(typeof Image!=='function')return false;fruitRainAssetSources().forEach(source=>{if(fruitRainPreloadedAssets.has(source))return;const image=new Image();image.decoding='async';image.src=source;fruitRainPreloadedAssets.set(source,image);});return true;}
-function wireFruitRainAssets(root=document){preloadFruitRainAssets();root.querySelectorAll('[data-fruit-rain-asset]').forEach(wireFruitRainAsset);}
+function wireFruitRainAssets(root=document){const images=[...root.querySelectorAll('[data-fruit-rain-asset]')];if(!images.length)return false;preloadFruitRainAssets();images.forEach(wireFruitRainAsset);return true;}
 function fruitRainObjectMarkup(item,hinted=false){
  const hintImage=hinted&&item.correct?`<img class="fruit-rain-hint-image" data-fruit-rain-asset src="${escapeHTML(FruitRainGame.ASSETS.hintGlow)}" alt="">`:'';
  return `<div class="fruit-rain-object ${item.mode==='blitz'?'is-blitz':''} ${item.visual!==item.letter?'is-word':''} ${hinted&&item.correct?'is-hint':''}" data-fruit-rain-object data-fruit="${escapeHTML(item.fruitKey)}" data-letter="${escapeHTML(item.letter)}" data-correct="${item.correct}" role="img" aria-label="${escapeHTML(item.label)}" style="--fruit-x:${item.x}%;--fruit-y:-110px"><span class="fruit-rain-fruit-fallback" aria-hidden="true">${escapeHTML(item.fruitEmoji)}</span><img class="fruit-rain-fruit-image" data-fruit-rain-asset src="${escapeHTML(item.fruitAsset)}" alt=""><span class="fruit-rain-object-symbol" aria-hidden="true">${escapeHTML(item.visual)}</span>${hintImage}</div>`;
@@ -3086,7 +3679,7 @@ function finishFruitRainCatch(entry){
  const state=fruitRainState(),blitz=entry.data.mode==='blitz',result=FruitRainGame.catchItem(MNO_FRUIT_RAIN_GAME,state,entry.data.letter);entry.gone=true;
  if(result==='ignored')return result;
  if(!entry.data.correct){
-  addFruitRainBurst(entry,'miss');entry.element.classList.add('is-wrong');noteAnalyticsMistake('fruit_rain_mno');saveProgress();setFruitRainFeedback(result==='retry'?'Почти! Лови дальше.':`Подсказка: ищи ${FruitRainGame.hint(MNO_FRUIT_RAIN_GAME,state)}.`);AudioManager.play(ru('almost'));
+  addFruitRainBurst(entry,'miss');entry.element.classList.add('is-wrong');noteAnalyticsMistake('fruit_rain_mno');saveProgress();setFruitRainFeedback(result==='retry'?'Почти! Лови дальше.':`Подсказка: ищи ${FruitRainGame.hint(MNO_FRUIT_RAIN_GAME,state)}.`);if(!blitz)AudioManager.play(ru('almost'));
   if(result!=='retry')document.querySelector('.fruit-rain-object[data-correct="true"]')?.classList.add('is-hint');
   fruitRainTimer(()=>entry.element.remove(),310);
   if(result==='retry-slow'&&!blitz){stopFruitRainWave();fruitRainTimer(()=>startFruitRainInstruction(),260);}
@@ -3219,7 +3812,7 @@ function wireBubbleCannonAsset(image){
  const loaded=()=>{image.classList.add('is-loaded');if(image.classList.contains('bubble-cannon-background'))image.closest('[data-bubble-cannon-scene]')?.classList.add('has-bubble-cannon-background');if(image.classList.contains('bubble-cannon-target-image'))image.closest('[data-bubble-cannon-target]')?.classList.add('has-bubble-cannon-art');if(image.classList.contains('bubble-cannon-barrel-image'))image.closest('[data-bubble-cannon-barrel]')?.classList.add('has-bubble-cannon-art');if(image.classList.contains('bubble-cannon-base-image'))image.parentElement?.classList.add('has-bubble-cannon-art');if(image.classList.contains('bubble-cannon-flash-image'))image.parentElement?.classList.add('has-bubble-cannon-art');if(image.classList.contains('bubble-cannon-projectile-image'))image.parentElement?.classList.add('has-projectile-art');},failed=()=>{image.hidden=true;image.classList.remove('is-loaded');image.closest('[data-bubble-cannon-scene]')?.setAttribute('data-bubble-cannon-asset-error','true');console.warn?.('[Bubble Cannon] PNG failed to load:',image.getAttribute('src'));};
  image.addEventListener('load',loaded,{once:true});image.addEventListener('error',failed,{once:true});if(image.complete)(image.naturalWidth>0?loaded:failed)();
 }
-function wireBubbleCannonAssets(root=document){preloadBubbleCannonAssets();root.querySelectorAll('[data-bubble-cannon-asset]').forEach(wireBubbleCannonAsset);}
+function wireBubbleCannonAssets(root=document){const images=[...root.querySelectorAll('[data-bubble-cannon-asset]')];if(!images.length)return false;preloadBubbleCannonAssets();images.forEach(wireBubbleCannonAsset);return true;}
 function setBubbleCannonFeedback(message){const feedback=document.querySelector('[data-bubble-cannon-feedback]');if(feedback)feedback.textContent=message;}
 function updateBubbleCannonOverallProgress(){const bar=document.querySelector('.bubble-cannon-progress'),done=BubbleCannonGame.progress(PQR_BUBBLE_CANNON_GAME,bubbleCannonState()),total=BubbleCannonGame.totalHits(PQR_BUBBLE_CANNON_GAME);if(!bar)return false;bar.setAttribute('aria-valuenow',String(done));const fill=bar.querySelector('i'),label=bar.querySelector('span');if(fill)fill.style.width=`${Math.round(done/total*100)}%`;if(label)label.textContent=`${done} / ${total}`;return true;}
 function updateBubbleCannonHitProgress(count,{complete=false}={}){
@@ -3288,7 +3881,7 @@ function repeatBubbleCannonInstruction(){if(AppState.cursor.phase!=='bubble_cann
 function openBubbleCannon(){if(!bubbleCannonUnlocked())return false;if(AppState.cursor.phase!=='bubble_cannon')AppState.bubbleCannonReturn={...AppState.cursor};AppState.cursor={phase:'bubble_cannon',index:PQR_END_INDEX,step:0};AppState.question=null;AppState.game=null;go('course');return true;}
 function exitBubbleCannon(){if(AppState.cursor.phase!=='bubble_cannon')return false;if(AppState.bubbleCannonReturn){AppState.cursor=AppState.bubbleCannonReturn;AppState.bubbleCannonReturn=null;}saveProgress();go('home');return true;}
 function replayBubbleCannon(){if(AppState.cursor.phase!=='bubble_cannon')return false;AppState.bubbleCannon=blankBubbleCannon();saveProgress();showScreen();return true;}
-function continueBubbleCannon(){if(AppState.cursor.phase!=='bubble_cannon'||!bubbleCannonState().gameCompleted)return false;if(AppState.bubbleCannonReturn){AppState.cursor=AppState.bubbleCannonReturn;AppState.bubbleCannonReturn=null;}else AppState.cursor={phase:'lesson',index:PQR_END_INDEX+1,step:0};AppState.question=null;AppState.game=null;go('course');return true;}
+function continueBubbleCannon(){if(AppState.cursor.phase!=='bubble_cannon'||!bubbleCannonState().gameCompleted)return false;if(AppState.bubbleCannonReturn){AppState.cursor=AppState.bubbleCannonReturn;AppState.bubbleCannonReturn=null;}else AppState.cursor={phase:'cumulativeIntro',index:PQR_END_INDEX,step:0};AppState.question=null;AppState.game=null;go('course');return true;}
 function advanceBubbleCannonDemo(){const state=bubbleCannonState();if(state.gameCompleted)return continueBubbleCannon();const task=BubbleCannonGame.currentTask(PQR_BUBBLE_CANNON_GAME,state),result=BubbleCannonGame.hitTarget(PQR_BUBBLE_CANNON_GAME,state,task.letter);if(result==='game-complete')awardStars(StudentDomain.STAR_REWARDS.blockCompleted,'minigame_completed',PQR_BUBBLE_CANNON_GAME.rewardSourceId);saveProgress();showScreen();return true;}
 let treehouseCleanup=[],treehouseTimers=new Set(),treehousePreloadedAssets=new Map(),treehousePointerId=null,treehouseAttachedLetter=null,treehouseWrongLetters=new Set(),treehouseJustCompletedStage=0,treehouseCelebrationStage=0,treehouseRevealCompletedScene=false;
 function treehouseTimer(callback,delay){const timer=setTimeout(()=>{treehouseTimers.delete(timer);callback();},delay);treehouseTimers.add(timer);return timer;}
@@ -3308,7 +3901,7 @@ function wireTreehouseAsset(image){
  const loaded=()=>image.classList.add('is-loaded'),failed=()=>{image.hidden=true;image.closest('[data-treehouse-scene]')?.setAttribute('data-treehouse-asset-error','true');console.warn?.('[Treehouse STU] PNG failed to load:',image.getAttribute('src'));};
  image.addEventListener('load',loaded,{once:true});image.addEventListener('error',failed,{once:true});if(image.complete)(image.naturalWidth>0?loaded:failed)();
 }
-function wireTreehouseAssets(root=document){preloadTreehouseAssets();root.querySelectorAll('[data-treehouse-asset]').forEach(wireTreehouseAsset);}
+function wireTreehouseAssets(root=document){const images=[...root.querySelectorAll('[data-treehouse-asset]')];if(!images.length)return false;preloadTreehouseAssets();images.forEach(wireTreehouseAsset);return true;}
 function setTreehouseFeedback(message){const feedback=document.querySelector('[data-treehouse-feedback]');if(feedback)feedback.textContent=message;}
 function updateTreehouseProgress(){const bar=document.querySelector('.treehouse-progress'),done=TreehouseSTUGame.progress(STU_TREEHOUSE_GAME,treehouseState()),total=STU_TREEHOUSE_GAME.totalDeliveries;if(!bar)return false;bar.setAttribute('aria-valuenow',String(done));bar.querySelector('i')?.style.setProperty('width',`${Math.round(done/total*100)}%`);const label=bar.querySelector('span');if(label)label.textContent=`${done} / ${total}`;return true;}
 function treehouseCenter(element,sceneRect){const rect=element?.getBoundingClientRect?.();return rect?{x:rect.left+rect.width/2-sceneRect.left,y:rect.top+rect.height/2-sceneRect.top,width:rect.width,height:rect.height}:null;}
@@ -3379,7 +3972,7 @@ function wireRailwayGame(){
  return Boolean(railwayController);
 }
 function replayRailway(){if(AppState.cursor.phase!=='railway_vwx')return false;clearRailwayRuntime();AppState.railway=blankRailway();saveProgress();showScreen();return true;}
-function continueRailway(){if(AppState.cursor.phase!=='railway_vwx'||!railwayState().gameCompleted)return false;clearRailwayRuntime();AppState.cursor={phase:'lesson',index:Math.min(letters.length-1,VWX_END_INDEX+1),step:0};AppState.question=null;AppState.game=null;go('course');return true;}
+function continueRailway(){if(AppState.cursor.phase!=='railway_vwx'||!railwayState().gameCompleted)return false;clearRailwayRuntime();AppState.cursor={phase:'cumulativeIntro',index:VWX_END_INDEX,step:0};AppState.question=null;AppState.game=null;go('course');return true;}
 function exitRailway(){if(AppState.cursor.phase!=='railway_vwx')return false;clearRailwayRuntime();saveProgress();go('home');return true;}
 let flightYZController=null;
 function clearFlightYZRuntime(){flightYZController?.destroy?.();flightYZController=null;}
@@ -3394,7 +3987,8 @@ function startFlightYZSession(){AppState.flightYZ.session=null;saveProgress();re
 function completeFlightYZ(snapshot,timestamp=Date.now()){
  if(snapshot)saveFlightYZSession({...snapshot,status:'complete',totalProgress:FlightYZGame.EDUCATION.totalTasks,journeyProgress:4,parcelState:'none'},false);
  const permanent=AppState.flightYZ.permanent,firstCompletion=!permanent.completed;
- permanent.completed=true;permanent.completedAt??=timestamp;AppState.completed=true;
+ permanent.completed=true;permanent.completedAt??=timestamp;
+ if(AppState.cursor.phase==='flight_yz')AppState.completed=false;
  if(!DEMO&&firstCompletion){
   StudentDomain.recordActivity(AppState.student,timestamp);
   StudentDomain.awardStars(AppState.student,StudentDomain.STAR_REWARDS.blockCompleted,'minigame_completed',FlightYZGame.CONFIG.rewardSourceId,timestamp);
@@ -3416,11 +4010,18 @@ function wireFlightYZGame(){
  flightYZController=FlightYZGame.mount(document,{initialState:flightYZState().session,catalogItems:flightYZCatalogItems(),playTarget:playFlightYZTarget,playRetry:playFlightYZRetry,playSuccess:playFlightYZSuccess,playFinal:playFlightYZFinal,onUnlockAudio:unlockAudio,onDestroy:stopAudio,onState:payload=>saveFlightYZSession(payload.state),onAnswer:payload=>{if(payload.outcome==='wrong')noteAnalyticsMistake('flight_yz');else{recordLearningActivity();if(payload.totalProgress>=FlightYZGame.EDUCATION.totalTasks)completeFlightYZ(payload.state);}},onComplete:state=>completeFlightYZ(state),onAssist:()=>{},onArrivalComplete:()=>{}});
  return Boolean(flightYZController);
 }
-function exitFlightYZ(){if(AppState.cursor.phase!=='flight_yz')return false;clearFlightYZRuntime();saveProgress();if(flightYZState().permanent.completed){AppState.cursor={phase:'results',index:letters.length-1,step:0};AppState.completed=true;go('course');}else go('home');return true;}
+function exitFlightYZ(){if(AppState.cursor.phase!=='flight_yz')return false;clearFlightYZRuntime();saveProgress();if(flightYZState().permanent.completed){AppState.cursor={phase:'cumulativeIntro',index:letters.length-1,step:0};AppState.completed=false;AppState.game=null;AppState.question=null;go('course');}else go('home');return true;}
 function renderResults(){return `<section class="interlude"><p class="eyebrow">Все задания пройдены</p><h1>У тебя получилось!</h1><p>Ты выучил буквы ${escapeHTML(letters[0].letter)}–${escapeHTML(letters.at(-1).letter)}!</p>${renderCharacter('results')}<div class="stars" aria-label="${letters.length} звёзд">${'★'.repeat(Math.min(letters.length,6))}</div><button class="primary" data-action="replay">Играть ещё ${icons.arrow}</button><button class="text-button" data-action="progress">👕 Жирафик</button></section>`;}
 function renderCourse(){const c=AppState.cursor;let content;if(c.phase==='lesson'){const step=currentLessonStep(c);if(step?.id==='letter')content=renderLearnLetter();else if(step?.id==='word')content=renderWordScreen();else if(step?.id==='wordMeaning')content=renderWordMeaningCard();else{const q=ensureQuestion();content=lessonTop()+(q.type===TRANSLATION_TYPE?renderTranslationQuiz(q):({find:renderFindLetter,letterPicture:renderLetterToPicture,pictureLetter:renderPictureToLetter}[q.type])(q));}}
  else if(FIND_OBJECT_COURSE[c.phase])content=renderFindObjectGame();else if(LETTER_MAZE_COURSE[c.phase])content=renderLetterMazeGame();else if(c.phase==='balloon_ghi')content=renderBalloonPopGame();else if(c.phase==='river_jkl')content=renderRiverCrossingGame();else if(c.phase==='fruit_rain')content=renderFruitRainGame();else if(c.phase==='bubble_cannon')content=renderBubbleCannonGame();else if(c.phase==='treehouse_stu')content=renderTreehouseGame();else if(c.phase==='railway_vwx')content=renderRailwayGame();else if(c.phase==='flight_yz')content=renderFlightYZGame();else if(['mini','review','cumulative'].includes(c.phase))content=renderMiniGame();else if(c.phase==='final')content=renderFinalChallenge();else if(c.phase==='results')content=renderResults();else content=renderInterlude(c.phase);
  return `<div class="screen learning">${content}${c.phase==='lesson'?journeyStrip():''}</div>`;}
+function wireActiveGameAssets(){
+ if(view!=='course')return false;
+ if(AppState.cursor.phase==='fruit_rain')return wireFruitRainAssets();
+ if(AppState.cursor.phase==='bubble_cannon')return wireBubbleCannonAssets();
+ if(AppState.cursor.phase==='treehouse_stu')return wireTreehouseAssets();
+ return false;
+}
 function showScreen(){
  viewEpoch++;const epoch=viewEpoch;clearTimeout(transitionTimer);transitionTimer=null;clearBalloonPopRuntime();clearRiverCrossingRuntime();clearFruitRainRuntime();clearBubbleCannonRuntime();clearTreehouseRuntime();clearRailwayRuntime();clearFlightYZRuntime();answerLocked=false;letterMazeAnimating=false;stopAudio();$('#confetti').replaceChildren();
  syncLessonCardAudioState();
@@ -3433,19 +4034,41 @@ function showScreen(){
  document.body.classList.toggle('railway-active',view==='course'&&AppState.cursor.phase==='railway_vwx');
  document.body.classList.toggle('yz-flight-active',view==='course'&&AppState.cursor.phase==='flight_yz');
  document.body.classList.toggle('training-active',view==='training');
- $('#main').innerHTML=view==='home'?renderHome():view==='profile'?renderStudentProfile():view==='progress'?renderWardrobe():view==='reward'?renderReward():view==='training'?renderTraining():renderCourse();
- if(DEMO&&AppState.cursor.phase!=='flight_yz')$('#main').insertAdjacentHTML('beforeend',`<div class="demo-bar" lang="ru"><span>DEMO · отдельный прогресс · BUILD ${escapeHTML(BUILD_ID)}</span><button data-action="demo-next">Следующий этап →</button></div>`);
- $('#home-button').classList.toggle('hide',view==='home');updateSoundButton();wireMedia();wireFruitRainAssets();wireBubbleCannonAssets();wireTreehouseAssets();wireFindObjectScene();wireLetterMazeScene();wireBalloonPopGame();wireRiverCrossingGame();wireFruitRainGame();wireBubbleCannonGame();wireTreehouseGame();wireRailwayGame();wireFlightYZGame();
+ $('#main').innerHTML=view==='wardrobe-preview'?renderMariusWardrobePreview():view==='home'?renderHome():view==='profile'?renderStudentProfile():view==='progress'?renderWardrobe():view==='reward'?renderReward():view==='training'?renderTraining():renderCourse();
+ if(view==='course'&&document.documentElement?.dataset.startClickedAt&&!document.documentElement.dataset.firstLessonRenderedAt){const renderedAt=globalThis.performance?.now?.()||Date.now(),startedAt=Number(document.documentElement.dataset.startClickedAt);document.documentElement.dataset.firstLessonRenderedAt=renderedAt.toFixed(1);document.documentElement.dataset.firstScreenDelay=Math.max(0,renderedAt-startedAt).toFixed(1);}
+ if(DEMO&&AppState.cursor.phase!=='flight_yz')$('#main').insertAdjacentHTML('beforeend',DEMO_WARDROBE_PREVIEW?`<div class="demo-bar" lang="ru"><span>PREVIEW · сохранения игрока не используются · BUILD ${escapeHTML(BUILD_ID)}</span></div>`:`<div class="demo-bar" lang="ru"><span>DEMO · отдельный прогресс · BUILD ${escapeHTML(BUILD_ID)}</span><button data-action="demo-next">Следующий этап →</button></div>`);
+ $('#home-button').classList.toggle('hide',view==='home');updateSoundButton();
+ // Start the critical voice fetch before Canvas and active-scene images are
+ // wired, so the current instruction wins the network race on slow links.
  announceScreen();
+ wireMedia();wireActiveGameAssets();wireFindObjectScene();wireLetterMazeScene();wireBalloonPopGame();wireRiverCrossingGame();wireFruitRainGame();wireBubbleCannonGame();wireTreehouseGame();wireRailwayGame();wireFlightYZGame();
  if(view!=='home'){const heading=$('#main h1');heading?.setAttribute('tabindex','-1');heading?.focus({preventScroll:true});}
- window.scrollTo({top:0,behavior:'auto'});log(view,AppState.cursor);showPendingAchievementCelebration();
+ window.scrollTo({top:0,behavior:'auto'});log(view,AppState.cursor);
+ if(typeof ResourceLoader!=='undefined'&&view==='course'){
+  const group=currentResourceGroup(),letter=letters[AppState.cursor.index]?.letter;ResourceLoader.warmLetter(letter);
+  const endIndex={ABC:2,DEF:5,GHI:8,JKL:11,MNO:14,PQR:17,STU:20,VWX:23,YZ:25}[group];
+  if(AppState.cursor.index>=endIndex-1)ResourceLoader.prefetchNext(group);
+ }
+ if(!DEMO_WARDROBE_PREVIEW&&!showPendingAchievementCelebration())showPendingCollectionCelebration();
 }
-function go(next){if(view==='profile'&&profileSection==='shop'&&next!=='profile')shopPreviewItemId=null;if(next==='course'){if(AppState.cursor.phase==='miniIntro'&&AppState.cursor.index===2&&!findObjectComplete(ABC_FIND_OBJECT_GAME))AppState.cursor.phase='room';if(AppState.cursor.phase==='miniIntro'&&AppState.cursor.index===5&&!letterMazeComplete(DEF_LETTER_MAZE))AppState.cursor.phase='maze';ensureRewardFlow();if(AppState.rewardFlow)next='reward';}view=next;if(view==='reward')rewardReady=Boolean(AppState.rewardFlow?.selected);saveProgress();trackCourseAnalyticsEntry();showScreen();}
+function go(next){
+ if(view==='profile'&&profileSection==='shop'&&next!=='profile')shopPreviewItemId=null;
+ if(next==='course'){
+  if(AppState.cursor.phase==='miniIntro'&&AppState.cursor.index===2&&!findObjectComplete(ABC_FIND_OBJECT_GAME))AppState.cursor.phase='room';
+  if(AppState.cursor.phase==='miniIntro'&&AppState.cursor.index===5&&!letterMazeComplete(DEF_LETTER_MAZE))AppState.cursor.phase='maze';
+  ensureRewardFlow();if(AppState.rewardFlow)next='reward';
+ }
+ view=next;if(view==='reward')rewardReady=rewardFlowClaimed(AppState.rewardFlow);saveProgress();
+ const finish=()=>{trackCourseAnalyticsEntry();showScreen();return true;};
+ if(typeof ResourceLoader==='undefined')return finish();
+ waitForResourceContext(view).then(ready=>{if(ready)finish();});return true;
+}
 function announceScreen(){const c=AppState.cursor,d=letters[c.index];
+ if(view==='wardrobe-preview'){setInstruction([]);return;}
  if(view==='home'){setInstruction([ru('welcome')]);return;}
  if(view==='profile'){setInstruction([ru('giraffe_happy')]);return;}
  if(view==='progress'){setInstruction([ru('dress_giraffe')]);return;}
- if(view==='reward'){const flow=visibleRewardFlow();setInstruction(flow?.selected?[ru(flow.id==='reward_def'?'new_item':'new_clothes'),ru('giraffe_happy')]:[ru('level_complete'),ru('reward'),ru('choose_reward')]);return;}
+ if(view==='reward'){const flow=visibleRewardFlow(),claimed=DEMO_REWARD_PREVIEW?Boolean(flow?.selected):rewardFlowClaimed(flow);setInstruction(claimed?[ru(flow.id==='reward_def'?'new_item':'new_clothes'),ru('giraffe_happy')]:flow?.selected?[ru('dress_giraffe')]:[ru('level_complete'),ru('reward'),ru('choose_reward')]);return;}
  if(view==='training'){
   const session=trainingSession(),activity=trainingActivity();
   if(session?.completed){setInstruction([ru('well_done'),ru('giraffe_happy')]);return;}
@@ -3480,20 +4103,18 @@ function announceScreen(){const c=AppState.cursor,d=letters[c.index];
   setInstruction([ru(command),cue]);
  }else setInstruction(c.phase==='results'?[ru('all_done'),ru('giraffe_happy')]:c.phase==='letterReward'?[ru('well_done'),enName(d)]:['miniResult','reviewResult','cumulativeResult'].includes(c.phase)?[ru('level_complete')]:[ru(['reviewIntro','cumulativeIntro'].includes(c.phase)?'repeat_letters':c.phase==='finalIntro'?'final_challenge':'challenge')]);
 }
-function begin(){unlockAudio();AppState.started=true;Analytics?.trackEvent(Analytics.EVENTS.START_LEARNING);go('course');preloadFeedbackStickers();}
+function begin(){unlockAudio();const root=document.documentElement,startedAt=globalThis.performance?.now?.()||Date.now();if(root){root.dataset.startClickedAt=startedAt.toFixed(1);delete root.dataset.firstLessonRenderedAt;delete root.dataset.firstScreenDelay;}AppState.started=true;if(typeof ResourceLoader!=='undefined')ResourceLoader.warmLetter(letters[AppState.cursor.index]?.letter);Analytics?.trackEvent(Analytics.EVENTS.START_LEARNING);go('course');}
 function nextLessonStep(){if(answerLocked||lessonCardAudioIsWaiting())return false;AppState.cursor.step++;AppState.question=null;go('course');return true;}
 function completeTranslationQuestion(){const c=AppState.cursor;if(c.phase!=='lesson'||currentLessonStep(c)?.type!==TRANSLATION_TYPE)return false;c.step++;AppState.question=null;saveProgress();return true;}
-function advanceAfterLetter(){const c=AppState.cursor;if(c.index===JKL_END_INDEX&&!riverCrossingState().gameCompleted)c.phase='river_jkl';else if(c.index<=GHI_END_INDEX&&((c.index+1)%GROUP_SIZE===0||c.index===GHI_END_INDEX))c.phase=c.index===2&&!findObjectComplete(ABC_FIND_OBJECT_GAME)?'room':c.index===5?'maze':'miniIntro';else if(localReviewAt(c.index))c.phase='reviewIntro';else{c.index++;c.phase='lesson';c.step=0;}AppState.question=null;go('course');}
-function advanceAfterMini(){const c=AppState.cursor;if(c.index===GHI_END_INDEX){if(AppState.completedBlocks.includes('reward_ghi')&&letters[GHI_END_INDEX+1]){c.index=GHI_END_INDEX+1;c.phase='lesson';c.step=0;}else c.phase='balloon_ghi';}else{c.index++;c.phase='lesson';c.step=0;}AppState.game=null;AppState.question=null;go('course');}
+function advanceAfterLetter(){const c=AppState.cursor,phase=phaseAfterLearnedBlock(AppState,c.index);if(phase)c.phase=phase;else{c.index++;c.phase='lesson';c.step=0;}AppState.question=null;go('course');}
+/* Legacy v9 mini saves are migrated before rendering. Keep this adapter as a
+   safe fallback: it now rejoins the thematic-game -> cumulative-review route. */
+function advanceAfterMini(){const c=AppState.cursor,phase=phaseAfterLearnedBlock(AppState,c.index);if(phase)c.phase=phase;else{c.index++;c.phase='lesson';c.step=0;}AppState.game=null;AppState.question=null;go('course');}
 function advanceAfterReview(){
  const c=AppState.cursor,cumulative=c.phase==='cumulativeResult',block=cumulative?cumulativeReviewAt(c.index):localReviewAt(c.index);if(!block)return false;
- if(!cumulative&&block.id==='review_MNO'&&!fruitRainState().gameCompleted)c.phase='fruit_rain';
- else if(!cumulative&&block.id==='review_PQR'&&!bubbleCannonState().gameCompleted)c.phase='bubble_cannon';
- else if(!cumulative&&block.id==='review_STU'&&!treehouseState().gameCompleted)c.phase='treehouse_stu';
- else if(!cumulative&&block.id==='review_VWX')c.phase='railway_vwx';
- else if(!cumulative&&block.cumulative)c.phase='cumulativeIntro';
- else if(cumulative&&c.index===letters.length-1){c.phase='flight_yz';startFlightYZSession();}
- else{c.index++;c.phase='lesson';c.step=0;}
+ if(!cumulative)c.phase=phaseAfterLearnedBlock(AppState,c.index)||'cumulativeIntro';
+ else if(c.index===letters.length-1){finishBlock();c.phase='results';AppState.completed=true;}
+ else{finishBlock();c.index++;c.phase='lesson';c.step=0;}
  AppState.game=null;AppState.question=null;go('course');return true;
 }
 function completeQuestion(){const c=AppState.cursor,q=AppState.question;let completedActivity=null;
@@ -3501,7 +4122,7 @@ function completeQuestion(){const c=AppState.cursor,q=AppState.question;let comp
  const learnedNow=registerCorrectAnswer(q);
  if(learnedNow)StudentDomain.awardStars(AppState.student,StudentDomain.STAR_REWARDS.letterCompleted,'letter_completed',`letter:${q.letter}`);
  if(c.phase==='lesson'){if(c.step<lessonSteps(letters[c.index]).length-1)c.step++;else c.phase='letterReward';}
- else{AppState.game.recent.push(q.letter);AppState.game.recent=AppState.game.recent.slice(-3);AppState.game.index++;const length=['review','cumulative'].includes(c.phase)?REVIEW_LENGTH:c.phase==='final'?FINAL_LENGTH:MINI_LENGTH;if(AppState.game.index>=length){completedActivity=analyticsActivityId(c);if(c.phase==='final'){c.phase='results';AppState.completed=true;}else if(c.phase==='review')c.phase='reviewResult';else if(c.phase==='cumulative')c.phase='cumulativeResult';else{c.phase='miniResult';if(c.index!==GHI_END_INDEX)finishBlock();}AppState.game=null;}}
+ else{AppState.game.recent.push(q.letter);AppState.game.recent=AppState.game.recent.slice(-3);AppState.game.index++;const length=['review','cumulative'].includes(c.phase)?AppState.game.letterOrder.length:c.phase==='final'?FINAL_LENGTH:MINI_LENGTH;if(AppState.game.index>=length){completedActivity=analyticsActivityId(c);if(c.phase==='final'){c.phase='results';AppState.completed=true;}else if(c.phase==='review')c.phase='reviewResult';else if(c.phase==='cumulative')c.phase='cumulativeResult';else{c.phase='miniResult';if(c.index!==GHI_END_INDEX)finishBlock();}AppState.game=null;}}
  AppState.question=null;saveProgress();
  evaluateStudentAchievements();
  if(completedActivity)completeAnalyticsActivity(completedActivity);
@@ -3512,9 +4133,9 @@ function completeQuestion(){const c=AppState.cursor,q=AppState.question;let comp
 }
 function celebrate(){const box=$('#confetti');box.innerHTML=Array.from({length:15},(_,i)=>`<i style="--x:${Math.round((Math.random()-.5)*430)}px;--y:${Math.round((Math.random()-.55)*400)}px;--r:${Math.round(Math.random()*300)}deg;color:${['#e4ad25','#4d9873','#a98acc','#ed9058'][i%4]}">${i%3?'✦':'★'}</i>`).join('');}
 /* Answer and completion stickers share one selection history, never saved. */
-const SUCCESS_STICKERS=Array.from({length:9},(_,i)=>`./images/stickers/marius_success_${String(i+1).padStart(2,'0')}.png`);
-const RETRY_STICKER='./images/stickers/marius_retry_01.png';
-let lastSuccessSticker=null,stickersWarmed=false;
+const SUCCESS_STICKERS=Array.from({length:9},(_,i)=>`./images/stickers/marius_success_${String(i+1).padStart(2,'0')}.webp`);
+const RETRY_STICKER='./images/stickers/marius_retry_01.webp';
+let lastSuccessSticker=null;
 function pickSuccessSticker(){
  const choices=SUCCESS_STICKERS.filter(src=>SUCCESS_STICKERS.length===1||src!==lastSuccessSticker);
  lastSuccessSticker=choices.length?choices[Math.floor(Math.random()*choices.length)]:null;
@@ -3522,20 +4143,12 @@ function pickSuccessSticker(){
 }
 function renderCompletionSticker(){
  const src=pickSuccessSticker();
- return src?`<img class="feedback-sticker success completion-sticker" data-feedback-sticker src="${escapeHTML(src)}" width="1254" height="1254" alt="" aria-hidden="true" draggable="false" decoding="async">`:'';
+ return src?`<img class="feedback-sticker success completion-sticker" data-feedback-sticker src="${escapeHTML(src)}" width="512" height="512" alt="" aria-hidden="true" draggable="false" decoding="async">`:'';
 }
 function prepareFeedbackSticker(img){
  img.onload=()=>{img.classList.add('ready');};
  img.onerror=()=>{img.remove();};
  if(img.complete){if(img.naturalWidth>0)img.onload();else img.onerror();}
-}
-function preloadFeedbackStickers(){
- if(stickersWarmed||typeof Image==='undefined')return;
- stickersWarmed=true;
- // Start after the first user action, two low-priority downloads at a time.
- const pending=[RETRY_STICKER,...SUCCESS_STICKERS];
- const next=()=>{const src=pending.shift();if(!src)return;const img=new Image();img.decoding='async';img.fetchPriority='low';img.onload=img.onerror=()=>{img.onload=img.onerror=null;next();};img.src=src;};
- setTimeout(()=>{next();next();},250);
 }
 function showAnswerFeedback(kind,message){
  const box=$('#feedback');if(!box)return;
@@ -3602,12 +4215,21 @@ function showLetterDetail(letter){
  openModal(`<div class="modal-head"><h2 id="modal-title">${d.letter} — ${escapeHTML(d.word)}</h2><button class="icon-button" data-action="close-modal" aria-label="Закрыть">×</button></div><div style="font-size:64px;margin:8px 0" aria-hidden="true">${d.emoji}</div><div class="stars" aria-label="Освоение ${mastery} из 3">${'★'.repeat(mastery)}${'☆'.repeat(3-mastery)}</div><p>Правильно: ${(course.correct||0)+(training.correct||0)}</p><p>Ошибок: ${(course.mistakes||0)+(training.mistakes||0)}</p><div class="modal-actions"><button class="primary" data-action="close-modal">Готово</button></div>`);return true;
 }
 function showPremiumInfo(){openModal(`<div class="achievement-celebration"><div class="achievement-icon" aria-hidden="true">💎</div><h2 id="modal-title">Попроси взрослого</h2><p>Этот предмет сможет купить взрослый. Покупки пока не подключены.</p><button class="primary" data-action="close-modal">Понятно</button></div>`);}
-function tryShopItem(id){const item=getItemById(id);if(!item||!shopItemUnlocked(item)||isItemOwned(id))return false;shopPreviewItemId=shopPreviewItemId===id?null:id;showScreen();return true;}
+function tryShopItem(id){const item=getItemById(id);if(!item||!shopItemVisible(item))return false;shopPreviewItemId=shopPreviewItemId===id?null:id;showScreen();return true;}
+function openCollection(id){const collection=getMariusCollection(id);if(!collection)return false;profileSection='shop';shopCategoryId='collections';shopCollectionId=id;shopCollectionPreviewId=id;shopPreviewItemId=null;showScreen();return true;}
+function backToCollections(){shopCollectionId=null;shopCollectionPreviewId=null;shopCategoryId='collections';showScreen();return true;}
+function tryCollection(id){const collection=getMariusCollection(id);if(!collection)return false;shopCollectionId=id;shopCollectionPreviewId=id;showScreen();return true;}
+function wearCollection(id){if(!equipCollection(id))return false;shopCollectionPreviewId=null;showScreen();celebrate();return true;}
 function buyShopItem(id){
  const previewed=shopPreviewItemId===id,result=purchaseCatalogItem(id);
  if(!result.ok){if(result.reason==='premium')showPremiumInfo();return false;}
  if(previewed)equipItem(id,AppState,false);
  shopPreviewItemId=null;saveProgress();celebrate();showScreen();return true;
+}
+function buyCollectionItem(id){shopPreviewItemId=null;return buyShopItem(id);}
+function buyCollection(id){
+ shopPreviewItemId=null;const result=purchaseCollection(id);if(!result.ok)return false;
+ shopCollectionId=id;shopCollectionPreviewId=id;celebrate();showScreen();return true;
 }
 function renderParentView(){const totals=Object.values(AppState.stats).reduce((a,s)=>({attempts:a.attempts+s.attempts,correct:a.correct+s.correct,mistakes:a.mistakes+s.mistakes}),{attempts:0,correct:0,mistakes:0});
  openModal(`<div class="modal-head"><h2 id="modal-title">Для родителей</h2><button class="icon-button" data-action="close-modal" aria-label="Закрыть">×</button></div><p>Звезда — три связи: найти букву, выбрать картинку и узнать букву по картинке.</p><div class="stats-totals"><div><b>${totals.attempts}</b>Всего ответов</div><div><b>${totals.correct}</b>Правильных</div><div><b>${totals.mistakes}</b>Ошибок</div></div><table class="stats-table"><thead><tr><th>Буква</th><th>Освоение</th><th>Связи</th><th>Ошибки</th></tr></thead><tbody>${letters.map(d=>{const s=AppState.stats[d.letter],status=s.mastery===3?'★ Освоена':!s.attempts?'Ещё впереди':s.practiceDebt?'Повторяем':'Изучаем';return `<tr><td>${escapeHTML(d.letter)}</td><td class="status-tag">${status}</td><td>${s.mastery} / 3</td><td>${s.mistakes}</td></tr>`;}).join('')}</tbody></table><p>При ошибке буква чаще встречается в играх. Исправленный ответ тоже считается успешной связью.</p><p style="margin-top:12px">Озвучка: готовые записи из audio/. Инструкции — по-русски, буквы, звуки и слова — по-английски. Между репликами пауза 0,5 секунды.</p><p style="margin-top:12px">Прогресс хранится только в этом браузере${DEMO?' (отдельный деморежим)':''}.</p><div class="modal-actions"><button class="secondary" data-action="close-modal">В игру</button><button class="secondary" data-action="reset">Сбросить прогресс</button></div>`);
@@ -3622,14 +4244,25 @@ $('#sound-button').addEventListener('click',toggleSound);$('#home-button').inner
 document.addEventListener('click',event=>{if(event.target.closest('.find-object-scene')&&!event.target.closest('button')){const entry=activeFindObjectEntry();if(entry)findObjectPick(null,entry.scene.id);}});
 /* EVENTS */
 const actions={
- 'open-profile':()=>{shopPreviewItemId=null;profileSection='marius';go('profile');},
- 'profile-section':button=>{if(PROFILE_SECTIONS.some(section=>section.id===button.dataset.section)){if(profileSection==='shop'&&button.dataset.section!=='shop')shopPreviewItemId=null;profileSection=button.dataset.section;showScreen();}},
+ 'marius-preview-item':button=>chooseMariusPreviewItem(button.dataset.item),
+ 'marius-preview-reset':resetMariusPreview,
+ 'marius-preview-preset':button=>applyMariusPreviewPreset(button.dataset.preset),
+ 'open-profile':()=>{shopPreviewItemId=null;shopCollectionPreviewId=null;profileSection='marius';go('profile');},
+ 'profile-section':button=>{if(PROFILE_SECTIONS.some(section=>section.id===button.dataset.section)){if(profileSection==='shop'&&button.dataset.section!=='shop'){shopPreviewItemId=null;shopCollectionPreviewId=null;}profileSection=button.dataset.section;const section=['shop','wardrobe'].includes(profileSection)?profileSection:'profile';if(typeof ResourceLoader==='undefined')showScreen();else ResourceLoader.ensureSection(section).then(showScreen).catch(error=>console.warn('[ABC Safari resources]',error));}},
+ 'shop-category':button=>{if(SHOP_CATEGORY_CONFIG.some(category=>category.id===button.dataset.category)){shopCategoryId=button.dataset.category;shopPreviewItemId=null;shopCollectionId=null;shopCollectionPreviewId=null;showScreen();}},
+ 'open-collection':button=>openCollection(button.dataset.collection),
+ 'back-to-collections':backToCollections,
+ 'try-collection':button=>tryCollection(button.dataset.collection),
+ 'equip-collection':button=>wearCollection(button.dataset.collection),
+ 'buy-collection':button=>buyCollection(button.dataset.collection),
+ 'buy-collection-item':button=>buyCollectionItem(button.dataset.item),
  'profile-course':()=>go('course'),
  'letter-detail':button=>showLetterDetail(button.dataset.letter),
  'try-shop-item':button=>tryShopItem(button.dataset.item),
  'buy-item':button=>buyShopItem(button.dataset.item),
  'premium-info':showPremiumInfo,
- 'close-achievement':()=>{closeModal();showPendingAchievementCelebration();},
+ 'close-achievement':()=>{closeModal();if(!showPendingAchievementCelebration())showPendingCollectionCelebration();},
+ 'close-collection-celebration':()=>{closeModal();showPendingCollectionCelebration();},
  'river-answer':button=>tapRiverCrossing(button.dataset.letter,button),
  'river-repeat':repeatRiverInstruction,
  'river-continue':continueRiverCrossingGame,
@@ -3672,7 +4305,9 @@ const actions={
  'find-object-continue':button=>continueFindObjectGame(button.dataset.game),
  'find-object-replay':button=>replayFindObjectGame(button.dataset.game),
  'find-object-reload':button=>{if(activeFindObjectEntry()?.scene.id===button.dataset.game)go('course');},
+ 'preview-reward':button=>previewReward(button.dataset.item),
  'claim-reward':button=>chooseReward(button.dataset.item),
+ 'confirm-reward':confirmReward,
  'reward-next':continueReward,
  equip:button=>{if(equipItem(button.dataset.item))showScreen();},
  unequip:button=>{if(unequipItem(button.dataset.item))showScreen();},
@@ -3730,22 +4365,39 @@ const actions={
   }
  }
 };
-document.addEventListener('click',event=>{const button=event.target.closest('button');if(!button||button.disabled)return;unlockAudio();if(button.hasAttribute('data-answer'))checkAnswer(button);else if(actions[button.dataset.action])actions[button.dataset.action](button);});
+document.addEventListener('click',event=>{const button=event.target.closest('button');if(button){if(button.disabled)return;unlockAudio();if(button.hasAttribute('data-answer'))checkAnswer(button);else if(actions[button.dataset.action])actions[button.dataset.action](button);return;}const card=event.target.closest('[data-shop-preview]');if(card){unlockAudio();tryShopItem(card.dataset.shopPreview);}});
+document.addEventListener('keydown',event=>{const card=event.target.closest?.('[data-shop-preview]');if(!card||event.target.closest('button')||!['Enter',' '].includes(event.key))return;event.preventDefault();unlockAudio();tryShopItem(card.dataset.shopPreview);});
 document.addEventListener('keydown',event=>{const layer=$('#modal-layer');if(layer.hidden)return;if(event.key==='Escape'){event.preventDefault();closeModal();}if(event.key==='Tab'){const buttons=[...layer.querySelectorAll('button:not(:disabled)')];const first=buttons[0],last=buttons.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}}});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){stopAudio();EffectsManager.stopAll();clearFruitRainRuntime();clearBubbleCannonRuntime();clearTreehouseRuntime();clearRailwayRuntime();clearFlightYZRuntime();cancelHold();saveProgress();}else if(view==='course'&&['fruit_rain','bubble_cannon','treehouse_stu','railway_vwx','flight_yz'].includes(AppState.cursor.phase))showScreen();});window.addEventListener('pagehide',()=>{stopAudio();EffectsManager.stopAll();clearFruitRainRuntime();clearBubbleCannonRuntime();clearTreehouseRuntime();clearRailwayRuntime();clearFlightYZRuntime();saveProgress();});
-/* INIT — preload the nine active supplied images, including reward card icons. */
-// Preload only the two images needed on the first screen.
-for(const key of ['background_home','giraffe_base']){
-  const asset=MEDIA_ASSETS.images[key];
-  if(!asset)continue;
-  const link=document.createElement('link');
-  link.rel='preload';
-  link.as='image';
-  link.href=asset.src;
-  document.head.appendChild(link);
+/* INIT — current-letter audio starts first; home images follow immediately. */
+function preloadHomeImages(){
+ const loads=[];
+ for(const key of ['giraffe_home','background_home']){
+   const asset=MEDIA_ASSETS.images[key];
+   if(!asset)continue;
+   const link=document.createElement('link');
+   link.rel='preload';link.as='image';link.href=asset.src;link.fetchPriority=key==='giraffe_home'?'high':'low';
+   loads.push(new Promise(resolve=>{link.onload=resolve;link.onerror=resolve;}));
+   document.head.appendChild(link);
+ }
+ if(typeof ResourceLoader==='undefined')return Promise.resolve(true);
+ // Chromium may omit a preload link's load event when the user leaves home
+ // immediately. Never let that browser quirk suppress the staged plan forever.
+ return new Promise(resolve=>{
+  let settled=false;const finish=()=>{if(settled)return;settled=true;clearTimeout(timer);resolve(true);};
+  const timer=setTimeout(finish,15000);Promise.all(loads).then(finish,finish);
+ });
 }
-// A reward in progress reopens automatically; audio still waits for a gesture.
-showScreen();
+// A reward or direct demo reopens only after its runtime bundle is ready.
+if(typeof ResourceLoader==='undefined'){preloadHomeImages();showScreen();}
+else waitForResourceContext(view).then(ready=>{
+ if(!ready)return;
+ const shouldPlan=['home','course','reward'].includes(view),firstGroup=view==='course'?currentResourceGroup():AppState.started?currentResourceGroup():'ABC';
+ const criticalWarm=shouldPlan?ResourceLoader.warmLetter(letters[AppState.cursor.index]?.letter):Promise.resolve();
+ const firstScreenReady=view==='home'?preloadHomeImages():Promise.resolve();
+ showScreen();
+ if(shouldPlan)Promise.allSettled([criticalWarm,firstScreenReady]).finally(()=>ResourceLoader.startBackgroundPlan(firstGroup));
+});
 if(AppState.started)saveProgress();
 </script>
 </body>

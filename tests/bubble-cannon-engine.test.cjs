@@ -95,11 +95,10 @@ assert.match(html,/<strong class="bubble-cannon-target-content">🐼<\/strong>/)
 const completeHTML=engine.render(config,state,{characterHTML:'<i>Marius</i>'});
 assert.match(completeHTML,/Все пузыри лопнули!/);assert.equal((completeHTML.match(/<span>★<\/span>/g)||[]).length,3);
 
-// Existing PQR review remains and hands off to the cannon; completion hands
-// off to S. Progress and the idempotent reward survive reload.
+// P/Q/R hands off directly to the cannon; completion hands off to A-R.
+// Progress and the idempotent reward survive reload.
 const course=createContext();
-assert.ok(course.run("LOCAL_REVIEW_BLOCKS.some(block=>block.id==='review_PQR')"));
-course.run("view='course';AppState.cursor={phase:'reviewResult',index:17,step:0};advanceAfterReview()");
+course.run("view='course';AppState.cursor={phase:'letterReward',index:17,step:0};advanceAfterLetter()");
 assert.equal(course.run('AppState.cursor.phase'),'bubble_cannon');
 course.run("let shotTask=BubbleCannonGame.currentTask(PQR_BUBBLE_CANNON_GAME,bubbleCannonState());BubbleCannonGame.hitTarget(PQR_BUBBLE_CANNON_GAME,bubbleCannonState(),shotTask.letter);saveProgress()");
 const resumed=createContext({saved:saved(course)});
@@ -107,7 +106,7 @@ assert.equal(resumed.run('AppState.cursor.phase'),'bubble_cannon');assert.equal(
 resumed.run("while(!bubbleCannonState().gameCompleted){const shotTask=BubbleCannonGame.currentTask(PQR_BUBBLE_CANNON_GAME,bubbleCannonState());BubbleCannonGame.hitTarget(PQR_BUBBLE_CANNON_GAME,bubbleCannonState(),shotTask.letter)};awardStars(StudentDomain.STAR_REWARDS.blockCompleted,'minigame_completed',PQR_BUBBLE_CANNON_GAME.rewardSourceId);saveProgress()");
 assert.equal(resumed.run("awardStars(3,'minigame_completed',PQR_BUBBLE_CANNON_GAME.rewardSourceId)"),false);
 assert.equal(resumed.run("AppState.student.starTransactions.filter(item=>item.sourceId===PQR_BUBBLE_CANNON_GAME.rewardSourceId).length"),1);
-resumed.run('continueBubbleCannon()');assert.deepEqual(JSON.parse(resumed.run('JSON.stringify(AppState.cursor)')),{phase:'lesson',index:18,step:0});
+resumed.run('continueBubbleCannon()');assert.deepEqual(JSON.parse(resumed.run('JSON.stringify(AppState.cursor)')),{phase:'cumulativeIntro',index:17,step:0});
 
 // A learner from the previous schema who already passed PQR stays in place
 // and receives the replay entry instead of being moved backwards.

@@ -92,7 +92,7 @@ assert.ok(config.learnedLetters.includes(engine.replacementLetter(config,['G','G
 
 // Course adapter: review G/H/I leads to Balloon Pop, not directly to reward.
 const course=createContext();
-course.run("view='course';AppState.started=true;AppState.cursor={phase:'miniResult',index:8,step:6};AppState.completedBlocks=['reward_abc','reward_def'];AppState.claimedRewards=['reward_abc','reward_def'];unlockItem('jacket_stars',AppState,false);equipItem('jacket_stars',AppState,false);unlockItem('accessory_balloon',AppState,false);equipItem('accessory_balloon',AppState,false);AppState.rewardFlow=null;advanceAfterMini()");
+course.run("view='course';AppState.started=true;AppState.cursor={phase:'letterReward',index:8,step:6};AppState.completedBlocks=['reward_abc','reward_def'];AppState.claimedRewards=['reward_abc','reward_def'];unlockItem('jacket_stars',AppState,false);equipItem('jacket_stars',AppState,false);unlockItem('accessory_balloon',AppState,false);equipItem('accessory_balloon',AppState,false);AppState.rewardFlow=null;advanceAfterLetter()");
 assert.equal(course.run('AppState.cursor.phase'),'balloon_ghi');
 assert.equal(course.run('AppState.rewardFlow'),null);
 assert.equal(course.run('BALLOON_LETTER_CHANGE_INTERVAL_MULTIPLIER'),1.25);
@@ -176,9 +176,12 @@ assert.equal(reload.run('AppState.cursor.phase'),'balloon_ghi');
 assert.equal(reload.run('balloonPopState().gameCompleted'),true);
 assert.ok(reload.run('renderCourse()').includes('Получить награду'));
 
-// The success button unlocks the existing reward flow and leaves inventory
-// ownership to the established reward system.
+// The success button opens cumulative A-I. The reward remains in the existing
+// system and appears only after those six review questions.
 reload.run("view='course';continueBalloonPopGame()");
+assert.equal(reload.run('AppState.rewardFlow'),null);
+assert.deepEqual(JSON.parse(reload.run('JSON.stringify(AppState.cursor)')),{phase:'cumulativeIntro',index:8,step:0});
+reload.run("startReview(true);while(AppState.cursor.phase==='cumulative'){ensureQuestion();completeQuestion()}advanceAfterReview()");
 assert.equal(reload.run('AppState.rewardFlow.id'),'reward_ghi');
 assert.equal(reload.run('view'),'reward');
 assert.deepEqual(JSON.parse(reload.run('JSON.stringify(AppState.cursor)')),{phase:'lesson',index:9,step:0});
@@ -222,7 +225,7 @@ assert.match(appSource,/window\.navigator\?\.vibrate\?\.\(20\)/);
 
 console.log(JSON.stringify({
   passed:true,
-  courseOrder:'G/H/I review -> Balloon Pop -> reward_ghi',
+  courseOrder:'G/H/I -> Balloon Pop -> cumulative A-I -> reward_ghi',
   targets:Array.from(config.targets),
   distractors:'A-I only',
   generatedFields:900,

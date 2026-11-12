@@ -70,7 +70,7 @@ assert.match(css,/aspect-ratio:1654\/2205/);assert.match(css,/\.treehouse-backgr
 assert.match(appSource,/setPointerCapture\?\.\(event\.pointerId\)/);assert.match(appSource,/releasePointerCapture/);assert.match(appSource,/data-treehouse-build-zone/);assert.match(appSource,/Груз держится на магните/);assert.match(appSource,/renderCharacter\('gameplay'.*treehouse-marius-stage/);assert.match(appSource,/STU_TREEHOUSE_GAME\.rewardSourceId/);
 
 const course=createContext();
-course.run("AppState.cursor={phase:'reviewResult',index:STU_END_INDEX,step:0};advanceAfterReview()");
+course.run("AppState.cursor={phase:'letterReward',index:STU_END_INDEX,step:0};advanceAfterLetter()");
 assert.equal(course.run('AppState.cursor.phase'),'treehouse_stu');
 course.run("let task=TreehouseSTUGame.currentTask(STU_TREEHOUSE_GAME,treehouseState());TreehouseSTUGame.deliver(STU_TREEHOUSE_GAME,treehouseState(),task.letter);saveProgress()");
 const resumed=createContext({saved:saved(course)});
@@ -84,4 +84,4 @@ const legacy=JSON.parse(course.run('JSON.stringify(AppState)'));legacy.version=6
 const legacyLoaded=createContext({saved:{'alfie-abc-v1':JSON.stringify(legacy)}});
 assert.deepEqual(JSON.parse(legacyLoaded.run('JSON.stringify(AppState.cursor)')),{phase:'lesson',index:22,step:2});assert.equal(legacyLoaded.run('treehouseUnlocked()'),true);assert.ok(legacyLoaded.run('renderHome()').includes('treehouse-open'));
 
-console.log(JSON.stringify({passed:true,rounds:3,deliveries:12,layers:19,artistPngs:20,canvas:dimensions[0],pointerCapture:true,persistentPartialBuild:true,duplicateRewardGuard:true,courseOrder:'review_STU -> treehouse_stu -> cumulative_review_AU'},null,2));
+console.log(JSON.stringify({passed:true,rounds:3,deliveries:12,layers:19,artistPngs:20,canvas:dimensions[0],pointerCapture:true,persistentPartialBuild:true,duplicateRewardGuard:true,courseOrder:'S/T/U -> treehouse_stu -> cumulative_review_AU'},null,2));

@@ -1,4 +1,7 @@
 'use strict';
+const AUDIO_UNLOCK_SILENCE =
+  'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+
 /* AUDIO — one reusable media element, cancelable sequences, recorded voices first.
    iPhone/Safari: the same audio element is explicitly primed from the first user gesture. */
 function createAudioManager({assets, enabled=true, debug=false, gap=500}) {
@@ -11,13 +14,14 @@ function createAudioManager({assets, enabled=true, debug=false, gap=500}) {
 
   // Tiny silent WAV. Calling load() on this source from the first real tap
   // primes the SAME HTMLAudioElement for later programmatic playback on iOS Safari.
-  const SILENT_WAV =
-    'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
-
-  player.src = SILENT_WAV;
+  player.src = AUDIO_UNLOCK_SILENCE;
 
   const warned = new Set();
   let epoch = 0, settle = null, unlocked = false;
+  const audioNow = () => globalThis.performance?.now?.() || Date.now();
+  const audioMetric = (name, value) => {
+    if (document.documentElement) document.documentElement.dataset[name] = String(value);
+  };
 
   const manager = {
     currentAudio: player,
@@ -31,6 +35,7 @@ function createAudioManager({assets, enabled=true, debug=false, gap=500}) {
       // for each audio element. load() is silent and does not interrupt the UI.
       try { player.load(); } catch (_) {}
       unlocked = true;
+      audioMetric('audioUnlockedAt', audioNow().toFixed(1));
     },
 
     stop() {
@@ -79,7 +84,7 @@ function createAudioManager({assets, enabled=true, debug=false, gap=500}) {
 
         if (!active(token)) return false;
 
-        if (outcome === 'missing') {
+        if (['missing', 'playback-timeout'].includes(outcome)) {
           warn(item.key, 'Audio asset is missing');
           if (item.text) {
             await speakFallback(item.text, item.lang || 'ru-RU', token);
@@ -110,6 +115,14 @@ function createAudioManager({assets, enabled=true, debug=false, gap=500}) {
     console.warn('[Alfie audio]', message, key);
   }
 
+  function emitAudioState(state, src, extra={}) {
+    audioMetric('audioLoadingState', state);
+    if (typeof document.dispatchEvent !== 'function' || typeof CustomEvent !== 'function') return;
+    document.dispatchEvent(new CustomEvent('abc-audio-state', {
+      detail:{state,src,...extra}
+    }));
+  }
+
   function pause(ms, token) {
     if (!active(token)) return Promise.resolve(false);
 
@@ -126,68 +139,128 @@ function createAudioManager({assets, enabled=true, debug=false, gap=500}) {
   }
 
   function playFile(src, token) {
-    return new Promise(resolve => {
+    return new Promise(async resolve => {
       if (!active(token)) {
         resolve('cancelled');
         return;
       }
 
       let done = false;
-      let watchdog;
+      let watchdog, loadingTimer, playbackAttempts = 0;
+      const requestedAt = audioNow();
+      audioMetric('audioRequestedAt', requestedAt.toFixed(1));
+
+      const armWatchdog = delay => {
+        clearTimeout(watchdog);
+        watchdog = setTimeout(() => {
+          warn(src, 'Audio playback timed out');
+          try { player.pause(); } catch (_) {}
+          finish('playback-timeout');
+        }, delay);
+      };
 
       const finish = outcome => {
         if (done) return;
         done = true;
         clearTimeout(watchdog);
+        clearTimeout(loadingTimer);
+        emitAudioState(outcome==='missing'||outcome==='playback-timeout'?'error':'idle', src, {outcome});
         player.onended = null;
         player.onerror = null;
         player.oncanplay = null;
+        player.onplaying = null;
+        audioMetric('audioLastOutcome', outcome);
         if (settle === finish) settle = null;
         resolve(outcome);
       };
 
       settle = finish;
 
+      let playableSource = src;
+      const loader = globalThis.ResourceLoader;
+      if (loader?.prepareAudio) {
+        loadingTimer = setTimeout(() => emitAudioState('loading', src), 180);
+        try {
+          playableSource = await loader.prepareAudio(src, {
+            priority:'high',
+            retries:1,
+            onRetry:attempt => emitAudioState('retrying', src, {attempt})
+          });
+        } catch (_) {
+          clearTimeout(loadingTimer);
+          warn(src, 'Audio could not be loaded after retry');
+          finish('missing');
+          return;
+        }
+        clearTimeout(loadingTimer);
+        emitAudioState('ready', src);
+      }
+
+      if (done || !active(token)) {
+        finish('cancelled');
+        return;
+      }
+
       player.onended = () => finish('ended');
       player.onerror = () => {
-        warn(src, 'Audio could not be loaded');
+        if (playbackAttempts < 2 && active(token)) {
+          startPlayback();
+          return;
+        }
+        warn(src, 'Audio could not be decoded or played');
         finish('missing');
       };
 
-      // Shorter watchdog: do not freeze a lesson for 20 seconds on a bad request.
-      watchdog = setTimeout(() => {
-        warn(src, 'Audio timed out');
-        try { player.pause(); } catch (_) {}
-        finish('timeout');
-      }, 8000);
+      // Network transfer finishes before player.src is assigned. The watchdog
+      // below therefore guards decoding/playback only and can no longer mistake
+      // a slow educational download for a missing instruction.
+      player.onplaying = () => {
+        const playingAt = audioNow();
+        if (!document.documentElement?.dataset.audioFirstPlayingAt) audioMetric('audioFirstPlayingAt', playingAt.toFixed(1));
+        audioMetric('audioLastPlayingAt', playingAt.toFixed(1));
+        audioMetric('audioStartDelay', Math.max(0, playingAt-requestedAt).toFixed(1));
+        const duration = Number(player.duration);
+        armWatchdog(Number.isFinite(duration) && duration > 0
+          ? Math.max(5000, duration * 1000 + 2000)
+          : 6000);
+      };
+      armWatchdog(8000);
 
-      player.src = src;
+      player.src = playableSource;
 
-      if (debug) console.log('[Alfie audio]', src);
+      if (debug) console.log('[Alfie audio]', src, playableSource.startsWith('blob:')?'(prepared)':'');
 
-      try {
-        // Calling load() after swapping src makes Safari begin the new resource
-        // deterministically instead of waiting for its own preload heuristics.
-        player.load();
-        const result = player.play();
+      function startPlayback() {
+        if (done || !active(token)) return;
+        playbackAttempts++;
+        try {
+          // Calling load() after swapping src makes Safari begin the prepared
+          // Blob deterministically instead of issuing a second media request.
+          player.load();
+          const result = player.play();
 
-        if (result?.catch) {
-          result.catch(error => {
-            if (done || !active(token)) return;
+          if (result?.catch) {
+            result.catch(error => {
+              if (done || !active(token)) return;
 
-            if (error.name === 'NotAllowedError' || error.name === 'AbortError') {
-              warn(src, 'Playback was blocked/interrupted');
-              finish('blocked');
-            } else {
-              warn(src, 'Audio could not be played');
-              finish('missing');
-            }
-          });
+              if (error.name === 'NotAllowedError') {
+                warn(src, 'Playback was blocked');
+                finish('blocked');
+              } else if (error.name === 'AbortError' && playbackAttempts < 2) {
+                startPlayback();
+              } else {
+                warn(src, 'Audio could not be played');
+                finish('missing');
+              }
+            });
+          }
+        } catch (_) {
+          warn(src, 'Audio could not be played');
+          finish('blocked');
         }
-      } catch (_) {
-        warn(src, 'Audio could not be played');
-        finish('blocked');
       }
+
+      startPlayback();
     });
   }
 
@@ -247,6 +320,7 @@ function createAudioManager({assets, enabled=true, debug=false, gap=500}) {
 function createSoundEffectManager({assets, keys=[], enabled=true, debug=false}) {
   const warned = new Set();
   const players = new Map();
+  const sources = new Map();
   let unlocked = false;
 
   function warn(key, message, error) {
@@ -263,12 +337,11 @@ function createSoundEffectManager({assets, keys=[], enabled=true, debug=false}) 
       continue;
     }
     const player = new Audio();
-    player.preload = 'auto';
+    player.preload = 'none';
     player.setAttribute('playsinline', '');
-    player.src = src;
     player.onerror = () => warn(key, 'Audio could not be loaded');
     players.set(key, player);
-    try { player.load(); } catch (error) { warn(key, 'Audio could not be preloaded', error); }
+    sources.set(key, src);
   }
 
   const manager = {
@@ -278,9 +351,12 @@ function createSoundEffectManager({assets, keys=[], enabled=true, debug=false}) 
     unlock() {
       if (unlocked) return;
       // Re-loading from the first gesture primes every distinct element on
-      // mobile Safari without producing a sound.
+      // mobile Safari without requesting any gameplay WAV file.
       for (const [key, player] of players) {
-        try { player.load(); } catch (error) { warn(key, 'Audio could not be unlocked', error); }
+        try {
+          player.src = AUDIO_UNLOCK_SILENCE;
+          player.load();
+        } catch (error) { warn(key, 'Audio could not be unlocked', error); }
       }
       unlocked = true;
     },
@@ -306,12 +382,19 @@ function createSoundEffectManager({assets, keys=[], enabled=true, debug=false}) 
         warn(key, 'Audio asset is missing');
         return Promise.resolve(false);
       }
+      const src = sources.get(key);
       try {
         // One player per effect prevents the same sound from piling up while
         // still allowing a landing effect to overlap the end of a jump.
         player.pause();
         player.currentTime = 0;
-        if (debug) console.log('[Alfie effects]', player.src);
+        if (player.__abcEffectSource !== src) {
+          player.preload = 'auto';
+          player.src = src;
+          player.__abcEffectSource = src;
+          player.load();
+        }
+        if (debug) console.log('[Alfie effects]', src);
         const result = player.play();
         return result?.then ? result.then(() => true).catch(error => {
           warn(key, 'Audio could not be played', error);

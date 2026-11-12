@@ -15,9 +15,12 @@ vm.runInContext(`${source}\nthis.scene=LETTER_MAZE_SCENES.campDEF;this.engine=Le
 const {scene,engine}=context;
 
 const mazeBuild='letter-maze-def3';
-assert.match(pageSource,new RegExp(`<link rel="stylesheet" href="\\./letter-maze-game\\.css\\?v=${mazeBuild}">`));
-assert.match(pageSource,new RegExp(`<script src="\\./letter-maze-scenes\\.js\\?v=${mazeBuild}"></script>`));
-assert.match(pageSource,new RegExp(`<script src="\\./letter-maze-game\\.js\\?v=${mazeBuild}"></script>`));
+const resourceRegistry=fs.readFileSync(path.join(root,'play/resource-registry.js'),'utf8');
+assert.doesNotMatch(pageSource,/href="\.\/letter-maze-game\.css/);
+assert.doesNotMatch(pageSource,/src="\.\/letter-maze-(?:scenes|game)\.js/);
+assert.match(resourceRegistry,new RegExp(`letter-maze-game\\.css\\?v=${mazeBuild}`));
+assert.match(resourceRegistry,new RegExp(`letter-maze-scenes\\.js\\?v=${mazeBuild}`));
+assert.match(resourceRegistry,new RegExp(`letter-maze-game\\.js\\?v=${mazeBuild}`));
 
 assert.equal(engine.validate(scene),true);
 assert.equal(scene.title,'Лабиринт букв');

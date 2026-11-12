@@ -1,0 +1,21 @@
+# HTML and generated routing documents must revalidate on every visit.
+/play/
+  Cache-Control: public, max-age=0, must-revalidate
+/play/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+/play/manifest.webmanifest
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Media are large and change infrequently. A bounded cache lifetime preserves
+# update safety for the remaining unversioned URLs.
+/play/audio/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+/play/images/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+# Scripts and styles use versioned URLs where practical; one-day revalidation
+# also keeps legacy unversioned game bundles safe to update.
+/play/*.js
+  Cache-Control: public, max-age=86400, stale-while-revalidate=3600
+/play/*.css
+  Cache-Control: public, max-age=86400, stale-while-revalidate=3600

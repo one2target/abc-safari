@@ -46,21 +46,22 @@ assert.ok(resumed.nodes.get('#main').innerHTML.includes('Отличная раб
 assert.equal(resumed.run('JSON.stringify(AppState.stats)'),beforeStats);assert.equal(resumed.run('AppState.questionSerial'),beforeSerial);
 assert.equal(resumed.run('AppState.completedBlocks.length'),0);
 const finished=createContext({saved:saved(resumed)});finished.run('begin()');assert.equal(phase(finished),'room');assert.equal(state(finished).gameCompleted,true);
-finished.run('continueFindObjectGame(ABC_FIND_OBJECT_GAME.id);continueFindObjectGame(ABC_FIND_OBJECT_GAME.id)');assert.equal(phase(finished),'miniIntro');
-finished.run('startGame(false)');assert.equal(phase(finished),'mini');assert.equal(finished.run('AppState.game.types.length'),5);
-for(let i=0;i<5;i++)finished.run('ensureQuestion();completeQuestion();go("course")');
+finished.run('continueFindObjectGame(ABC_FIND_OBJECT_GAME.id);continueFindObjectGame(ABC_FIND_OBJECT_GAME.id)');assert.equal(phase(finished),'cumulativeIntro');
+finished.run('startReview(true)');assert.equal(phase(finished),'cumulative');assert.equal(finished.run('AppState.game.types.length'),6);
+for(let i=0;i<6;i++)finished.run('ensureQuestion();completeQuestion();go("course")');
+finished.run('advanceAfterReview()');
 assert.equal(finished.run('view'),'reward');assert.equal(finished.run('AppState.rewardFlow.id'),'reward_abc');
 // Replay only the room, preserving the learned letters and all other progress.
 resumed.run('replayFindObjectGame(ABC_FIND_OBJECT_GAME.id)');assert.deepEqual(state(resumed),{gameId:'marius-room-abc',currentRound:0,foundObjects:[],wrongAttempts:0,gameCompleted:false});assert.equal(resumed.run('JSON.stringify(AppState.stats)'),beforeStats);
 finishRoom(resumed);resumed.run('continueFindObjectGame(ABC_FIND_OBJECT_GAME.id);replayFindObjectGame(ABC_FIND_OBJECT_GAME.id)');assert.equal(phase(resumed),'room');assert.equal(state(resumed).gameCompleted,false);
 // Before an old ABC test: insert room. Mid-test or later: retain the exact lesson.
-const legacy=JSON.parse(a.store.get('alfie-abc-v1'));delete legacy.findObjectGames;delete legacy.roomABC;legacy.cursor={phase:'miniIntro',index:2,step:4};
+const legacy=JSON.parse(a.store.get('alfie-abc-v1'));legacy.version=9;delete legacy.findObjectGames;delete legacy.roomABC;legacy.cursor={phase:'miniIntro',index:2,step:4};
 const oldStart=createContext({saved:{'alfie-abc-v1':JSON.stringify(legacy)}});oldStart.run('begin()');assert.equal(phase(oldStart),'room');
 const legacyRoom={...legacy,cursor:{phase:'room',index:2,step:4},roomABC:{currentRound:1,foundObjects:['letterB'],wrongAttempts:1,gameCompleted:false}};
 const oldRoom=createContext({saved:{'alfie-abc-v1':JSON.stringify(legacyRoom)}});oldRoom.run('begin()');assert.deepEqual(state(oldRoom),{gameId:'marius-room-abc',currentRound:1,foundObjects:['letterB'],wrongAttempts:1,gameCompleted:false});
 legacy.cursor={phase:'lesson',index:3,step:1};const oldLater=createContext({saved:{'alfie-abc-v1':JSON.stringify(legacy)}});oldLater.run('begin()');assert.equal(phase(oldLater),'lesson');assert.equal(oldLater.run('AppState.cursor.index'),3);assert.equal(oldLater.run('AppState.cursor.step'),1);
 legacy.cursor={phase:'mini',index:2,step:4};legacy.game={index:2,types:['find','letterPicture','pictureLetter','wordPicture','find'],recent:['A','B']};
-const oldMid=createContext({saved:{'alfie-abc-v1':JSON.stringify(legacy)}});oldMid.run('begin()');assert.equal(phase(oldMid),'mini');assert.equal(oldMid.run('AppState.game.index'),2);
+const oldMid=createContext({saved:{'alfie-abc-v1':JSON.stringify(legacy)}});oldMid.run('begin()');assert.equal(phase(oldMid),'room');
 // Corrupt or duplicated fields cannot claim completion or introduce foreign targets.
 const corrupt=a.run('JSON.stringify(HiddenObjectGame.restore(ABC_FIND_OBJECT_GAME,{currentRound:42,foundObjects:["apple","apple","ball"],wrongAttempts:-2,gameCompleted:true}))');
 assert.deepEqual(JSON.parse(corrupt),{gameId:'marius-room-abc',currentRound:0,foundObjects:['apple'],wrongAttempts:0,gameCompleted:false});
@@ -91,4 +92,4 @@ for(const [width,height] of viewports){
  }
  assert.ok(sceneWidth<=available);
 }
-console.log(JSON.stringify({passed:true,rounds:3,hotspots:6,duplicateClicks:true,hints:true,reloadPartialAndComplete:true,replay:true,legacyProgress:true,noScorePenalty:true,originalFiveQuestionTest:true,rewardAfterTest:true,reset:true,imageFailure:true,storageFailure:true,geometryViewports:viewports},null,2));
+console.log(JSON.stringify({passed:true,rounds:3,hotspots:6,duplicateClicks:true,hints:true,reloadPartialAndComplete:true,replay:true,legacyProgress:true,noScorePenalty:true,cumulativeReviewQuestions:6,rewardAfterReview:true,reset:true,imageFailure:true,storageFailure:true,geometryViewports:viewports},null,2));

@@ -113,12 +113,26 @@ const threeOptionMarkup=app.run(`renderTrainingQuestion({letter:'A',answerType:'
 assert.ok(threeOptionMarkup.includes('answers-grid answers-grid--3'));
 const twoOptionMarkup=app.run(`renderTrainingQuestion({letter:'A',answerType:'letter',promptType:'name',type:'soundLetter',options:['B','A']})`);
 assert.ok(twoOptionMarkup.includes('answers-grid answers-grid--2'));
+assert.match(twoOptionMarkup,/data-training-audio-cue/);
+assert.match(twoOptionMarkup,/data-action="training-repeat"/);
+assert.equal((twoOptionMarkup.match(/data-action="training-repeat"/g)||[]).length,1);
+const soundMarkup=app.run(`renderTrainingQuestion({letter:'A',answerType:'letter',promptType:'sound',type:'soundLetter',options:['B','A']})`);
+assert.match(soundMarkup,/data-training-audio-cue/);
+const visualMarkup=app.run(`renderTrainingQuestion({letter:'A',answerType:'image',promptType:'letter',type:'letterPicture',options:['B','A']})`);
+assert.doesNotMatch(visualMarkup,/data-training-audio-cue/);
+assert.match(visualMarkup,/class="repeat question-repeat"/);
 const trainingCSS=fs.readFileSync(path.join(root,'play','training.css'),'utf8');
 assert.doesNotMatch(trainingCSS,/\.training-home-card \.training-button\{[^}]*(?:width|min-height|border-radius|padding)/);
 const pageSource=fs.readFileSync(path.join(root,'play','index.html'),'utf8');
 assert.match(pageSource,/\.training-question \.answers-grid\.answers-grid--4\s*\{[\s\S]*?grid-template-columns:repeat\(2,minmax\(0,1fr\)\);[\s\S]*?\}/);
 assert.match(pageSource,/@media\(max-width:520px\)[\s\S]*?\.answers-grid\.answers-grid--3 \.answer-card:last-child\s*\{\s*grid-column:2 \/ span 2;/);
-assert.match(pageSource,/training\.css\?v=training-layout-v3/);
+const registrySource=fs.readFileSync(path.join(root,'play','resource-registry.js'),'utf8');
+assert.doesNotMatch(pageSource,/<link[^>]+training\.css/);
+assert.match(registrySource,/training\.css\?v=training-layout-v4/);
+assert.match(trainingCSS,/\.training-question \.question-cue\.is-audio-cue\{min-height:64px;margin-bottom:8px\}/);
+assert.match(trainingCSS,/\.training-audio-cue\{[^}]*width:64px[^}]*height:64px[^}]*min-width:44px[^}]*min-height:44px/);
+assert.match(trainingCSS,/\.training-audio-cue svg\{width:clamp\(34px,5vw,42px\);height:clamp\(34px,5vw,42px\)\}/);
+assert.match(trainingCSS,/@media\(max-width:650px\)\{[\s\S]*?\.question-cue\.is-audio-cue\{min-height:54px;margin-bottom:7px\}[\s\S]*?\.training-audio-cue\{width:54px;height:54px/);
 assert.doesNotMatch(trainingCSS,/river-answers\{[^}]*auto-(?:fit|fill)/);
 assert.match(trainingCSS,/body\.training-active \.river-answers--4\{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
 assert.match(pageSource,/\.home-actions \{[\s\S]*?width:min\(100%,330px\);[\s\S]*?\}/);
@@ -156,5 +170,6 @@ console.log(JSON.stringify({
   passed:true,sessionLength:config.sessionLength,atomicPrompts:targets.length,coverage:new Set(targets).size,generatedVariants,
   learnedOnly:true,rotatingAnswerPosition:true,maxSameLetterInARow:config.maxSameLetterInARow,
   delayedRetry:[config.retryAfterMin,config.retryAfterMax],adaptiveWeights:true,persistentStats:true,
-  balloonReuse:true,riverReuse:true,blitzQuestions:config.blitz.questions,positiveResults:true
+  balloonReuse:true,riverReuse:true,blitzQuestions:config.blitz.questions,positiveResults:true,
+  audioCueTypes:['letter name','letter sound'],singleReplayControlForAudioCue:true,visualIconPx:'30-42',touchTargetPx:'54-64',mobileShortLayout:true
 },null,2));

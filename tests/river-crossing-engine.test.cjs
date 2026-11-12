@@ -97,7 +97,7 @@ const completed=createContext({saved:saved(midway)});
 assert.equal(completed.run('riverCrossingState().gameCompleted'),true);
 assert.ok(completed.run('renderCourse()').includes('Ура! Ты помог Мариусу'));
 completed.run("view='course';continueRiverCrossingGame()");
-assert.deepEqual(JSON.parse(completed.run('JSON.stringify(AppState.cursor)')),{phase:'reviewIntro',index:11,step:0});
+assert.deepEqual(JSON.parse(completed.run('JSON.stringify(AppState.cursor)')),{phase:'cumulativeIntro',index:11,step:0});
 assert.equal(completed.run('AppState.claimedRewards.length'),0);
 
 // Fast repeated input is ignored by the adapter while an animation owns input.
@@ -206,7 +206,7 @@ assert.equal(guarded.run('riverCrossingState().correct'),0);
     platformThresholds:[2,4,6,8,10,12],
     finalPlatform:engine.platformIndex(config,state),
     completionPersistence:true,
-    existingReviewPreserved:true,
+    cumulativeReviewAfterGame:true,
     duplicateRewardGuard:true,
     fastTapGuard:true,
     wavPlaybackSupported:true,

@@ -26,7 +26,7 @@
 
 | Файл | Роль |
 |---|---|
-| background_home.png | Фон главной страницы и коллекции |
+| background_home.webp | Фон главной страницы и коллекции |
 | background_reward.png | Фон праздника после каждого блока |
 | giraffe_base.png | Начальный жирафик |
 | giraffe_jacket_stars.png | Полный жирафик в зелёной куртке |

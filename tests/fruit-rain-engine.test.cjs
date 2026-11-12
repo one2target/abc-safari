@@ -180,12 +180,10 @@ assert.doesNotMatch(blitzHTML,/>\s*[0123]\s*\/\s*3\s*</);
 const restoredPartialHTML=engine.render(config,engine.restore(config,JSON.parse(JSON.stringify({...blitzState,nextTaskIndex:beforeBlitzIndex,completedTasks:blitzState.completedTasks.slice(0,beforeBlitzProgress),blitzCatches:1}))),{characterHTML:'<i>Marius</i>'});
 assert.equal((restoredPartialHTML.match(/fruit-rain-catch-slot is-filled/g)||[]).length,1);
 
-// Course adapter: the existing MNO review remains, Fruit Rain is inserted
-// before A-O, and leaving/reopening saves the last completed task.
+// Course adapter: Fruit Rain follows M/N/O directly and A-O follows the game.
 const course=createContext();
-assert.ok(course.run("LOCAL_REVIEW_BLOCKS.some(block=>block.id==='review_MNO')"));
 assert.ok(course.run("CUMULATIVE_REVIEW_BLOCKS.some(block=>block.id==='cumulative_review_AO')"));
-course.run("view='course';AppState.cursor={phase:'reviewResult',index:14,step:0};advanceAfterReview()");
+course.run("view='course';AppState.cursor={phase:'letterReward',index:14,step:0};advanceAfterLetter()");
 assert.equal(course.run('AppState.cursor.phase'),'fruit_rain');
 course.run("let fruitTask=FruitRainGame.currentTask(MNO_FRUIT_RAIN_GAME,fruitRainState());FruitRainGame.catchItem(MNO_FRUIT_RAIN_GAME,fruitRainState(),fruitTask.letter);saveProgress()");
 const resumed=createContext({saved:saved(course)});
@@ -225,6 +223,18 @@ audio.run('AudioManager.setEnabled(false);AudioManager.play(fruitRainAudioItem()
 assert.equal(audio.played.length,playedBeforeMute);
 assert.equal(audio.stats().objects,1+audio.run('RIVER_EFFECT_KEYS.length'));
 
+// Ordinary wave mistakes keep their spoken feedback. Blitz mistakes retain
+// only the soft visual state, while the target word cue remains audible.
+const feedback=createContext();
+feedback.run("unlockAudio();view='course';AppState.cursor={phase:'fruit_rain',index:14,step:0};addFruitRainBurst=()=>false;setFruitRainFeedback=()=>{};fruitRainWaveActive=true;var fruitElement={classList:{add(){}},remove(){}};var normalWrong='MNO'.split('').find(letter=>letter!==FruitRainGame.currentTask(MNO_FRUIT_RAIN_GAME,fruitRainState()).letter);finishFruitRainCatch({data:{mode:'wave',letter:normalWrong,correct:false},gone:false,element:fruitElement})");
+assert.equal(feedback.played.at(-1).src,'./audio/16_almost.mp3');
+feedback.run("AppState.fruitRain=blankFruitRain();while(fruitRainState().currentRound<2){const task=FruitRainGame.currentTask(MNO_FRUIT_RAIN_GAME,fruitRainState());FruitRainGame.catchItem(MNO_FRUIT_RAIN_GAME,fruitRainState(),task.letter)};fruitRainWaveActive=true;var blitzWrong='MNO'.split('').find(letter=>letter!==FruitRainGame.currentTask(MNO_FRUIT_RAIN_GAME,fruitRainState()).letter)");
+const beforeSilentBlitz=feedback.played.length;
+feedback.run("finishFruitRainCatch({data:{mode:'blitz',letter:blitzWrong,correct:false},gone:false,element:fruitElement})");
+assert.equal(feedback.played.length,beforeSilentBlitz);
+feedback.run('AudioManager.play(fruitRainAudioItem())');
+assert.equal(feedback.played.at(-1).src,feedback.run('MEDIA_ASSETS.audio[fruitRainAudioItem().key].src'));
+
 // Static runtime guarantees: pointer controls are normalized and clamped,
 // movement/falling share requestAnimationFrame, and all runtime handles clear.
 assert.match(appSource,/addEventListener\('pointerdown'/);
@@ -247,6 +257,7 @@ assert.match(appSource,/is-catching/);
 assert.match(appSource,/naturalWidth>0\?loaded:failed/);
 assert.match(appSource,/addFruitRainBurst/);
 assert.match(appSource,/fruit-rain-object\[data-correct="true"\].*classList\.add\('is-hint'\)/);
+assert.match(appSource,/if\(!blitz\)AudioManager\.play\(ru\('almost'\)\)/);
 assert.match(appSource,/getBoundingClientRect\(\),basketRect/);
 assert.doesNotMatch(appSource,/phase===['"]fruit_rain['"]&&fruitRainState\(\)\.gameCompleted\)celebrate\(\)/);
 assert.match(css,/touch-action:none/);
@@ -289,5 +300,6 @@ console.log(JSON.stringify({
   targetAlwaysPresent:true,oneCorrectPerWave:true,correctLaneVaries:true,thirdRoundMode:'blitz',targetMaxWaitMilliseconds:engine.BLITZ.targetMaxWaitMs,fruitVariants:engine.FRUITS.length,blitzFruitVariants:engine.BLITZ_FRUITS.length,productionPngs:assetSources.length,wrongDoesNotProgress:true,
   missedTargetRetries:true,hintAfterErrors:2,slowAfterErrors:3,fallMilliseconds:engine.TIMING.fullFallMs,
   persistence:true,legacyStatePreserved:true,oldLearnerReplay:true,rewardSourceId:config.rewardSourceId,
+  normalWrongVoice:true,blitzWrongVoice:false,blitzTargetAudio:true,
   duplicateRewardGuard:true,pointerEvents:true,requestAnimationFrame:true,optionalAssetFallback:true,successAndMissEffects:true,cleanup:true,mobileCSS:true
 },null,2));

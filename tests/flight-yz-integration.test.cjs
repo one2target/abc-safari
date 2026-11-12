@@ -4,12 +4,12 @@ const assert=require('node:assert/strict');
 const {createContext,saved}=require('./support/trainer-harness.cjs');
 
 const production=createContext();
-assert.equal(production.run('AppState.version'),9);
+assert.equal(production.run('AppState.version'),11);
 assert.equal(production.run('AppState.flightYZ.version'),1);
 assert.equal(production.run('AppState.flightYZ.permanent.completed'),false);
 assert.equal(production.run("StudentDomain.ACHIEVEMENTS.some(item=>item.id==='alphabet_conqueror'&&item.title==='Покоритель алфавита')"),true);
 
-production.run("AppState.started=true;AppState.cursor={phase:'cumulativeResult',index:25,step:0};AppState.game=null;AppState.question=null;advanceAfterReview()");
+production.run("AppState.started=true;AppState.cursor={phase:'letterReward',index:25,step:0};AppState.game=null;AppState.question=null;advanceAfterLetter()");
 assert.deepEqual(JSON.parse(production.run('JSON.stringify(AppState.cursor)')),{phase:'flight_yz',index:25,step:0});
 assert.equal(production.run('AppState.flightYZ.session'),null,'the production route must start a new YZ session');
 
@@ -83,7 +83,7 @@ finalFlightCrash.run(`AppState.cursor={phase:'flight_yz',index:25,step:0};for(co
 const finalFlightReload=createContext({saved:saved(finalFlightCrash)});
 assert.equal(finalFlightReload.run('AppState.flightYZ.session.status'),'complete');
 assert.equal(finalFlightReload.run('AppState.flightYZ.permanent.completed'),true);
-assert.equal(finalFlightReload.run('AppState.completed'),true,'task 12 stays completed when the page closes during finalFlight');
+assert.equal(finalFlightReload.run('AppState.completed'),false,'task 12 stays saved but final completion waits for A-Z review');
 assert.equal(finalFlightReload.run("AppState.student.starTransactions.filter(item=>item.sourceId===FlightYZGame.CONFIG.rewardSourceId).length"),1);
 assert.equal(finalFlightReload.run("AppState.student.achievements.unlocked.filter(item=>item.id==='alphabet_conqueror').length"),1);
 
@@ -99,7 +99,7 @@ completion.run(`
 `);
 assert.equal(completion.run('AppState.flightYZ.permanent.completed'),true);
 assert.equal(completion.run('AppState.flightYZ.permanent.completedAt'),12345);
-assert.equal(completion.run('AppState.completed'),true);
+assert.equal(completion.run('AppState.completed'),false);
 assert.equal(completion.run("AppState.student.starTransactions.filter(item=>item.sourceId===FlightYZGame.CONFIG.rewardSourceId).length"),1);
 assert.equal(completion.run("AppState.student.starTransactions.find(item=>item.sourceId===FlightYZGame.CONFIG.rewardSourceId).amount"),3);
 assert.equal(completion.run("AppState.student.achievements.unlocked.filter(item=>item.id==='alphabet_conqueror').length"),1);
@@ -112,7 +112,10 @@ assert.equal(completion.run('AppState.flightYZ.permanent.completed'),true,'a rep
 assert.equal(completion.run("AppState.student.starTransactions.filter(item=>item.sourceId===FlightYZGame.CONFIG.rewardSourceId).length"),1);
 
 completion.run("AppState.cursor={phase:'flight_yz',index:25,step:0};exitFlightYZ()");
-assert.equal(completion.run('AppState.cursor.phase'),'results','the existing results screen is the production destination after YZ');
+assert.equal(completion.run('AppState.cursor.phase'),'cumulativeIntro','A-Z review follows the YZ expedition');
+completion.run("startReview(true);while(AppState.cursor.phase==='cumulative'){ensureQuestion();completeQuestion()}advanceAfterReview()");
+assert.equal(completion.run('AppState.cursor.phase'),'results');
+assert.equal(completion.run('AppState.completed'),true);
 
 const completedReload=createContext({saved:saved(completion)});
 assert.equal(completedReload.run('AppState.flightYZ.permanent.completed'),true);
@@ -135,7 +138,7 @@ assert.equal(migrated.run('AppState.completed'),false);
 assert.equal(migrated.run('AppState.cursor.phase'),'flight_yz','a pre-integration A–Z save must unlock the new final expedition');
 
 console.log(JSON.stringify({
- passed:true,productionRoute:'cumulative_review_AZ -> flight_yz -> results',sessionRestore:true,
+ passed:true,productionRoute:'Y/Z -> flight_yz -> cumulative_review_AZ -> results',sessionRestore:true,
  wordRestore:true,finalExpeditionRestore:true,completionAtTask12:true,starsOnce:true,
  achievement:'alphabet_conqueror',achievementOnce:true,replayPreservesPermanent:true,
  demoIsolation:true,legacyMigration:true

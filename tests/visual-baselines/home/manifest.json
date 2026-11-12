@@ -1,0 +1,60 @@
+{
+  "source": "https://abcsafari.ru/play/",
+  "capturedAt": "2026-11-11T14:12:25Z",
+  "format": "image/jpeg",
+  "states": [
+    "locked",
+    "unlocked"
+  ],
+  "sizes": [
+    {
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "width": 390,
+      "height": 844
+    },
+    {
+      "width": 320,
+      "height": 568
+    }
+  ],
+  "baselines": [
+    {
+      "name": "home-locked-1440x900.jpg",
+      "bytes": 120001,
+      "sha256": "f0b53ea39d3c20dd2016d4a1b57a75558eee82d890931d12a35c37f7734301ca"
+    },
+    {
+      "name": "home-locked-390x844.jpg",
+      "bytes": 74889,
+      "sha256": "c4ae4ab9e7ff03b50804287606dcf8512dca6fb18b2a8d34725ee6ceef7867be"
+    },
+    {
+      "name": "home-locked-320x568.jpg",
+      "bytes": 70482,
+      "sha256": "dd63054b732816e4987b112fb6dbe9e11c549771117e24400cdabc3d165a5db6"
+    },
+    {
+      "name": "home-unlocked-1440x900.jpg",
+      "bytes": 124476,
+      "sha256": "27e8efe2039f77873cbd1033068776f4aa97ed8c75af490f9674e91934b7f0a1"
+    },
+    {
+      "name": "home-unlocked-390x844.jpg",
+      "bytes": 78327,
+      "sha256": "c65854b471d8400dd08ef5b9c13a72cf944d8fb6b09ca30a772629d3afc60500"
+    },
+    {
+      "name": "home-unlocked-320x568.jpg",
+      "bytes": 75259,
+      "sha256": "007d6d1a8c77e1171540819131c52fca96971cc8dfe40018b073ec1a2bdd3274"
+    }
+  ],
+  "notes": {
+    "locked": "Published demo with a fresh demo storage key (www mirror); only necessary cookies selected so no consent overlay is present.",
+    "unlocked": "Published training preview returned to Home; eight learned letters.",
+    "deviceScaleFactor": 1
+  }
+}

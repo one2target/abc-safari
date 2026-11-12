@@ -91,10 +91,10 @@
 
 - `letters` — A–Z, слова, русские значения, звуки, emoji, цвета, отвлекающие буквы и привязки английского/русского аудио. `audioWordKey:'yoyo'` отделяет интерфейсное Yo-yo от имён файлов без дефиса; `wordLetterPosition:'end'` у X/Fox запрещает формулировки про первую букву.
 - `lessonSteps()` строит урок из данных буквы: знакомство, английское слово, карточка значения, `translationPicture`, затем прежние три упражнения. Если visual, английская или русская запись отсутствует, два шага значения не добавляются.
-- `CORE_TYPES` — `find`, `letterPicture`, `pictureLetter`; `TRANSLATION_TYPE` — отдельная проверка значения без влияния на mastery; старые `MINI_TYPES` и A–I mini-flow сохранены. `REVIEW_TYPES` задаёт шесть типов новых review, включая `soundLetter`, внутри того же question UI.
-- `LOCAL_REVIEW_BLOCKS` описывает JKL, MNO, PQR, STU, VWX, YZ; `CUMULATIVE_REVIEW_BLOCKS` — A–O, A–U, A–Z. Каждый блок содержит шесть вопросов.
-- После завершения L перед существующим `review_JKL` запускается фаза `river_jkl`: 12 вопросов на названия, звуки, слова Juice/Kite/Lion и смешанный финал. Ошибка не двигает прогресс, а каждые два правильных ответа переводят Мариуса на следующую точку маршрута.
-- `startGame()` обслуживает прежние mini; `startReview()` создаёт новый local/cumulative review. В cumulative выбираются шесть уникальных целей: две случайные из последнего блока и четыре случайные из более раннего изученного диапазона. `gamePool()` оставляет весь диапазон доступным для вариантов ответа.
+- `CORE_TYPES` — `find`, `letterPicture`, `pictureLetter`; `TRANSLATION_TYPE` — отдельная проверка значения без влияния на mastery; прежние `MINI_TYPES` остаются для совместимости сохранений. `REVIEW_TYPES` задаёт шесть типов накопительного review, включая `soundLetter`, внутри того же question UI.
+- `LEGACY_LOCAL_REVIEW_BLOCKS` описывает старые JKL, MNO, PQR, STU, VWX, YZ только для миграции. `CUMULATIVE_REVIEW_BLOCKS` содержит девять диапазонов A–C, A–F, A–I, A–L, A–O, A–R, A–U, A–X и A–Z. `reviewLength()` даёт 6–26 заданий, `reviewRoundSizes()` делит их на три раунда, а `balancedReviewLetterOrder()` гарантирует каждую открытую букву.
+- После завершения L сразу запускается `river_jkl`: 12 вопросов на названия, звуки, слова Juice/Kite/Lion и смешанный финал. Ошибка не двигает прогресс, а каждые два правильных ответа переводят Мариуса на следующую точку маршрута; затем открывается накопительное A–L.
+- `startGame()` обслуживает прежние mini для совместимости; `startReview()` создаёт legacy-local либо накопительный review. В cumulative каждая открытая буква обязательна, A–C повторяются дважды, а соседние одинаковые цели не допускаются. `gamePool()` оставляет весь открытый диапазон доступным для вариантов ответа; для Y/Z генератор сохраняет исходный distractor и добавляет третий уникальный visual из A–Z один раз при создании вопроса.
 - `ensureQuestion()` восстанавливает подходящий вопрос либо вызывает `createQuestion()`; `validQuestion()` проверяет структуру сохранённого вопроса.
 - `questionPrompt()` / `questionBody()` выводят вопрос и варианты.
 - `completedTrainingLetters()` использует существующий `mastery === 3`; `TrainingEngine` получает только этот пул. Сессия из 10 этапов содержит 7 быстрых заданий, Balloon Pop, 4-шаговую переправу и блиц из 5 вопросов. Адаптеры передают динамические конфигурации существующим `BalloonPopGame` и `RiverCrossingGame`.
@@ -109,7 +109,7 @@
 - `stats` по каждой букве: `attempts`, `correct`, `mistakes`, `mastery`, `skills`, `practiceDebt`. Итоги для родителей вычисляет `renderParentView()`.
 - `game`, `question`, `reviews`, `questionSerial` сохраняют позицию обычных заданий; `balloonPop` хранит phase/target/score/quickOrder/completion; `riverCrossing` хранит 12 созданных вопросов, текущий индекс, число правильных ответов, ошибки текущего задания и completion; `railway` хранит порядок 12 заданий, прогресс, completedTasks, ошибки текущего задания и completion; `training` хранит активную сессию, историю и адаптивную статистику `letterName` / `sound` / `word`; `started`, `completed`, `soundEnabled` — общие флаги.
 - Награды: `characterState.ownedItems`, стандартные слоты `characterState.equipped`, `completedBlocks`, `claimedRewards`, `rewardFlow`.
-- Storage adapter использует прежний ключ `alfie-abc-v1`; при `?demo=1` — отдельный `alfie-abc-demo-v1`. Общая версия состояния — 8; загрузчик принимает версии 1–8. Для сохранений v1/v2 прежние lesson steps 2–4 сдвигаются на два места. Завершённое A–F продолжает с G, завершённое A–I или сохранение в прежнем финале — с J; статистика, `completedBlocks`, inventory и экипировка сохраняются. `fruitRain`, `bubbleCannon` и `railway` восстанавливают логический прогресс мини-игр, а `game.poolLetters` / `game.letterOrder` — точную позицию review. Инвентарь отдельно мигрирует `migrateRewards()` с `REWARD_STATE_VERSION = 3`, профиль — `migrateStudentState()`.
+- Storage adapter использует прежний ключ `alfie-abc-v1`; при `?demo=1` — отдельный `alfie-abc-demo-v1`. Общая версия состояния — 11, версия маршрута курса — 10; загрузчик принимает версии 1–11. Для сохранений v1/v2 прежние lesson steps 2–4 сдвигаются на два места. Миграция v9 направляет прежние local/mini review в тематическую игру или следующее накопительное повторение, не возвращая уже завершённую мини-игру. Начатый шестизадачный cumulative v10 расширяется до нового полного диапазона с сохранением текущего вопроса и индекса. Статистика, `completedBlocks`, inventory, экипировка и completion-маркеры сохраняются. Инвентарь отдельно мигрирует `migrateRewards()` с `REWARD_STATE_VERSION = 3`, профиль — `migrateStudentState()`.
 - При невозможности записи состояние остаётся в памяти вкладки, показывается `#storage-notice`. Сохранение также вызывается при скрытии страницы и `pagehide`. Сброс сохраняет настройку звука.
 - `view`, блокировки, таймеры и история выбора стикеров — временные переменные вне сохранения.
 
@@ -117,7 +117,9 @@
 
 `play/index.html`: `ITEM_SLOTS`, `ITEMS`, `itemCatalog`, `rewardConfig`, `finishBlock()`, `ensureRewardFlow()`, `chooseReward()`, `continueReward()`.
 
-`ITEMS` — независимый каталог предметов с `id`, `name`, `slot`, `asset`, `collection` и необязательной иконкой. `rewardConfig` содержит только условия награды и `itemIds`. После A–C и мини-игры выбирается одна куртка; после D–F/лабиринта — один аксессуар; после G–H–I, пяти вопросов review и Balloon Pop — одна шляпа. Завершение Balloon Pop сохраняется раньше награды; только success-кнопка открывает прежний reward flow. `chooseReward()` вызывает общие `unlockItem()` / `equipItem()`. Альтернативный предмет остаётся закрытым.
+`ITEMS` и `MARIUS_WARDROBE_ITEMS` образуют единый `itemCatalog`; `rewardConfig` содержит условия и девять пар `itemIds`. `previewReward()` сохраняет примерку, `confirmReward()` передаёт выбранный ID в защищённый `chooseReward()`, и только подтверждение вызывает `unlockItem()` / `equipItem()`. Альтернативный предмет доступен в магазине лишь после завершения и получения награды. `ensureRewardFlow()` последовательно восстанавливает пропущенные награды, а `migrateRewards()` не принимает ID из `student.purchasedItemIds` за бесплатный выбор.
+
+Готовые образы задаёт `MARIUS_COLLECTIONS` в `play/marius-wardrobe-catalog.js`. UI карточек, временной примерки, прогресса и действий находится в `play/index.html` / `play/student-profile.css`; атомарную покупку всех недостающих доступных ID выполняет `StudentDomain.purchaseItems()` после полной проверки lock, ownership и баланса.
 
 Общие операции: `getItemById()`, `isItemOwned()`, `unlockItem()`, `equipItem()`, `unequipItem()`, `getEquippedItem()`, `loadProgress()`, `saveProgress()`. Поддерживаемые слоты: `outfit`, `head`, `face`, `hand_left`, `hand_right`, `back`, `extra`, `background`.
 
@@ -129,7 +131,7 @@
 - `renderCharacter()` — единственный renderer inventory-совместимой позы. Он выводит экипировку на главной, в гардеробе, при награде, в итогах, на экранах знакомства с буквой/словом и во вводных/итоговых экранах mini/final. `buddy()` — только компактная обёртка над ним без фона; отдельного состояния персонажа у экранов нет.
 - Реакции находятся в `play/images/stickers/`: `marius_success_01.png` … `marius_success_09.png`, `marius_retry_01.png`. Эти пути формируются прямо в `play/index.html`, вне `MEDIA_ASSETS`.
 - `SUCCESS_STICKERS`, `RETRY_STICKER`, `pickSuccessSticker()` выбирают реакцию без повторения успешного стикера подряд. `showAnswerFeedback()` вызывается из `checkAnswer()`; `renderCompletionSticker()` — из `renderInterlude()` при завершении буквы.
-- `prepareFeedbackSticker()` управляет загрузкой/ошибкой; `preloadFeedbackStickers()` запускает фоновую загрузку после начала игры. Внешний вид — `.feedback-sticker`, `.completion-sticker`, анимации `feedback-pop` / `feedback-soft`.
+- `prepareFeedbackSticker()` управляет загрузкой/ошибкой; стикер загружается только при фактическом показе, чтобы не конкурировать с первой озвучкой. Внешний вид — `.feedback-sticker`, `.completion-sticker`, анимации `feedback-pop` / `feedback-soft`.
 - Сюжетные изображения не используют inventory overlays: цельная сцена `marius-room-abc.png`, success/retry/completion stickers и три иллюстрации лендинга `marius-captain.png`, `marius-traveler.png`, `marius-surfer.png`. У них другие позы, размеры и системы координат.
 
 ## 8. Clothing and accessories
@@ -190,7 +192,7 @@
 | `MEDIA_ASSETS` | `play/assets.js` | Реальные пути медиа. |
 | `createAudioManager()` | `play/audio-manager.js` | Загрузка, очередь, отмена, повтор и fallback аудио. |
 | `RiverCrossingGame` | `play/river-crossing-game.js` | Двенадцать заданий J/K/L, сохранение, hint, пороги 2/4/6/8/10/12 и шаблон сцены. |
-| River course adapter | `play/index.html` | Фаза `river_jkl`, общий renderer Мариуса, аудио, частицы, дуговой прыжок, блокировка ввода и переход в `review_JKL`. |
+| River course adapter | `play/index.html` | Фаза `river_jkl`, общий renderer Мариуса, аудио, частицы, дуговой прыжок, блокировка ввода и переход в накопительное A–L review. |
 
 ## 12. Common modification paths
 
@@ -257,16 +259,16 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 
 ## 16. Комната Мариуса (A/B/C)
 
-Порядок: `lesson` A → B → C → `letterReward` C → **`room`** → прежние `miniIntro` / `mini` (5 вопросов) → награда → D. Фаза `room` использует тот же `view='course'`, `go()`, `showScreen()`, `saveProgress()` и AudioManager.
+Порядок: `lesson` A → B → C → `letterReward` C → **`room`** → `cumulative_review_AC` (6 заданий) → награда → D. Фаза `room` использует тот же `view='course'`, `go()`, `showScreen()`, `saveProgress()` и AudioManager.
 
 - Общий движок — `play/hidden-object-game.js`: `HiddenObjectGame.validate/initialState/restore/currentRound/getObject/progress/remaining/roundComplete/hint/choose/next/render`. В нём нет данных комнаты или маршрута курса.
 - Конфигурации — `play/find-object-scenes.js`. Текущая `FIND_OBJECT_SCENES.mariusRoomABC` содержит стабильный `id`, изображение и alt, `objects[]`, `rounds[]`, `copy` и `completion`.
 - `play/images/marius-room-abc.png`: цельная предоставленная иллюстрация; зарегистрирована в `play/assets.js` как `marius_room_abc`.
 - `play/index.html`: `FIND_OBJECT_COURSE` связывает фазу `room` с config и `nextPhase`; `renderFindObjectGame`, `wireFindObjectScene`, `updateFindObjectView`, `selectFindObject`, `nextFindObjectRound`, `continueFindObjectGame`, `replayFindObjectGame` являются общим course adapter. Делегированные действия имеют префикс `find-object-*`.
-- `AppState.findObjectGames[scene.id]`: `{gameId,currentRound,foundObjects,wrongAttempts,gameCompleted}`. `gameId` не позволяет применить state одной сцены к другой. `loadProgress` переносит прежнее `roomABC` в `findObjectGames['marius-room-abc']`; старый `miniIntro` A/B/C при продолжении открывает комнату, начатый тест и последующие уроки сохраняют позицию.
+- `AppState.findObjectGames[scene.id]`: `{gameId,currentRound,foundObjects,wrongAttempts,gameCompleted}`. `gameId` не позволяет применить state одной сцены к другой. `loadProgress` переносит прежнее `roomABC` в `findObjectGames['marius-room-abc']`; старый `miniIntro` A/B/C при незавершённой комнате открывает комнату, а при завершённой — накопительное A–C.
 - Каждый `object` имеет `id`, `label`, необязательный ключ `audio` и `hotspot:{x,y,width,height}`. Все четыре величины — проценты от полного исходного изображения. Кнопка позиционируется внутри того же responsive wrapper, поэтому одна геометрия применяется на desktop, mobile и landscape.
 - Каждый `round` имеет стабильный `id`, `targets[]` из существующих object ID и текст `instruction`. Поле `letter` текущей сцены используется существующим AudioManager для курса A/B/C.
-- Игра не вызывает `registerMistake`, `registerCorrectAnswer`, `finishBlock` и не выдаёт награды: это практика перед проверкой. Финиш и явная кнопка переводят в существующий `miniIntro`.
+- Игра не вызывает `registerMistake`, `registerCorrectAnswer`, `finishBlock` и не выдаёт награды: это практика перед проверкой. Финиш и явная кнопка переводят в `cumulativeIntro` A–C.
 - Последний правильный выбор возвращает из движка `game-complete` и ставит `state.gameCompleted=true`. `HiddenObjectGame.render()` выводит completion UI и действие `find-object-continue`; `continueFindObjectGame()` читает `nextPhase` из `FIND_OBJECT_COURSE` и вызывает прежний `go('course')`.
 - Комната остаётся сюжетной цельной иллюстрацией, несовместимой с inventory overlays. Renderer из разделов 7–8 не меняется: `outfit` выбирает готовое полное изображение Мариуса, а `head`, `face`, `hand_left`, `hand_right`, `back`, `extra` остаются прозрачными слоями поверх него.
 
@@ -290,9 +292,9 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 
 - `tests/find-object-engine.test.cjs`: две разные конфигурации, валидация, изоляция state, относительные координаты, counter/remaining и completion signal.
 - `tests/room.test.cjs`: текущая механика, сохранения и миграция `roomABC`, повтор, старые данные, загрузка изображения и расчёт размеров зон.
-- `tests/course-regression.test.cjs`: два полных прохода A–Z с комнатой, лабиринтом, G/H/I review, Balloon Pop, тремя прежними наградами, девятью новыми review и миграцией завершённых A–F/A–I; адаптер DOM/audio — `tests/support/trainer-harness.cjs`.
+- `tests/course-regression.test.cjs`: два полных прохода A–Z с девятью тематическими играми, тремя прежними наградами и девятью накопительными review; адаптер DOM/audio — `tests/support/trainer-harness.cjs`.
 - `tests/lesson-continue.test.cjs`: единое состояние card-кнопки `waitingForAudio` → `readyToContinue` для `letter`, `word` и `wordMeaning`, отдельный reset каждого слайда, блокировка перехода до завершения Promise обязательной аудиоочереди, повтор без повторной блокировки, mute/reset, A/B/M/Z и responsive/animation CSS.
-- `tests/alphabet-reviews.test.cjs`: порядок A–Z, конфигурации всех review, шесть разных типов, диапазоны, уникальный cumulative sampling, переходы, restore review и сохранение inventory при A–I → J.
+- `tests/alphabet-reviews.test.cjs`: порядок A–Z, девять накопительных диапазонов, шесть типов, обязательные свежие и более ранние цели, отсутствие соседних повторов, переходы, restore review и миграция v9 без потери inventory.
 - `tests/balloon-pop-engine.test.cjs`: цели/дистракторы, обязательный target, score и переходы, persistence, reward gate, demo isolation и responsive CSS.
 - `tests/inventory.test.cjs`: восемь предметов, восемь слотов, ownership/lock новой награды, head equip/unequip, перезагрузка и миграция rewardStateVersion 2 → 3.
 - `tests/character-assets.test.cjs`: manifest, наличие, Git tracking и SHA-256 семи ключевых character PNG; также автоматически запускается из `tests/character-renderer.test.cjs`.
@@ -303,7 +305,7 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 - `play/student-domain.js` — чистые конфигурации и операции звёзд, транзакций, покупок, mastery, streak, уровней и достижений; здесь же находится заменяемый storage adapter.
 - `play/student-profile.css` — responsive UI кабинета, навигации, A–Z-коллекции, статистики, гардероба, достижений и магазина.
 - `play/index.html` сохраняет роль composition root: связывает StudentDomain с существующими `AppState`, Training, RewardState и единым `renderCharacter()`.
-- Общая версия AppState — 8. При загрузке v1–v7 сохраняются прежние курс, Training, owned/equipped items и награды; исторически завершённые буквы/блоки получают идемпотентные star-транзакции.
+- Общая версия AppState — 10. При загрузке v1–v9 сохраняются прежние курс, Training, owned/equipped items, награды и завершённые мини-игры; исторически завершённые буквы/блоки получают идемпотентные star-транзакции.
 - Магазин показывает только предметы с выполненным `unlockCondition`. Невыбранная награда появляется после соответствующего `completedBlock`; фоны доступны сразу. Реальные платежи отсутствуют.
 - `tests/student-domain.test.cjs` покрывает экономику, повторные награды, покупки, ограничения equip, достижения, mastery, streak, миграцию и reload.
 - `tests/shop.test.cjs` покрывает раздельные preview/purchase/equip, точный дефицит, outfit/background сценарии, premium и повторную покупку, owned controls, reload и itemId-specific thumbnails общего renderer.
@@ -335,7 +337,7 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 
 ## 19. Блок G/H/I и head-награда
 
-Порядок третьего блока: G/Goat → H/Hat → I/Iguana → `miniIntro` → review из пяти вопросов по G/H/I → `balloon_ghi` → `reward_ghi` → J. `advanceAfterMini()` отправляет normal flow в Balloon Pop; уже полученные старые head-награды не отзываются.
+Порядок третьего блока: G/Goat → H/Hat → I/Iguana → `balloon_ghi` → `cumulative_review_AI` → `reward_ghi` → J. Уже полученные старые head-награды не отзываются.
 
 - `reward_ghi.itemIds`: `hat_straw_bow`, `hat_adventure`. Оба предмета имеют `slot:'head'`; `chooseReward()` разблокирует и экипирует только выбранный ID.
 - `marius_hat_straw_bow.png` и `marius_hat_adventure.png` зарегистрированы как 1024×1536. Выбранный head asset передаётся compositor после BODY и рисуется тем же `drawImage(...,0,0,1024,1536)`, без индивидуальных координат, crop или transform.
@@ -345,17 +347,17 @@ Deployment → README.md; index.html; .nojekyll; play/manifest.webmanifest
 
 ## 20. Буквы J–Z и повторение
 
-Полный новый поток после награды GHI: J → K → L → `river_jkl` → `review_JKL` → M → N → O → `review_MNO` → `fruit_rain` → `cumulative_review_AO` → P → Q → R → `review_PQR` → `bubble_cannon` → S → T → U → `review_STU` → `cumulative_review_AU` → V → W → X → `review_VWX` → `railway_vwx` → Y → Z → `review_YZ` → `cumulative_review_AZ` → `results`.
+Полный поток после награды GHI: J → K → L → `river_jkl` → `cumulative_review_AL` → M → N → O → `fruit_rain` → `cumulative_review_AO` → P → Q → R → `bubble_cannon` → `cumulative_review_AR` → S → T → U → `treehouse_stu` → `cumulative_review_AU` → V → W → X → `railway_vwx` → `cumulative_review_AX` → Y → Z → `flight_yz` → `cumulative_review_AZ` → `results`.
 
 - Уроки J–Z создаёт прежний `lessonSteps()` из `letters[]`; отдельная переправа J/K/L не добавляет reward screen или предмет.
-- После `review_VWX` железная дорога даёт 3 задания на имена букв, 3 на звуки и 6 на Van/Whale/Fox. Неверная станция не меняет прогресс; после любого нефинального прибытия состав исчезает и переносится в депо без обратной анимации; 12-й успех сразу запускает финал.
-- Local review использует только буквы своего блока. Все шесть `REVIEW_TYPES` появляются ровно по одному разу; буквы перемешиваются и равномерно повторяются.
-- Cumulative review хранит полный доступный range в `game.poolLetters`, а шесть уникальных целей — в `game.letterOrder`. Две цели берутся из только что изученного блока, четыре — из более ранних букв; оба набора и общий порядок перемешиваются при новом прохождении.
-- `completeQuestion()` переводит review в result-фазу после шестого ответа; `advanceAfterReview()` открывает следующий урок, cumulative block либо итоговый A–Z экран.
+- После изучения VWX железная дорога даёт 3 задания на имена букв, 3 на звуки и 6 на Van/Whale/Fox. Неверная станция не меняет прогресс; после любого нефинального прибытия состав исчезает и переносится в депо без обратной анимации; 12-й успех сразу запускает финал и затем A–X review.
+- Каждый cumulative review использует по одному заданию каждого `REVIEW_TYPE`: `find`, `soundLetter`, `pictureLetter`, `letterPicture`, `wordPicture`, `lowercase`.
+- Cumulative review хранит полный открытый range в `game.poolLetters`, а шесть целей — в `game.letterOrder`. Все свежие буквы обязательны, свободные места берутся из более ранних; A–C повторяет каждую цель дважды, далее цели уникальны. Набор и порядок меняются при новом прохождении.
+- `completeQuestion()` переводит review в result-фазу после шестого ответа; `advanceAfterReview()` открывает награду, следующий урок либо итоговый A–Z экран.
 
 ## 21. Переправа Мариуса J/K/L
 
-После `letterReward` буквы L свежий курс открывает `river_jkl`, а после 12-го правильного ответа и кнопки продолжения — прежний `review_JKL`, затем урок M. Награда за переправу не определена, поэтому игра не добавляет предмет и не вызывает `finishBlock()`.
+После `letterReward` буквы L свежий курс открывает `river_jkl`, а после 12-го правильного ответа и кнопки продолжения — накопительное повторение A–L, затем урок M. Награда за переправу не определена, поэтому игра не добавляет предмет и не вызывает `finishBlock()`.
 
 - Движок: `play/river-crossing-game.js`. Этапы: name J/K/L, sound J/K/L, word Juice/Kite/Lion, смешанный финал с J/K/L и всеми тремя типами. Варианты всегда состоят из J/K/L и перемешиваются.
 - Состояние: `AppState.riverCrossing`. Ошибка увеличивает только `wrongAttempts`; с третьей ошибки `hint()` разрешает мягкую подсветку. Correct/questionIndex увеличиваются только при правильном ответе.
